@@ -1,10 +1,10 @@
 import { env, pipeline } from "@xenova/transformers";
 import { LLM_CONFIG, SUPPORTED_CLIENT_LLM_MODELS, getClientLlmModelInfo } from "../lib/llmConfig";
-import { getSafeOnnxWasmThreadCount, installWarningSuppression } from "../lib/warningSuppressionUtils";
+import { setupGlobalWarningSuppressions, suppressKnownBrowserMlWarnings } from "../lib/warningSuppressionUtils";
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
-installWarningSuppression();
+setupGlobalWarningSuppressions();
 
 type LlmWorkerRequest =
   | {
@@ -119,6 +119,7 @@ async function initializePipeline(modelName: string): Promise<void> {
 
   const options: Record<string, unknown> = {
     quantized: modelInfo.quantized,
+    session_options: createOnnxSessionOptions(),
   };
   if (modelInfo.requiresWebGPU && LLM_CONFIG.enableWebGPU) {
     options.device = "webgpu";
@@ -128,13 +129,18 @@ async function initializePipeline(modelName: string): Promise<void> {
   }
 
   try {
-    textGenerator = await pipeline("text-generation", requestedModelName, options);
+    textGenerator = await suppressKnownBrowserMlWarnings(() =>
+      pipeline("text-generation", requestedModelName, options),
+    );
   } catch (error) {
     if (options.device === "webgpu") {
-      textGenerator = await pipeline("text-generation", requestedModelName, {
-        quantized: true,
-        device: "wasm",
-      } as any);
+      textGenerator = await suppressKnownBrowserMlWarnings(() =>
+        pipeline("text-generation", requestedModelName, {
+          quantized: true,
+          device: "wasm",
+          session_options: createOnnxSessionOptions(),
+        } as any),
+      );
     } else {
       throw error;
     }
@@ -171,21 +177,23 @@ async function detectCapabilities(): Promise<{ webGPU: boolean; simd: boolean }>
 }
 
 async function detectWebGPU(): Promise<boolean> {
-  try {
-    const gpu = (navigator as Navigator & { gpu?: { requestAdapter: (options?: unknown) => Promise<any> } }).gpu;
-    if (!gpu?.requestAdapter) {
+  return suppressKnownBrowserMlWarnings(async () => {
+    try {
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter: (options?: unknown) => Promise<any> } }).gpu;
+      if (!gpu?.requestAdapter) {
+        return false;
+      }
+      const adapter = await gpu.requestAdapter({ powerPreference: "high-performance" });
+      if (!adapter) {
+        return false;
+      }
+      const device = await adapter.requestDevice();
+      device.destroy();
+      return true;
+    } catch {
       return false;
     }
-    const adapter = await gpu.requestAdapter({ powerPreference: "high-performance" });
-    if (!adapter) {
-      return false;
-    }
-    const device = await adapter.requestDevice();
-    device.destroy();
-    return true;
-  } catch {
-    return false;
-  }
+  });
 }
 
 function detectWasmSimd(): boolean {
@@ -200,6 +208,7 @@ function detectWasmSimd(): boolean {
 }
 
 function configureTransformersRuntime(): void {
+  configureOnnxRuntimeLogging();
   const backends = env.backends as unknown as {
     onnx?: {
       wasm?: {
@@ -209,8 +218,53 @@ function configureTransformersRuntime(): void {
     };
   };
   if (backends.onnx?.wasm) {
-    backends.onnx.wasm.numThreads = getSafeOnnxWasmThreadCount(8);
+    backends.onnx.wasm.numThreads = Math.min(navigator.hardwareConcurrency || 4, 8);
     backends.onnx.wasm.simd = capabilities.simd && LLM_CONFIG.enableSIMD;
+  }
+}
+
+function createOnnxSessionOptions(): Record<string, unknown> {
+  return {
+    log_severity_level: 3,
+    log_verbosity_level: 0,
+    graph_optimization_level: "basic",
+    enable_profiling: false,
+  };
+}
+
+function configureOnnxRuntimeLogging(): void {
+  const ort = (globalThis as {
+    ort?: {
+      env?: {
+        logLevel?: string;
+        logVerbosityLevel?: number;
+        wasm?: {
+          numThreads?: number;
+          simd?: boolean;
+        };
+        webgpu?: {
+          powerPreference?: string;
+          validateInputContent?: boolean;
+          enableDebugInfo?: boolean;
+        };
+      };
+    };
+  }).ort;
+
+  if (!ort?.env) {
+    return;
+  }
+
+  ort.env.logLevel = "error";
+  ort.env.logVerbosityLevel = 0;
+  if (ort.env.wasm) {
+    ort.env.wasm.numThreads = Math.min(navigator.hardwareConcurrency || 4, 8);
+    ort.env.wasm.simd = capabilities.simd && LLM_CONFIG.enableSIMD;
+  }
+  if (ort.env.webgpu) {
+    ort.env.webgpu.powerPreference = "high-performance";
+    ort.env.webgpu.validateInputContent = false;
+    ort.env.webgpu.enableDebugInfo = false;
   }
 }
 

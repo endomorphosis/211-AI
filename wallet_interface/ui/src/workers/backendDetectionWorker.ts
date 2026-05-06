@@ -1,8 +1,8 @@
 import { detectBrowserMlBackends } from "../lib/backendDetection";
 import type { BackendDetectionOptions, BackendDetectionResult } from "../lib/backendDetection";
-import { installWarningSuppression } from "../lib/warningSuppressionUtils";
+import { setupGlobalWarningSuppressions, suppressKnownBrowserMlWarnings } from "../lib/warningSuppressionUtils";
 
-installWarningSuppression();
+setupGlobalWarningSuppressions();
 
 type BackendDetectionWorkerRequest =
   | {
@@ -36,7 +36,7 @@ self.onmessage = async (event: MessageEvent<BackendDetectionWorkerRequest>) => {
     }
 
     if (type === "detect") {
-      const result = await detectBrowserMlBackends(data || {});
+      const result = await suppressKnownBrowserMlWarnings(() => detectBrowserMlBackends(data || {}));
       postResponse({ id, success: true, data: { result, ready: true } });
       return;
     }

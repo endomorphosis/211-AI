@@ -1,115 +1,87 @@
-export interface WarningSuppressionOptions {
-  patterns?: readonly RegExp[];
-  consoleObject?: Pick<Console, "warn">;
-}
+type ConsoleMethod = "warn" | "log" | "info";
 
-export interface WarningSuppressionHandle {
-  restore: () => void;
-}
+type ConsoleMethodMap = Pick<Console, ConsoleMethod>;
 
-const DEFAULT_SUPPRESSED_WARNING_PATTERNS: readonly RegExp[] = [
-  /env\.wasm\.numThreads is set to \d+.*crossOriginIsolated mode/i,
-  /WebAssembly multi-threading is not supported.*falling back to single-threading/i,
-  /removing requested execution provider "webgpu" from session options because it is not available/i,
-  /WebGPU not available on this browser/i,
-  /Failed to get GPU adapter.*enable-unsafe-webgpu/i,
-  /Property "env\.wasm\.simd" is set to unknown value/i,
+const noisyWarningPatterns = [
+  /WebGPU is experimental/i,
+  /Failed to create WebGPU Context Provider/i,
+  /Implementation-Status#implementation-status/i,
+  /Automatic fallback to software WebGL has been deprecated/i,
+  /enable-unsafe-swiftshader/i,
+  /GroupMarkerNotSet/i,
+  /Removing initializer .* It is not used by any node/i,
+  /CleanUnusedInitializersAndNodeArgs/i,
+  /\[W:onnxruntime:.*graph\.cc:/i,
+  /onnxruntime.*unused initializer/i,
 ];
 
-const suppressionStateKey = Symbol.for("abby.warningSuppression.consoleWarn");
+let originalConsoleMethods: ConsoleMethodMap | null = null;
+let activeSuppressionRefs = 0;
 
-interface WarningSuppressionState {
-  originalWarn: Console["warn"];
-  patterns: RegExp[];
-  refCount: number;
+export function isKnownNoisyBrowserMlWarning(args: unknown[]): boolean {
+  const message = args.map(formatConsoleArgument).join(" ");
+  return noisyWarningPatterns.some((pattern) => pattern.test(message));
 }
 
-type ConsoleWithSuppressionState = Pick<Console, "warn"> & {
-  [suppressionStateKey]?: WarningSuppressionState;
-};
+export function setupGlobalWarningSuppressions(): () => void {
+  activeSuppressionRefs += 1;
 
-export function installWarningSuppression(options: WarningSuppressionOptions = {}): WarningSuppressionHandle {
-  const consoleObject = (options.consoleObject || console) as ConsoleWithSuppressionState;
-  const patterns = [...DEFAULT_SUPPRESSED_WARNING_PATTERNS, ...(options.patterns || [])];
-  const existingState = consoleObject[suppressionStateKey];
-
-  if (existingState) {
-    existingState.patterns.push(...patterns);
-    existingState.refCount += 1;
-    return {
-      restore: () => restoreWarningSuppression(consoleObject),
+  if (!originalConsoleMethods) {
+    originalConsoleMethods = {
+      warn: console.warn,
+      log: console.log,
+      info: console.info,
     };
+
+    console.warn = createFilteredConsoleMethod("warn", originalConsoleMethods);
+    console.log = createFilteredConsoleMethod("log", originalConsoleMethods);
+    console.info = createFilteredConsoleMethod("info", originalConsoleMethods);
   }
 
-  const originalWarn = consoleObject.warn.bind(consoleObject);
-  consoleObject[suppressionStateKey] = {
-    originalWarn,
-    patterns,
-    refCount: 1,
-  };
-
-  consoleObject.warn = (...args: unknown[]) => {
-    const state = consoleObject[suppressionStateKey];
-    if (state && shouldSuppressWarning(args, state.patterns)) {
+  let restored = false;
+  return () => {
+    if (restored) {
       return;
     }
-    originalWarn(...args);
+    restored = true;
+    activeSuppressionRefs = Math.max(0, activeSuppressionRefs - 1);
+    if (activeSuppressionRefs === 0 && originalConsoleMethods) {
+      console.warn = originalConsoleMethods.warn;
+      console.log = originalConsoleMethods.log;
+      console.info = originalConsoleMethods.info;
+      originalConsoleMethods = null;
+    }
   };
+}
 
-  return {
-    restore: () => restoreWarningSuppression(consoleObject),
+export async function suppressKnownBrowserMlWarnings<T>(operation: () => Promise<T>): Promise<T> {
+  const restore = setupGlobalWarningSuppressions();
+  try {
+    return await operation();
+  } finally {
+    restore();
+  }
+}
+
+function createFilteredConsoleMethod(method: ConsoleMethod, originals: ConsoleMethodMap): Console[ConsoleMethod] {
+  return (...args: unknown[]) => {
+    if (isKnownNoisyBrowserMlWarning(args)) {
+      return;
+    }
+    originals[method].apply(console, args as Parameters<Console[ConsoleMethod]>);
   };
 }
 
-export function shouldSuppressWarning(args: readonly unknown[], patterns = DEFAULT_SUPPRESSED_WARNING_PATTERNS): boolean {
-  const message = warningArgsToString(args);
-  return patterns.some((pattern) => pattern.test(message));
-}
-
-export function getSafeOnnxWasmThreadCount(maxThreads = 8): number {
-  if (!supportsSharedWasmThreads()) {
-    return 1;
+function formatConsoleArgument(argument: unknown): string {
+  if (typeof argument === "string") {
+    return argument;
   }
-  const hardwareConcurrency = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 1 : 1;
-  return Math.max(1, Math.min(hardwareConcurrency, maxThreads));
-}
-
-function restoreWarningSuppression(consoleObject: ConsoleWithSuppressionState): void {
-  const state = consoleObject[suppressionStateKey];
-  if (!state) {
-    return;
-  }
-
-  state.refCount -= 1;
-  if (state.refCount > 0) {
-    return;
-  }
-
-  consoleObject.warn = state.originalWarn;
-  delete consoleObject[suppressionStateKey];
-}
-
-function warningArgsToString(args: readonly unknown[]): string {
-  return args.map(warningArgToString).join(" ");
-}
-
-function warningArgToString(arg: unknown): string {
-  if (typeof arg === "string") {
-    return arg;
-  }
-  if (arg instanceof Error) {
-    return `${arg.name}: ${arg.message}`;
+  if (argument instanceof Error) {
+    return `${argument.name}: ${argument.message}`;
   }
   try {
-    return JSON.stringify(arg);
+    return JSON.stringify(argument);
   } catch {
-    return String(arg);
+    return String(argument);
   }
-}
-
-function supportsSharedWasmThreads(): boolean {
-  return (
-    typeof SharedArrayBuffer !== "undefined" &&
-    Boolean((globalThis as { crossOriginIsolated?: boolean }).crossOriginIsolated)
-  );
 }
