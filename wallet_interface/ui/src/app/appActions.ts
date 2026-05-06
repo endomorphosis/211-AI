@@ -169,7 +169,6 @@ export interface AppActionState {
 export interface AppActionRuntime {
   getState: () => AppActionState;
   setActiveRoute?: (route: RouteId) => void;
-  setServiceDetailDocId?: (docId: string | null) => void;
   setMobileNavOpen?: (open: boolean) => void;
   setProfile?: (profile: RegistrationProfileDraft) => void;
   setPolicy?: (policy: CheckInPolicyDraft) => void;
@@ -187,6 +186,7 @@ export interface AppActionRuntime {
   setSavedServices?: (services: SavedService[]) => void;
   setServicePlans?: (plans: ServicePlan[]) => void;
   setServiceInteractions?: (interactions: ServiceInteractionEvent[]) => void;
+  setServiceDetailDocId?: (docId: string | null) => void;
   walletApiConfig?: WalletApiConfig;
   refreshWalletAccessState?: () => Promise<void>;
   refreshWalletAuditEvents?: () => Promise<void>;
