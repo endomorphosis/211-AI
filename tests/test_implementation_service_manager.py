@@ -47,16 +47,16 @@ def test_service_command_requires_explicit_implementation_mode():
     assert "--no-ephemeral-worktree" in command
 
 
-def test_parser_defaults_to_monitor_only_mode():
+def test_parser_defaults_to_implementation_mode():
     args = manager.parse_args(["start", "agent"])
 
-    assert args.implement is False
+    assert args.implement is True
 
 
-def test_restart_parser_defaults_to_monitor_only_mode():
+def test_restart_parser_defaults_to_implementation_mode():
     args = manager.parse_args(["restart", "all"])
 
-    assert args.implement is False
+    assert args.implement is True
 
 
 def test_parser_accepts_explicit_implementation_mode():

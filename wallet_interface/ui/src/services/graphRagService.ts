@@ -12,7 +12,7 @@ import {
 } from "../lib/graphrag";
 import { backendDetectionWorkerService } from "../lib/backendDetectionWorkerService";
 import { clientEmbeddingWorkerService } from "../lib/clientEmbeddingWorkerService";
-import type { GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
+import type { CorpusDocument, GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
 import type { BackendDetectionStatus } from "../lib/backendDetectionWorkerService";
 
 interface GraphRagRetrievalOptions {
@@ -62,6 +62,46 @@ export interface GraphRagRuntimeStatus {
     benchmarks: BackendDetectionStatus["benchmarks"];
     error?: string;
   };
+}
+
+export interface ServiceProvenanceMetadata {
+  buildManifestCid: string;
+  documentsArtifactCid: string;
+  documentCount: number;
+  loadedAt: string;
+}
+
+export interface ServiceSourceSpan {
+  text: string;
+  start: number;
+  end: number;
+}
+
+export interface ServiceFieldProvenance {
+  field: string;
+  label: string;
+  value: string;
+  confidence: number;
+  confidenceLabel: string;
+  method: string;
+  sourceUrl: string;
+  sourceContentCid: string;
+  sourcePageCid: string;
+  sourceSpan?: ServiceSourceSpan;
+  warning?: string;
+}
+
+export interface ServiceProvenance {
+  serviceDocId: string;
+  sourceUrl: string;
+  sourceContentCid: string;
+  sourcePageCid: string;
+  buildManifestCid: string;
+  documentsArtifactCid: string;
+  loadedAt: string;
+  documentCount: number;
+  scrapeTimestamp: string;
+  fields: ServiceFieldProvenance[];
 }
 
 export async function search211Info(query: string, limit = 10, options: GraphRagRetrievalOptions = {}) {
@@ -123,6 +163,44 @@ export function build211InfoFallbackSummary(evidence: GraphRagEvidence): string 
     return "I could not find a relevant record in the local 211 corpus for that question. For immediate service navigation, contact 211 directly.";
   }
   return append211InfoSources(buildEvidenceSummary(evidence.results), evidence.results);
+}
+
+export function build211InfoServiceProvenance(
+  document: CorpusDocument,
+  metadata: ServiceProvenanceMetadata,
+): ServiceProvenance {
+  const fields = [
+    buildServiceFieldProvenance(document, "provider_name", "Provider name", document.provider_name, {
+      emptyWarning: "Provider name was not extracted for this record.",
+    }),
+    buildServiceFieldProvenance(document, "program_name", "Program name", document.program_name, {
+      emptyWarning: "Program name was not extracted for this record.",
+    }),
+    buildServiceFieldProvenance(document, "title", "Service title", document.title),
+    buildServiceFieldProvenance(document, "categories", "Categories", document.categories),
+    buildServiceFieldProvenance(document, "city", "City", document.city),
+    buildServiceFieldProvenance(document, "state", "State", document.state),
+    buildServiceFieldProvenance(document, "source_url", "Source URL", document.source_url, {
+      method: "crawler metadata with source URL match",
+    }),
+    buildServiceFieldProvenance(document, "summary", "Source summary", sourceSummarySpanValue(document.text), {
+      method: "source document text excerpt",
+      forceFirstSpan: true,
+    }),
+  ];
+
+  return {
+    serviceDocId: document.doc_id,
+    sourceUrl: document.source_url,
+    sourceContentCid: document.source_content_cid,
+    sourcePageCid: document.source_page_cid,
+    buildManifestCid: metadata.buildManifestCid,
+    documentsArtifactCid: metadata.documentsArtifactCid,
+    loadedAt: metadata.loadedAt,
+    documentCount: metadata.documentCount,
+    scrapeTimestamp: "Not included in the current browser corpus",
+    fields,
+  };
 }
 
 export async function get211InfoRuntimeStatus(): Promise<GraphRagRuntimeStatus> {
@@ -255,6 +333,92 @@ async function tryGenerateQueryEmbedding(query: string, enabled = false): Promis
     console.warn("211 query embedding unavailable; using keyword retrieval only", error);
     return undefined;
   }
+}
+
+function buildServiceFieldProvenance(
+  document: CorpusDocument,
+  field: string,
+  label: string,
+  rawValue: string,
+  options: { emptyWarning?: string; method?: string; forceFirstSpan?: boolean } = {},
+): ServiceFieldProvenance {
+  const value = rawValue.trim();
+  const sourceSpan = options.forceFirstSpan ? firstSourceSpan(document.text, value) : findSourceSpan(document.text, value);
+  const confidence = serviceFieldConfidence(value, sourceSpan);
+  return {
+    field,
+    label,
+    value,
+    confidence,
+    confidenceLabel: confidenceLabel(confidence),
+    method: value
+      ? sourceSpan
+        ? options.method || "corpus metadata with exact source text span"
+        : "corpus metadata; exact source text span unavailable"
+      : "field not extracted from current corpus package",
+    sourceUrl: document.source_url,
+    sourceContentCid: document.source_content_cid,
+    sourcePageCid: document.source_page_cid,
+    sourceSpan,
+    warning: value ? undefined : options.emptyWarning || "Field was not extracted for this record.",
+  };
+}
+
+function serviceFieldConfidence(value: string, sourceSpan?: ServiceSourceSpan): number {
+  if (!value) {
+    return 0;
+  }
+  return sourceSpan ? 0.95 : 0.7;
+}
+
+function confidenceLabel(confidence: number): string {
+  if (confidence >= 0.9) return "High";
+  if (confidence >= 0.6) return "Medium";
+  if (confidence > 0) return "Low";
+  return "Missing";
+}
+
+function findSourceSpan(sourceText: string, value: string): ServiceSourceSpan | undefined {
+  if (!sourceText || !value) {
+    return undefined;
+  }
+  const exactIndex = sourceText.indexOf(value);
+  if (exactIndex >= 0) {
+    return sourceSpanFromIndex(sourceText, exactIndex, value.length);
+  }
+
+  const lowerSource = sourceText.toLowerCase();
+  const lowerValue = value.toLowerCase();
+  const lowerIndex = lowerSource.indexOf(lowerValue);
+  if (lowerIndex >= 0) {
+    return sourceSpanFromIndex(sourceText, lowerIndex, value.length);
+  }
+
+  return undefined;
+}
+
+function firstSourceSpan(sourceText: string, value: string): ServiceSourceSpan | undefined {
+  if (!sourceText || !value) {
+    return undefined;
+  }
+  return sourceSpanFromIndex(sourceText, 0, Math.min(value.length, sourceText.length));
+}
+
+function sourceSpanFromIndex(sourceText: string, start: number, length: number): ServiceSourceSpan {
+  const end = Math.min(sourceText.length, start + length);
+  const previewStart = Math.max(0, start - 80);
+  const previewEnd = Math.min(sourceText.length, end + 80);
+  const prefix = previewStart > 0 ? "..." : "";
+  const suffix = previewEnd < sourceText.length ? "..." : "";
+  return {
+    start,
+    end,
+    text: `${prefix}${sourceText.slice(previewStart, previewEnd).replace(/\s+/g, " ").trim()}${suffix}`,
+  };
+}
+
+function sourceSummarySpanValue(text: string): string {
+  return text.replace(/\s+/g, " ").trim().slice(0, 360);
 }
 
 async function withMainThreadSearchFallback<T extends SearchResult[] | GraphRagEvidence>(

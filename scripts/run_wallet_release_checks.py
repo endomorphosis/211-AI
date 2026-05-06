@@ -14,7 +14,6 @@ import os
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -66,7 +65,6 @@ class ReleaseCheckResult:
     exit_code: int
     completed: tuple[str, ...]
     failed: str | None = None
-    evidence_path: Path | None = None
 
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
@@ -161,7 +159,6 @@ def run_release_check_steps(
     steps: Sequence[ReleaseCheckStep],
     *,
     keep_going: bool = False,
-    evidence_dir: Path | None = None,
     runner: Runner = subprocess.run,
 ) -> ReleaseCheckResult:
     """Run release-check commands sequentially and stop on first failure by default."""
@@ -169,40 +166,16 @@ def run_release_check_steps(
     completed: list[str] = []
     exit_code = 0
     failed: str | None = None
-    evidence_path: Path | None = None
-    evidence_steps: list[dict[str, object]] = []
-
-    if evidence_dir is not None:
-        run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        evidence_path = evidence_dir / run_id
-        evidence_path.mkdir(parents=True, exist_ok=True)
-        (evidence_path / "manifest.json").write_text(
-            json.dumps([step.manifest() for step in steps], indent=2, sort_keys=True),
-            encoding="utf-8",
-        )
 
     for step in steps:
         print(f"==> {step.name}", flush=True)
         env = os.environ.copy()
         env.update(step.env)
-        started_at = datetime.now(timezone.utc)
         result = runner(
             list(step.command),
             cwd=str(step.cwd),
             env=env,
             text=True,
-        )
-        finished_at = datetime.now(timezone.utc)
-        evidence_steps.append(
-            {
-                "name": step.name,
-                "command": list(step.command),
-                "cwd": str(step.cwd),
-                "started_at": started_at.isoformat(),
-                "finished_at": finished_at.isoformat(),
-                "duration_seconds": (finished_at - started_at).total_seconds(),
-                "returncode": result.returncode,
-            }
         )
         if result.returncode != 0:
             exit_code = result.returncode
@@ -212,30 +185,10 @@ def run_release_check_steps(
         else:
             completed.append(step.name)
 
-    if evidence_path is not None:
-        (evidence_path / "results.json").write_text(
-            json.dumps(
-                {
-                    "source": "scripts/run_wallet_release_checks.py",
-                    "generated_at": datetime.now(timezone.utc).isoformat(),
-                    "status": "ok" if exit_code == 0 else "error",
-                    "exit_code": exit_code,
-                    "completed": completed,
-                    "failed": failed,
-                    "steps": evidence_steps,
-                },
-                indent=2,
-                sort_keys=True,
-            ),
-            encoding="utf-8",
-        )
-        print(f"release-check evidence: {evidence_path}", flush=True)
-
     return ReleaseCheckResult(
         exit_code=exit_code,
         completed=tuple(completed),
         failed=failed,
-        evidence_path=evidence_path,
     )
 
 
@@ -265,16 +218,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the command manifest without running checks.",
     )
-    parser.add_argument(
-        "--evidence-dir",
-        default=str(REPO_ROOT / "artifacts" / "wallet-release-checks"),
-        help="Directory for release-check evidence bundles. Default: artifacts/wallet-release-checks.",
-    )
-    parser.add_argument(
-        "--no-evidence",
-        action="store_true",
-        help="Do not write manifest/results evidence for this run.",
-    )
     return parser
 
 
@@ -291,8 +234,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.dry_run:
         print(json.dumps([step.manifest() for step in steps], indent=2, sort_keys=True))
         return 0
-    evidence_dir = None if args.no_evidence else Path(args.evidence_dir)
-    return run_release_check_steps(steps, keep_going=args.keep_going, evidence_dir=evidence_dir).exit_code
+    return run_release_check_steps(steps, keep_going=args.keep_going).exit_code
 
 
 if __name__ == "__main__":  # pragma: no cover

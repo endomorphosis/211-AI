@@ -167,7 +167,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--implement",
         dest="implement",
         action="store_true",
-        help="Allow managed daemons to invoke implementation commands.",
+        help="Allow managed daemons to invoke implementation commands. This is the default.",
     )
     implement_group.add_argument(
         "--no-implement",
@@ -175,11 +175,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_false",
         help="Only monitor daemon state; do not invoke implementation commands.",
     )
-    parser.set_defaults(implement=False)
+    parser.set_defaults(implement=True)
     parser.add_argument(
         "--implementation-command",
         default="",
-        help="Implementation command passed to supervised daemons when --implement is set.",
+        help="Implementation command passed to supervised daemons unless --no-implement is set.",
     )
     parser.add_argument("--implementation-timeout", type=float, default=1800.0)
     parser.add_argument(
