@@ -1,0 +1,777 @@
+diff --git a/wallet_interface/ui/src/app/App.tsx b/wallet_interface/ui/src/app/App.tsx
+index c8dd3ef5..f1d2283c 100644
+--- a/wallet_interface/ui/src/app/App.tsx
++++ b/wallet_interface/ui/src/app/App.tsx
+@@ -26,8 +26,7 @@ import { AgentChatDrawer } from "../components/agent/AgentChatDrawer";
+ import { getRouteLabel } from "../agent/surfaceRegistry";
+ import {
+   getServiceDetailDocIdFromHash,
+-  openCanonicalServiceDetailRoute,
+-  setLocationServiceDetailHash
++  openCanonicalServiceDetailRoute
+ } from "../agent/tools/serviceDetailTools";
+ import type { AppActionRuntime } from "./appActions";
+ import { useAgentChatService } from "../services/agentChatService";
+@@ -584,7 +583,20 @@ export function App() {
+         {serviceDetailDocId ? (
+           <ServiceDetailScreen docId={serviceDetailDocId} onBack={() => navigate("social-services")} />
+         ) : null}
+-        {activeRoute === "social-services" && !serviceDetailDocId ? <SocialServicesScreen /> : null}
++        {activeRoute === "social-services" && !serviceDetailDocId ? (
++          <SocialServicesScreen
++            onOpenServiceDetail={(docId) =>
++              openCanonicalServiceDetailRoute(docId, {
++                setActiveRoute: (route) => {
++                  activeRouteRef.current = route;
++                  setActiveRoute(route);
++                },
++                setServiceDetailDocId,
++                setMobileNavOpen
++              })
++            }
++          />
++        ) : null}
+         {activeRoute === "shelter" ? (
+           <ShelterScreen
+             checklist={shelterChecklist}
+@@ -1766,7 +1778,7 @@ function UploadsScreen({
+   );
+ }
+ 
+-function SocialServicesScreen() {
++function SocialServicesScreen({ onOpenServiceDetail }: { onOpenServiceDetail: (docId: string) => void }) {
+   const categories = ["Shelter", "Food", "Health", "Legal", "Benefits", "Transportation", "Employment", "Crisis"];
+   const suggestedPrompts = ["food pantry near Portland", "emergency shelter", "utility bill help"];
+   const [query, setQuery] = useState("");
+@@ -1855,7 +1867,7 @@ function SocialServicesScreen() {
+                   </div>
+                   <div className="row-actions list-item-action">
+                     {document.source_url ? <Badge tone="success">source</Badge> : null}
+-                    <Button onClick={() => setLocationServiceDetailHash(result.docId)} variant="secondary">
++                    <Button onClick={() => onOpenServiceDetail(result.docId)} variant="secondary">
+                       Open detail
+                     </Button>
+                   </div>
+diff --git a/wallet_interface/ui/src/app/ServiceDetailScreen.tsx b/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
+index 009e8bf7..dc127839 100644
+--- a/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
++++ b/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
+@@ -1,24 +1,24 @@
+ import { useEffect, useState } from "react";
+-import { ArrowLeft, ExternalLink, Link as LinkIcon } from "lucide-react";
++import { ArrowLeft, ExternalLink } from "lucide-react";
+ import { Badge, Button, Section, StatusBanner } from "../components/ui";
++import { ServiceProvenancePanel } from "../components/services/ServiceProvenancePanel";
+ import {
+-  load211ArtifactManifest,
+-  load211Documents,
+-  load211GeneratedManifest,
+-  type CorpusDocument,
+-} from "../lib/graphrag";
+-
+-type ServiceDetailMetadata = {
+-  buildManifestCid: string;
+-  documentsArtifactCid: string;
+-  documentCount: number;
+-  loadedAt: string;
+-};
++  get211InfoServiceDetail,
++  type GraphRagServiceDetailMetadata,
++  type GraphRagServiceProvenance,
++} from "../services/graphRagService";
++import type { CorpusDocument } from "../lib/graphrag";
+ 
+ type ServiceDetailState =
+   | { status: "loading"; document: null; metadata: null; error: "" }
+-  | { status: "ready"; document: CorpusDocument; metadata: ServiceDetailMetadata; error: "" }
+-  | { status: "not-found"; document: null; metadata: ServiceDetailMetadata | null; error: "" }
++  | {
++      status: "ready";
++      document: CorpusDocument;
++      metadata: GraphRagServiceDetailMetadata;
++      provenance: GraphRagServiceProvenance;
++      error: "";
++    }
++  | { status: "not-found"; document: null; metadata: GraphRagServiceDetailMetadata | null; error: "" }
+   | { status: "error"; document: null; metadata: null; error: string };
+ 
+ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack: () => void }) {
+@@ -35,30 +35,19 @@ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack:
+     async function loadServiceDetail() {
+       setState({ status: "loading", document: null, metadata: null, error: "" });
+       try {
+-        const [documentsState, artifactManifest, generatedManifest] = await Promise.all([
+-          load211Documents(),
+-          load211ArtifactManifest(),
+-          load211GeneratedManifest(),
+-        ]);
++        const detail = await get211InfoServiceDetail(docId);
+         if (canceled) return;
+ 
+-        const document =
+-          documentsState.documentById.get(docId) ??
+-          documentsState.documentByContentCid.get(docId) ??
+-          documentsState.documents.find((item) => item.source_page_cid === docId) ??
+-          null;
+-        const documentsArtifact = artifactManifest.artifacts.find((artifact) => artifact.role === "documents");
+-        const metadata: ServiceDetailMetadata = {
+-          buildManifestCid: artifactManifest.sourcePackage.build_manifest_cid,
+-          documentsArtifactCid: documentsArtifact?.cid ?? "",
+-          documentCount: generatedManifest.documentCount,
+-          loadedAt: new Date().toISOString(),
+-        };
+-
+         setState(
+-          document
+-            ? { status: "ready", document, metadata, error: "" }
+-            : { status: "not-found", document: null, metadata, error: "" },
++          detail.document && detail.provenance
++            ? {
++                status: "ready",
++                document: detail.document,
++                metadata: detail.metadata,
++                provenance: detail.provenance,
++                error: "",
++              }
++            : { status: "not-found", document: null, metadata: detail.metadata, error: "" },
+         );
+       } catch (error) {
+         if (canceled) return;
+@@ -124,6 +113,7 @@ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack:
+ 
+   const document = state.document;
+   const metadata = state.metadata;
++  const provenance = state.provenance;
+   const title = document.program_name || document.provider_name || document.title || document.doc_id;
+   const provider = document.provider_name || "Provider not listed";
+   const program = document.program_name || document.title || "Program not listed";
+@@ -179,33 +169,13 @@ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack:
+         </div>
+       </Section>
+ 
+-      <Section title="Source and provenance">
++      <Section title="Record identity">
+         <div className="list-stack">
+-          <article className="list-item">
+-            <div>
+-              <h3>Source URL</h3>
+-              {sourceUrl ? (
+-                <p style={{ overflowWrap: "anywhere" }}>
+-                  <a href={sourceUrl} rel="noreferrer" target="_blank">
+-                    {sourceUrl}
+-                  </a>
+-                </p>
+-              ) : (
+-                <p>Source URL not listed</p>
+-              )}
+-            </div>
+-            {sourceUrl ? <LinkIcon aria-hidden="true" size={20} /> : null}
+-          </article>
+           <ProvenanceRow label="Service document ID" value={document.doc_id} />
+-          <ProvenanceRow label="Source content CID" value={document.source_content_cid} />
+-          <ProvenanceRow label="Source page CID" value={document.source_page_cid} />
+-          <ProvenanceRow label="Build manifest CID" value={metadata.buildManifestCid} />
+-          <ProvenanceRow label="Documents artifact CID" value={metadata.documentsArtifactCid} />
+-          <ProvenanceRow label="Detail loaded at" value={metadata.loadedAt} />
+-          <ProvenanceRow label="Scrape timestamp" value="Not included in the current browser corpus" />
+-          <ProvenanceRow label="Corpus document count" value={metadata.documentCount.toLocaleString()} />
+         </div>
+       </Section>
++
++      <ServiceProvenancePanel metadata={metadata} provenance={provenance} />
+     </div>
+   );
+ }
+diff --git a/wallet_interface/ui/src/services/graphRagService.ts b/wallet_interface/ui/src/services/graphRagService.ts
+index cb3a8ae0..3e3f9249 100644
+--- a/wallet_interface/ui/src/services/graphRagService.ts
++++ b/wallet_interface/ui/src/services/graphRagService.ts
+@@ -6,19 +6,65 @@ import {
+   get211CorpusBaseUrl,
+   isGrounded211GraphRagAnswer,
+   load211ArtifactManifest,
++  load211Documents,
+   load211GeneratedManifest,
+   ragSearchWorkerService,
+   search211Corpus,
+ } from "../lib/graphrag";
+ import { backendDetectionWorkerService } from "../lib/backendDetectionWorkerService";
+ import { clientEmbeddingWorkerService } from "../lib/clientEmbeddingWorkerService";
+-import type { GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
++import type { CorpusDocument, GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
+ import type { BackendDetectionStatus } from "../lib/backendDetectionWorkerService";
+ 
+ interface GraphRagRetrievalOptions {
+   useEmbedding?: boolean;
+ }
+ 
++export interface GraphRagServiceDetailMetadata {
++  buildManifestCid: string;
++  documentsArtifactCid: string;
++  documentCount: number;
++  loadedAt: string;
++}
++
++export interface GraphRagSourceSpan {
++  field: string;
++  label: string;
++  value: string;
++  excerpt: string;
++  startOffset: number | null;
++  endOffset: number | null;
++  confidence: number;
++  extractionMethod: string;
++  sourceUrl?: string;
++  contentCid?: string;
++  pageCid?: string;
++}
++
++export interface GraphRagFieldConfidence {
++  field: string;
++  label: string;
++  value: string;
++  confidence: number;
++  extractionMethod: string;
++  hasSourceSpan: boolean;
++}
++
++export interface GraphRagServiceProvenance {
++  sourceUrl: string;
++  sourceContentCid: string;
++  sourcePageCid: string;
++  sourceSpans: GraphRagSourceSpan[];
++  fieldConfidence: GraphRagFieldConfidence[];
++  warnings: string[];
++}
++
++export interface GraphRagServiceDetail {
++  document: CorpusDocument | null;
++  metadata: GraphRagServiceDetailMetadata;
++  provenance: GraphRagServiceProvenance | null;
++}
++
+ export interface GraphRagCitation {
+   index: number;
+   label: string;
+@@ -82,6 +128,154 @@ export async function search211Info(query: string, limit = 10, options: GraphRag
+   );
+ }
+ 
++export async function get211InfoServiceDetail(docId: string): Promise<GraphRagServiceDetail> {
++  const [documentsState, artifactManifest, generatedManifest] = await Promise.all([
++    load211Documents(),
++    load211ArtifactManifest(),
++    load211GeneratedManifest(),
++  ]);
++  const document =
++    documentsState.documentById.get(docId) ??
++    documentsState.documentByContentCid.get(docId) ??
++    documentsState.documents.find((item) => item.source_page_cid === docId) ??
++    null;
++  const documentsArtifact = artifactManifest.artifacts.find((artifact) => artifact.role === "documents");
++  const metadata: GraphRagServiceDetailMetadata = {
++    buildManifestCid: artifactManifest.sourcePackage.build_manifest_cid,
++    documentsArtifactCid: documentsArtifact?.cid ?? "",
++    documentCount: generatedManifest.documentCount,
++    loadedAt: new Date().toISOString(),
++  };
++
++  return {
++    document,
++    metadata,
++    provenance: document ? build211InfoServiceProvenance(document) : null,
++  };
++}
++
++export function build211InfoServiceProvenance(document: CorpusDocument): GraphRagServiceProvenance {
++  const spans: GraphRagSourceSpan[] = [];
++  const fieldConfidence: GraphRagFieldConfidence[] = [];
++
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "provider_name",
++    label: "Provider",
++    value: document.provider_name,
++    confidence: 0.92,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "program_name",
++    label: "Program",
++    value: document.program_name,
++    confidence: 0.92,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "title",
++    label: "Title",
++    value: document.title,
++    confidence: 0.84,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "categories",
++    label: "Categories",
++    value: document.categories,
++    confidence: 0.72,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "city",
++    label: "City",
++    value: document.city,
++    confidence: 0.66,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "state",
++    label: "State",
++    value: document.state,
++    confidence: 0.66,
++  });
++  addStructuredField(document, spans, fieldConfidence, {
++    field: "source_url",
++    label: "Source URL",
++    value: document.source_url,
++    confidence: 0.96,
++  });
++
++  addRegexFields(document, spans, fieldConfidence, {
++    field: "phones",
++    label: "Phone",
++    pattern: /(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\b\d{3})[\s.-]?\d{3}[\s.-]?\d{4}(?:\s*(?:x|ext\.?|extension)\s*\d{1,6})?/gi,
++    confidence: 0.82,
++  });
++  addRegexFields(document, spans, fieldConfidence, {
++    field: "emails",
++    label: "Email",
++    pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
++    confidence: 0.86,
++  });
++  addRegexFields(document, spans, fieldConfidence, {
++    field: "websites",
++    label: "Website",
++    pattern: /https?:\/\/[^\s<>"')]+/gi,
++    confidence: 0.86,
++  });
++  addRegexFields(document, spans, fieldConfidence, {
++    field: "addresses",
++    label: "Address",
++    pattern:
++      /\b\d{1,6}\s+[A-Z0-9][A-Z0-9 .'-]{2,80}\s+(?:Avenue|Ave\.?|Boulevard|Blvd\.?|Court|Ct\.?|Drive|Dr\.?|Highway|Hwy\.?|Lane|Ln\.?|Loop|Parkway|Pkwy\.?|Place|Pl\.?|Road|Rd\.?|Street|St\.?|Way)\b(?:[, ]+[A-Z][A-Z .'-]{2,50})?(?:[, ]+[A-Z]{2}\b)?(?:[, ]+\d{5}(?:-\d{4})?)?/gi,
++    confidence: 0.68,
++  });
++  addSentenceFields(document, spans, fieldConfidence, {
++    field: "hours",
++    label: "Hours",
++    pattern:
++      /\b(mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday|hours?|open|closed|a\.?m\.?|p\.?m\.?)\b/i,
++    confidence: 0.66,
++  });
++  addSentenceFields(document, spans, fieldConfidence, {
++    field: "eligibility",
++    label: "Eligibility",
++    pattern: /(eligible|eligibility|qualify|qualification|income|resident|age|available to|serves)/i,
++    confidence: 0.64,
++  });
++  addSentenceFields(document, spans, fieldConfidence, {
++    field: "intake_steps",
++    label: "Intake steps",
++    pattern: /(apply|application|appointment|call|contact|intake|walk[- ]?in|register|schedule)/i,
++    confidence: 0.62,
++  });
++  addSentenceFields(document, spans, fieldConfidence, {
++    field: "required_documents",
++    label: "Required documents",
++    pattern: /(bring|document|documents|identification|\bid\b|proof|verification|required)/i,
++    confidence: 0.6,
++  });
++
++  for (const sourceField of [
++    { field: "source_content_cid", label: "Source content CID", value: document.source_content_cid },
++    { field: "source_page_cid", label: "Source page CID", value: document.source_page_cid },
++  ]) {
++    if (sourceField.value) {
++      fieldConfidence.push({
++        ...sourceField,
++        confidence: 0.98,
++        extractionMethod: "corpus-manifest",
++        hasSourceSpan: false,
++      });
++    }
++  }
++
++  return {
++    sourceUrl: document.source_url,
++    sourceContentCid: document.source_content_cid,
++    sourcePageCid: document.source_page_cid,
++    sourceSpans: uniqueSpans(spans).slice(0, 12),
++    fieldConfidence: uniqueFieldConfidence(fieldConfidence).slice(0, 18),
++    warnings: buildProvenanceWarnings(document, spans),
++  };
++}
++
+ export async function build211InfoEvidence(query: string, limit = 6, options: GraphRagRetrievalOptions = {}) {
+   const queryEmbedding = await tryGenerateQueryEmbedding(query, options.useEmbedding);
+   return withMainThreadSearchFallback(
+@@ -268,3 +462,220 @@ async function withMainThreadSearchFallback<T extends SearchResult[] | GraphRagE
+     return fallbackCall();
+   }
+ }
++
++function addStructuredField(
++  document: CorpusDocument,
++  spans: GraphRagSourceSpan[],
++  fieldConfidence: GraphRagFieldConfidence[],
++  field: { field: string; label: string; value: string; confidence: number },
++): void {
++  const value = field.value.trim();
++  if (!value) return;
++
++  const span = findExactSpan(document, field.field, field.label, value, field.confidence, "structured-corpus-field");
++  if (span) {
++    spans.push(span);
++  }
++  fieldConfidence.push({
++    field: field.field,
++    label: field.label,
++    value,
++    confidence: span ? field.confidence : Math.max(0.5, field.confidence - 0.18),
++    extractionMethod: span ? "structured-corpus-field" : "structured-corpus-field-no-span",
++    hasSourceSpan: Boolean(span),
++  });
++}
++
++function addRegexFields(
++  document: CorpusDocument,
++  spans: GraphRagSourceSpan[],
++  fieldConfidence: GraphRagFieldConfidence[],
++  field: { field: string; label: string; pattern: RegExp; confidence: number },
++): void {
++  const matches = [...document.text.matchAll(field.pattern)].slice(0, 4);
++  for (const match of matches) {
++    const value = trimTrailingPunctuation(match[0].replace(/\s+/g, " ").trim());
++    const startOffset = match.index ?? null;
++    if (!value || startOffset === null) continue;
++    spans.push(
++      spanFromOffsets(
++        document,
++        field.field,
++        field.label,
++        value,
++        startOffset,
++        startOffset + match[0].length,
++        field.confidence,
++        "regex-source-span",
++      ),
++    );
++    fieldConfidence.push({
++      field: field.field,
++      label: field.label,
++      value,
++      confidence: field.confidence,
++      extractionMethod: "regex-source-span",
++      hasSourceSpan: true,
++    });
++  }
++}
++
++function addSentenceFields(
++  document: CorpusDocument,
++  spans: GraphRagSourceSpan[],
++  fieldConfidence: GraphRagFieldConfidence[],
++  field: { field: string; label: string; pattern: RegExp; confidence: number },
++): void {
++  for (const sentence of findMatchingSentences(document.text, field.pattern).slice(0, 3)) {
++    spans.push(
++      spanFromOffsets(
++        document,
++        field.field,
++        field.label,
++        sentence.value,
++        sentence.startOffset,
++        sentence.endOffset,
++        field.confidence,
++        "sentence-pattern-source-span",
++      ),
++    );
++    fieldConfidence.push({
++      field: field.field,
++      label: field.label,
++      value: sentence.value,
++      confidence: field.confidence,
++      extractionMethod: "sentence-pattern-source-span",
++      hasSourceSpan: true,
++    });
++  }
++}
++
++function findExactSpan(
++  document: CorpusDocument,
++  field: string,
++  label: string,
++  value: string,
++  confidence: number,
++  extractionMethod: string,
++): GraphRagSourceSpan | null {
++  const startOffset =
++    value.length <= 3
++      ? findShortExactValueOffset(document.text, value)
++      : document.text.toLowerCase().indexOf(value.toLowerCase());
++  if (startOffset < 0) return null;
++  return spanFromOffsets(
++    document,
++    field,
++    label,
++    value,
++    startOffset,
++    startOffset + value.length,
++    confidence,
++    extractionMethod,
++  );
++}
++
++function findShortExactValueOffset(text: string, value: string): number {
++  const match = new RegExp(`\\b${escapeRegExp(value)}\\b`, "i").exec(text);
++  return match?.index ?? -1;
++}
++
++function spanFromOffsets(
++  document: CorpusDocument,
++  field: string,
++  label: string,
++  value: string,
++  startOffset: number,
++  endOffset: number,
++  confidence: number,
++  extractionMethod: string,
++): GraphRagSourceSpan {
++  return {
++    field,
++    label,
++    value,
++    excerpt: excerptAround(document.text, startOffset, endOffset),
++    startOffset,
++    endOffset,
++    confidence,
++    extractionMethod,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++  };
++}
++
++function findMatchingSentences(text: string, pattern: RegExp): Array<{ value: string; startOffset: number; endOffset: number }> {
++  const matches: Array<{ value: string; startOffset: number; endOffset: number }> = [];
++  const sentencePattern = /[^.!?\n]+(?:[.!?]+|\n|$)/g;
++  for (const match of text.matchAll(sentencePattern)) {
++    const rawValue = match[0];
++    const startOffset = match.index ?? 0;
++    const valueStartTrimmed = rawValue.length - rawValue.trimStart().length;
++    const value = rawValue.trim().replace(/\s+/g, " ");
++    if (!value || !pattern.test(value)) continue;
++    matches.push({
++      value: truncateText(value, 240),
++      startOffset: startOffset + valueStartTrimmed,
++      endOffset: startOffset + rawValue.length,
++    });
++  }
++  return matches;
++}
++
++function excerptAround(text: string, startOffset: number, endOffset: number, radius = 120): string {
++  const start = Math.max(0, startOffset - radius);
++  const end = Math.min(text.length, endOffset + radius);
++  const prefix = start > 0 ? "..." : "";
++  const suffix = end < text.length ? "..." : "";
++  return `${prefix}${text.slice(start, end).replace(/\s+/g, " ").trim()}${suffix}`;
++}
++
++function uniqueSpans(spans: GraphRagSourceSpan[]): GraphRagSourceSpan[] {
++  const seen = new Set<string>();
++  return spans.filter((span) => {
++    const key = `${span.field}:${span.value.toLowerCase()}:${span.startOffset ?? "none"}`;
++    if (seen.has(key)) return false;
++    seen.add(key);
++    return true;
++  });
++}
++
++function uniqueFieldConfidence(fields: GraphRagFieldConfidence[]): GraphRagFieldConfidence[] {
++  const seen = new Set<string>();
++  return fields.filter((field) => {
++    const key = `${field.field}:${field.value.toLowerCase()}`;
++    if (seen.has(key)) return false;
++    seen.add(key);
++    return true;
++  });
++}
++
++function buildProvenanceWarnings(document: CorpusDocument, spans: GraphRagSourceSpan[]): string[] {
++  const warnings: string[] = [];
++  if (document.text_truncated) {
++    warnings.push("The browser corpus text is truncated, so later source spans may be missing.");
++  }
++  if (!document.source_url) {
++    warnings.push("No source URL is listed for this service record.");
++  }
++  if (!document.source_content_cid || !document.source_page_cid) {
++    warnings.push("One or more source CIDs are missing from this service record.");
++  }
++  if (spans.length === 0) {
++    warnings.push("No exact source spans were found in the local browser corpus text.");
++  }
++  return warnings;
++}
++
++function trimTrailingPunctuation(value: string): string {
++  return value.replace(/[),.;:]+$/g, "");
++}
++
++function escapeRegExp(value: string): string {
++  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
++}
++
++function truncateText(value: string, maxLength: number): string {
++  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 3).trim()}...`;
++}
+diff --git a/tmp/211-ai-implementation-worktrees/portal-021-attempt-10-1778055584/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx b/tmp/211-ai-implementation-worktrees/portal-021-attempt-10-1778055584/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx
+new file mode 100644
+index 00000000..dbf42467
+--- /dev/null
++++ b/tmp/211-ai-implementation-worktrees/portal-021-attempt-10-1778055584/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx
+@@ -0,0 +1,140 @@
++import { ExternalLink, Hash, LocateFixed } from "lucide-react";
++import { Badge, Section, StatusBanner } from "../ui";
++import type {
++  GraphRagFieldConfidence,
++  GraphRagServiceDetailMetadata,
++  GraphRagServiceProvenance,
++  GraphRagSourceSpan,
++} from "../../services/graphRagService";
++
++export function ServiceProvenancePanel({
++  metadata,
++  provenance,
++}: {
++  metadata: GraphRagServiceDetailMetadata;
++  provenance: GraphRagServiceProvenance;
++}) {
++  return (
++    <Section title="Source and provenance">
++      <div className="list-stack">
++        {provenance.warnings.map((warning) => (
++          <StatusBanner key={warning} tone="warning">
++            {warning}
++          </StatusBanner>
++        ))}
++
++        <article className="list-item">
++          <div>
++            <h3>Source URL</h3>
++            {provenance.sourceUrl ? (
++              <p style={{ overflowWrap: "anywhere" }}>
++                <a href={provenance.sourceUrl} rel="noreferrer" target="_blank">
++                  {provenance.sourceUrl}
++                </a>
++              </p>
++            ) : (
++              <p>Source URL not listed</p>
++            )}
++          </div>
++          {provenance.sourceUrl ? <ExternalLink aria-hidden="true" size={20} /> : null}
++        </article>
++
++        <ProvenanceRow icon={<Hash aria-hidden="true" size={16} />} label="Source content CID" value={provenance.sourceContentCid} />
++        <ProvenanceRow icon={<Hash aria-hidden="true" size={16} />} label="Source page CID" value={provenance.sourcePageCid} />
++        <ProvenanceRow label="Build manifest CID" value={metadata.buildManifestCid} />
++        <ProvenanceRow label="Documents artifact CID" value={metadata.documentsArtifactCid} />
++        <ProvenanceRow label="Detail loaded at" value={metadata.loadedAt} />
++        <ProvenanceRow label="Scrape timestamp" value="Not included in the current browser corpus" />
++        <ProvenanceRow label="Corpus document count" value={metadata.documentCount.toLocaleString()} />
++
++        <div className="review-panel">
++          <h3>Source spans</h3>
++          {provenance.sourceSpans.length ? (
++            <div className="list-stack">
++              {provenance.sourceSpans.map((span) => (
++                <SourceSpanCard key={`${span.field}-${span.value}-${span.startOffset ?? "none"}`} span={span} />
++              ))}
++            </div>
++          ) : (
++            <p className="supporting-copy">No exact source spans are available for this record.</p>
++          )}
++        </div>
++
++        <div className="review-panel">
++          <h3>Extraction confidence</h3>
++          {provenance.fieldConfidence.length ? (
++            <div className="list-stack">
++              {provenance.fieldConfidence.map((field) => (
++                <FieldConfidenceRow key={`${field.field}-${field.value}`} field={field} />
++              ))}
++            </div>
++          ) : (
++            <p className="supporting-copy">No extracted fields are available for confidence review.</p>
++          )}
++        </div>
++      </div>
++    </Section>
++  );
++}
++
++function SourceSpanCard({ span }: { span: GraphRagSourceSpan }) {
++  return (
++    <article className="list-item">
++      <div>
++        <div className="badge-row">
++          <Badge>{span.label}</Badge>
++          <Badge tone={confidenceTone(span.confidence)}>{formatConfidence(span.confidence)}</Badge>
++          <Badge>{span.extractionMethod}</Badge>
++        </div>
++        <h3>{span.value}</h3>
++        <p className="supporting-copy" style={{ overflowWrap: "anywhere" }}>
++          {span.excerpt}
++        </p>
++      </div>
++      <span className="badge-row" title="Character offsets in source text">
++        <LocateFixed aria-hidden="true" size={16} />
++        <small>
++          {span.startOffset === null || span.endOffset === null ? "offset n/a" : `${span.startOffset}-${span.endOffset}`}
++        </small>
++      </span>
++    </article>
++  );
++}
++
++function FieldConfidenceRow({ field }: { field: GraphRagFieldConfidence }) {
++  return (
++    <article className="list-item">
++      <div>
++        <h3>{field.label}</h3>
++        <p style={{ overflowWrap: "anywhere" }}>{field.value}</p>
++        <small className="upload-machine-summary">
++          {field.extractionMethod}
++          {field.hasSourceSpan ? " with source span" : " without exact source span"}
++        </small>
++      </div>
++      <Badge tone={confidenceTone(field.confidence)}>{formatConfidence(field.confidence)}</Badge>
++    </article>
++  );
++}
++
++function ProvenanceRow({ icon, label, value }: { icon?: JSX.Element; label: string; value: string }) {
++  return (
++    <article className="list-item">
++      <div>
++        <h3>{label}</h3>
++        <p style={{ overflowWrap: "anywhere" }}>{value || "Not listed"}</p>
++      </div>
++      {icon ?? null}
++    </article>
++  );
++}
++
++function formatConfidence(confidence: number): string {
++  return `${Math.round(confidence * 100)}%`;
++}
++
++function confidenceTone(confidence: number): "success" | "warning" | "neutral" {
++  if (confidence >= 0.8) return "success";
++  if (confidence < 0.65) return "warning";
++  return "neutral";
++}

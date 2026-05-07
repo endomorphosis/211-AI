@@ -1,0 +1,143 @@
+diff --git a/wallet_interface/ui/src/app/App.tsx b/wallet_interface/ui/src/app/App.tsx
+index 8aa3bb0b..b4bd1685 100644
+--- a/wallet_interface/ui/src/app/App.tsx
++++ b/wallet_interface/ui/src/app/App.tsx
+@@ -27,6 +27,7 @@ import { getRouteLabel } from "../agent/surfaceRegistry";
+ import type { AppActionRuntime } from "./appActions";
+ import { useAgentChatService } from "../services/agentChatService";
+ import { ServiceDetailScreen } from "./ServiceDetailScreen";
++import { getServiceDetailDocIdFromHash, setLocationServiceDetailHash } from "../agent/tools/serviceDetailTools";
+ import { search211Info } from "../services/graphRagService";
+ import type { SearchResult } from "../lib/graphrag";
+ import {
+@@ -147,23 +148,6 @@ const routes = primaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.
+ const secondaryNavigationRoutes = secondaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] }));
+ const navigationRoutes = appRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] }));
+ 
+-function getServiceDetailDocIdFromHash(hash = typeof window === "undefined" ? "" : window.location.hash): string | null {
+-  const servicePrefix = "#/services/";
+-  if (!hash.startsWith(servicePrefix)) return null;
+-  const encodedDocId = hash.slice(servicePrefix.length).split("/")[0];
+-  if (!encodedDocId) return null;
+-  try {
+-    return decodeURIComponent(encodedDocId);
+-  } catch {
+-    return encodedDocId;
+-  }
+-}
+-
+-function setLocationServiceDetailHash(docId: string): void {
+-  if (typeof window === "undefined") return;
+-  window.location.hash = `#/services/${encodeURIComponent(docId)}`;
+-}
+-
+ function getInitialRouteFromHash(): RouteId {
+   return getServiceDetailDocIdFromHash() ? "social-services" : getRouteFromHash();
+ }
+@@ -369,6 +353,7 @@ export function App() {
+       setSavedServices,
+       setServicePlans,
+       setServiceInteractions,
++      setServiceDetailDocId,
+       walletApiConfig,
+       refreshWalletAccessState,
+       refreshWalletAuditEvents
+diff --git a/wallet_interface/ui/src/app/appActions.ts b/wallet_interface/ui/src/app/appActions.ts
+index aa29ff91..e2dccc0d 100644
+--- a/wallet_interface/ui/src/app/appActions.ts
++++ b/wallet_interface/ui/src/app/appActions.ts
+@@ -22,6 +22,7 @@ import {
+   searchServiceNavigation,
+ } from "../agent/serviceNavigationAgent";
+ import { navigateAction, readSurfaceContextAction } from "../agent/tools/navigationTools";
++import { openServiceDetailAction } from "../agent/tools/serviceDetailTools";
+ import { updateRegistrationDraftAction } from "../agent/tools/registrationTools";
+ import { updateCheckInPolicyAction } from "../agent/tools/checkInTools";
+ import {
+@@ -112,7 +113,6 @@ import type {
+   DelegateGrantCommandInput,
+   EditRecipientCommandInput,
+   ImportExportBundleCommandInput,
+-  OpenServiceDetailCommandInput,
+   RepairUploadStorageCommandInput,
+   RemoveRecipientCommandInput,
+   RequestShelterContactCommandInput,
+@@ -186,6 +186,7 @@ export interface AppActionRuntime {
+   setSavedServices?: (services: SavedService[]) => void;
+   setServicePlans?: (plans: ServicePlan[]) => void;
+   setServiceInteractions?: (interactions: ServiceInteractionEvent[]) => void;
++  setServiceDetailDocId?: (docId: string | null) => void;
+   walletApiConfig?: WalletApiConfig;
+   refreshWalletAccessState?: () => Promise<void>;
+   refreshWalletAuditEvents?: () => Promise<void>;
+@@ -432,17 +433,6 @@ async function answer211QuestionAction(
+   });
+ }
+ 
+-async function openServiceDetailAction(
+-  runtime: AppActionRuntime,
+-  input: OpenServiceDetailCommandInput
+-): Promise<AppActionResult> {
+-  await navigateAction(runtime, { route: "social-services" });
+-  return success("open_service_detail", `Opened service ${input.docId}.`, {
+-    route: "social-services",
+-    artifactId: input.docId
+-  });
+-}
+-
+ export const appActionHandlers = {
+   navigate: navigateAction,
+   read_surface_context: readSurfaceContextAction,
+diff --git a/tmp/211-ai-implementation-worktrees/agent-071-attempt-1-1778025365/wallet_interface/ui/src/agent/tools/serviceDetailTools.ts b/tmp/211-ai-implementation-worktrees/agent-071-attempt-1-1778025365/wallet_interface/ui/src/agent/tools/serviceDetailTools.ts
+new file mode 100644
+index 00000000..e0dcd1ec
+--- /dev/null
++++ b/tmp/211-ai-implementation-worktrees/agent-071-attempt-1-1778025365/wallet_interface/ui/src/agent/tools/serviceDetailTools.ts
+@@ -0,0 +1,47 @@
++import type { AppActionResult, AppActionRuntime } from "../../app/appActions";
++import type { OpenServiceDetailCommandInput } from "../commandSchemas";
++
++const serviceDetailHashPrefix = "#/services/";
++
++export function getCanonicalServiceDetailHash(docId: string): string {
++  return `${serviceDetailHashPrefix}${encodeURIComponent(docId.trim())}`;
++}
++
++export function getServiceDetailDocIdFromHash(
++  hash = typeof window === "undefined" ? "" : window.location.hash
++): string | null {
++  if (!hash.startsWith(serviceDetailHashPrefix)) return null;
++  const encodedDocId = hash.slice(serviceDetailHashPrefix.length).split("/")[0];
++  if (!encodedDocId) return null;
++  try {
++    return decodeURIComponent(encodedDocId);
++  } catch {
++    return encodedDocId;
++  }
++}
++
++export function setLocationServiceDetailHash(docId: string): void {
++  if (typeof window === "undefined") return;
++  window.location.hash = getCanonicalServiceDetailHash(docId);
++}
++
++export async function openServiceDetailAction(
++  runtime: AppActionRuntime,
++  input: OpenServiceDetailCommandInput
++): Promise<AppActionResult> {
++  const docId = input.docId.trim();
++  setLocationServiceDetailHash(docId);
++  runtime.setServiceDetailDocId?.(docId);
++  runtime.setActiveRoute?.("social-services");
++  runtime.setMobileNavOpen?.(false);
++  return {
++    ok: true,
++    action: "open_service_detail",
++    summary: `Opened service ${docId}.`,
++    route: "social-services",
++    artifactId: docId,
++    metadata: {
++      canonicalRoute: getCanonicalServiceDetailHash(docId)
++    }
++  };
++}

@@ -1,0 +1,3879 @@
+diff --git a/docs/UCAN_ZK_DATA_WALLET_IMPLEMENTATION_PLAN.md b/docs/UCAN_ZK_DATA_WALLET_IMPLEMENTATION_PLAN.md
+index b91bc17f..a6269ea0 100644
+--- a/docs/UCAN_ZK_DATA_WALLET_IMPLEMENTATION_PLAN.md
++++ b/docs/UCAN_ZK_DATA_WALLET_IMPLEMENTATION_PLAN.md
+@@ -35,6 +35,12 @@ Implemented foundations:
+   encrypted replica health summaries/repair.
+ - UCAN-style grants and invocations for decrypt, analyze, coarse-location,
+   proof, service-match, and encrypted export flows.
++- Common wallet UCAN caveat enforcement for not-before, record IDs, data
++  types, output attenuation, user presence, purpose-bound invocations, and
++  delegated caveat preservation. Decrypt, summary, redacted analysis, vector
++  profile, and encrypted export operations assert concrete output types before
++  using delegated grants, and API invocation routes carry user-presence, purpose,
++  and output caveats into signed `wallet-ucan-v1` tokens.
+ - Threshold approval support for high-impact capabilities such as
+   `export/create`, with API and UI hooks for multi-controller approval.
+ - Location records with precise encrypted coordinates, coarse claims, delegated
+@@ -285,8 +291,9 @@ Common caveats:
+ 
+ - Expiration and not-before.
+ - Allowed record IDs and data types.
+-- Allowed output types: plaintext, redacted fields, summary, eligibility facts,
+-  geohash prefix, census tract, proof only, aggregate only.
++- Allowed output types: plaintext, summary, redacted derived output, vector
++  profile, encrypted export bundle, eligibility facts, geohash prefix, census
++  tract, proof only, aggregate only.
+ - Purpose: service matching, emergency support, case work, legal help, research,
+   operations analytics, user export.
+ - Maximum delegation depth.
+@@ -497,13 +504,13 @@ still need production hardening.
+ | 0. Architecture and threat model | partial | formal ADRs, production proof decision, privacy review process |
+ | 1. Generic data wallet core | MVP implemented | recovery, durable persistence, richer record schemas |
+ | 2. Storage integration | MVP implemented | live IPFS/Filecoin/S3 deployment tests, replica policy UX |
+-| 3. UCAN wallet authorization | MVP implemented | external UCAN token interop and formal caveat tests |
++| 3. UCAN wallet authorization | MVP implemented | external UCAN token interop and final production caveat profile |
+ | 4. Location claims and service matching | MVP implemented | production polygon/distance proof backend |
+-| 5. Proof system integration | dev simulated | production circuits, verifier registry, fail-closed runtime checks |
++| 5. Proof system integration | MVP implemented | reviewed production circuit artifacts and verifier deployment selection |
+ | 6. Privacy-preserving analytics | MVP implemented | production DP randomness, durable budget ledger, review workflow |
+-| 7. Document and derived analysis | partial | full PDF/OCR/GraphRAG wallet wrappers and redaction policy tests |
++| 7. Document and derived analysis | partial | full form/GraphRAG wrappers beyond the redacted text-extraction/analysis/vector-profile/cross-record paths |
+ | 8. 211-AI product UI | MVP implemented | live session/auth, device keys, accessibility and usability pass |
+-| 9. API, MCP, CLI, and operations | partial | MCP tools, background verifiers, runbooks, deployment persistence |
++| 9. API, MCP, CLI, and operations | partial | stable API/CLI/MCP reference docs and production rollout guidance |
+ 
+ ### Phase 0: Architecture and Threat Model
+ 
+@@ -575,6 +582,8 @@ Acceptance:
+ - `record/analyze` does not imply `record/decrypt`.
+ - `location/read_coarse` does not imply `location/read_precise`.
+ - Delegation attenuation prevents re-sharing broader authority.
++- Record ID, not-before, data-type, output, and user-presence caveats fail
++  closed when a grant or delegated child exceeds the parent policy.
+ - Expired and revoked grants fail.
+ 
+ ### Phase 4: Location Claims and Service Matching
+@@ -626,11 +635,13 @@ Current MVP status:
+   exposes bounded encrypted export grant, invocation, and bundle commands for
+   `export/create` capabilities. `export/create` is treated as a sensitive
+   capability and participates in threshold approval before grant issuance when
+-  wallet governance requires multi-controller review. Export bundles include a
+-  deterministic `bundle_hash` and `bundle_id` so recipients can detect tampering
+-  independent of JSON key order. Bundle receipt verification is exposed through
+-  both CLI and the 211-AI API, and verified bundles can be imported as encrypted
+-  descriptors without granting plaintext access. Import validates the expected
++  wallet governance requires multi-controller review. Export grants default to
++  the `encrypted_export_bundle` output type, and export creation checks that
++  caveat before building the bundle. Export bundles include a deterministic
++  `bundle_hash` and `bundle_id` so recipients can detect tampering independent
++  of JSON key order. Bundle receipt verification is exposed through both CLI and
++  the 211-AI API, and verified bundles can be imported as encrypted descriptors
++  without granting plaintext access. Import validates the expected
+   bundle type and required record/version sections after hash verification.
+   Storage availability checks report whether referenced encrypted blobs are
+   locally retrievable without decrypting them.
+@@ -666,6 +677,50 @@ Acceptance:
+ 
+ ### Phase 7: Document and Derived Data Analysis
+ 
++Current MVP status:
++
++- `WalletService.analyze_document_with_redaction` now creates encrypted derived
++  artifacts for document analysis with a `redacted_derived_only` output policy.
++  The returned safe output masks common direct identifiers such as email
++  addresses, phone numbers, SSNs, and street addresses, emits derived need
++  categories, enforces matching output-type caveats on delegated grants, and
++  audits `record/analyze_redacted`.
++- `ipfs_datasets_py.mcp_server.tools.wallet_tools.wallet_analyze_document_redacted`
++  exposes that flow through MCP using the same wallet snapshot/blob persistence
++  path as the wallet CLI and other wallet MCP tools.
++- `WalletService.extract_document_text_with_redaction` now wraps the existing
++  `processors.multimedia.attachment_text_extractor` inside the wallet boundary
++  for text/PDF/image/OCR-capable records. Decrypted bytes are written only to a
++  short-lived service-local temporary file for extraction, returned text is
++  redacted before leaving the service, the redacted result is stored as an
++  encrypted `redacted_document_text_extraction` artifact, and delegated use must
++  carry the `redacted_extracted_text` output type. `wallet_extract_document_text_redacted`
++  exposes the same flow through MCP.
++- `WalletService.create_document_vector_profile` now creates encrypted
++  redacted document vector-profile artifacts for privacy-preserving retrieval
++  and analytics features. The returned profile contains only redaction counts,
++  category-level feature counts, document stats, and hashes of redacted
++  per-chunk feature signatures; arbitrary extracted tokens and plaintext stay
++  inside the encrypted artifact boundary. `wallet_create_document_vector_profile`
++  exposes the same flow through MCP.
++- `WalletService.analyze_documents_with_redaction` now performs cross-record
++  redacted analysis over an explicit authorized record set. It verifies
++  `record/analyze` for each document before decrypting inside the wallet service
++  boundary, returns aggregate-safe need categories/redaction counts/per-record
++  derived facts without document text, stores an encrypted
++  `redacted_cross_document_analysis` artifact, and audits
++  `record/analyze_redacted_batch`. `wallet_analyze_documents_redacted` exposes
++  the same flow through MCP.
++- `wallet_interface.api` exposes redacted analysis, vector profile, and
++  cross-record redacted analysis endpoints so the 211-AI project can call these
++  package capabilities without reaching into `WalletService` internals. UI API
++  client helpers return the encrypted artifact descriptor plus the redacted safe
++  output for future product flows.
++- Wallet and MCP tests assert that obvious sensitive fields are not present in
++  the returned redacted text extraction, redacted analysis, cross-record
++  analysis, or vector-profile output and that the encrypted derived artifact
++  descriptor is persisted.
++
+ Deliverables:
+ 
+ - Wallet-aware wrappers around PDF/OCR/form/GraphRAG/vector tools.
+@@ -706,6 +761,22 @@ Acceptance:
+ 
+ ### Phase 9: API, MCP, CLI, and Operations
+ 
++Current MVP status:
++
++- `wallet_interface.api` now exposes the integrated wallet, proof, analytics,
++  export, storage-repair, recovery, and ops-health surface used by the 211-AI
++  UI.
++- `ipfs_datasets_py.wallet.cli` provides local wallet creation, record ingest,
++  bounded sharing, proof generation, export, analytics, approval, and audit
++  flows.
++- `ipfs_datasets_py.mcp_server.tools.wallet_tools` now adds hierarchical MCP
++  tools for wallet creation, encrypted document/location ingest, location-region
++  proof creation, record listing, analytics template/consent/contribution
++  workflows, and private aggregate counts.
++- Deployment and operator support now include the bounded/watch-mode ops worker,
++  authenticated webhook alerts, reference Docker/Compose/Kubernetes/Cloudflare
++  assets, and the wallet operations runbook.
++
+ Deliverables:
+ 
+ - Stable Python API docs.
+@@ -806,6 +877,7 @@ Completion evidence:
+ | UCAN token profile | `wallet-ucan-v1` invocation tokens are issued and accepted by `wallet_interface.api`, with issuer, audience, grant ID, wallet resource, ability, caveats, and expiration carried in signed wallet invocations. External `ucanto`/w3up compatibility remains a production-hardening target. |
+ | Delegated request, approval, invocation, and revocation | `tests/test_wallet_interface_api.py` covers third-party access requests, owner approval, bounded invocation, listed revoked requests, and later invocation failure after revocation. |
+ | Capability separation | `ipfs_datasets_py/tests/unit/test_data_wallet.py` covers `record/analyze` without decrypt, `record/decrypt` key wrapping, coarse/proven location grants, analytics consent/contribution controls, export grants, wrong-ability rejection, tampered invocation rejection, and revoked grant rejection. |
++| Caveat enforcement | Wallet service tests cover record-ID constrained wildcard grants, not-before caveats, concrete output-type checks for document/export operations, and delegated grants preserving parent record restrictions. API tests cover user-presence-required grants failing direct use and succeeding only through a signed invocation carrying `user_present`. |
+ | Threshold approval references | Wallet unit tests and API tests cover sensitive decrypt and `export/create` grants requiring configured controller thresholds before issuance. |
+ | Durable wallet state | Wallet snapshots persist access requests, grants, revocations, approvals, grant receipts, analytics state, proof receipts, exports, audit events, and encrypted record descriptors. The CLI repository persists snapshots for local operation; production database wiring remains Milestone E. |
+ | 211-AI capability previews | `wallet_interface/ui` now previews abilities, records/resources, outputs, purpose, expiration/status, approval readiness, revocation state, and non-granted sensitive capabilities across sharing rules, recipient access, grant receipts, analytics, proof center, benefits, uploads, and exports. |
+@@ -978,7 +1050,8 @@ Current implementation evidence:
+ 
+ ### Milestone E: Deployment and Operations
+ 
+-Status: complete for the initial production-ops path as of 2026-05-04.
++Status: implementation-complete for the in-repo production-ops path as of
++2026-05-04.
+ Production persistence is available through `LocalWalletRepository` and
+ environment-driven wallet storage/proof configuration. The API-level operations
+ health report checks repository persistence, encrypted storage availability,
+@@ -986,7 +1059,11 @@ proof mode, revocation propagation, and privacy-budget ledger readability, and
+ writes durable `ops/health` audit events for wallet operators. The 211-AI
+ Security screen can run the ops-health check and display per-check status. A
+ bounded/watch-mode ops worker, reference Docker/Compose deployment, and operator
+-runbook now cover the initial deployment and incident-response path.
++runbook now cover the initial deployment and incident-response path. The ops
++worker can emit authenticated webhook alerts, the deployment assets carry the
++alert and proof-service env surface, the HTTP proof backend can probe a remote
++verifier service, and the Security screen now surfaces verifier metadata and
++live proof-backend health.
+ 
+ Scope:
+ 
+@@ -1011,21 +1088,22 @@ Current implementation evidence:
+ | --- | --- |
+ | Durable state | `LocalWalletRepository` persists wallet snapshots plus the shared analytics ledger; `WalletInterfaceService` can auto-load and auto-persist through `WALLET_REPOSITORY_ROOT`. |
+ | Storage configuration | `WalletInterfaceService` reads `WALLET_STORAGE_CONFIG`, `WALLET_STORAGE_TYPE`, and mirror-specific env vars to build local/IPFS/S3/Filecoin-backed encrypted storage. |
+-| Proof configuration | `WALLET_PROOF_MODE`, `WALLET_PROOF_BACKEND`, and `WALLET_ALLOW_SIMULATED_PROOFS` control whether simulated proofs are allowed. |
+-| Ops health endpoint | `GET /ops/health?verify_storage=true` reports repository, storage, proof registry, revocation propagation, and privacy-budget checks, and can be protected with `WALLET_OPS_HEALTH_SHARED_SECRET`. |
++| Proof configuration | `WALLET_PROOF_MODE`, `WALLET_PROOF_BACKEND`, and `WALLET_ALLOW_SIMULATED_PROOFS` control whether simulated proofs are allowed, and `http-location-region` now supports an external verifier service through `WALLET_PROOF_SERVICE_URL` plus verifier metadata/auth env vars. |
++| Ops health endpoint | `GET /ops/health?verify_storage=true` reports repository, storage, proof registry, revocation propagation, and privacy-budget checks, can be protected with `WALLET_OPS_HEALTH_SHARED_SECRET`, and actively probes the external HTTP verifier when that backend is configured. |
+ | Actionable audit events | Ops health appends `ops/health` audit events to each loaded wallet with per-check statuses. |
+-| 211-AI ops UI | The Security screen runs `/ops/health`, shows overall status and per-check summaries, and refreshes wallet audit events after the check. |
+-| Scheduled worker | `python -m wallet_interface.ops` runs bounded or watch-mode ops checks, emits JSONL, and can fail on warnings or errors for cron/sidecar integration. |
++| 211-AI ops UI | The Security screen runs `/ops/health`, shows overall status, per-check summaries, proof verifier metadata, live verifier health, and refreshes wallet audit events after the check. |
++| Scheduled worker | `python -m wallet_interface.ops` runs bounded or watch-mode ops checks, emits JSONL, can fail on warnings or errors for cron/sidecar integration, and can POST warning/error alerts to an operator webhook with bearer or custom-header authentication. |
+ | Deployment config | `wallet_interface/deploy/docker-compose.wallet.yml` runs API, UI, and ops worker services with durable volumes and production-mode proof settings, `wallet_interface/deploy/kubernetes/` provides the parallel namespace/config/API/UI/ops/ingress reference manifests, and `wallet_interface/deploy/cloudflare/` adds edge proxy plus scheduled ops-health Worker glue. |
+ | Operator runbook | `docs/WALLET_OPERATIONS_RUNBOOK.md` covers lost keys, revoked grants, proof backend failure, storage outage, privacy incidents, and scheduled worker setup. |
+ 
+ Remaining work:
+ 
+-- Replace the deterministic integration proof backend with the selected
+-  production verifier service.
+-- Add environment-specific secret management and alert routing.
++- Validate the external verifier service contract and provision its production
++  credentials in the target secret manager.
++- Add environment-specific secret management and production alert destination wiring.
+ - Harden the Cloudflare reference path with environment-specific origin auth,
+   Access/Tunnel integration, and deployment secrets.
++- Publish stable API/CLI/MCP reference docs for operators and integrators.
+ 
+ ## Open Decisions
+ 
+diff --git a/docs/WALLET_OPERATIONS_RUNBOOK.md b/docs/WALLET_OPERATIONS_RUNBOOK.md
+index 48ab081a..d58edb71 100644
+--- a/docs/WALLET_OPERATIONS_RUNBOOK.md
++++ b/docs/WALLET_OPERATIONS_RUNBOOK.md
+@@ -13,6 +13,9 @@ Required environment:
+   replicas.
+ - `WALLET_PROOF_MODE=production`.
+ - `WALLET_PROOF_BACKEND` points to the active verifier backend.
++- When using the HTTP verifier adapter, set `WALLET_PROOF_SERVICE_URL`,
++  `WALLET_PROOF_VERIFIER_ID`, `WALLET_PROOF_SYSTEM`, and verifier auth
++  credentials.
+ - `WALLET_AUTO_LOAD_REPOSITORY=true`.
+ - `WALLET_AUTO_PERSIST=true`.
+ 
+@@ -27,8 +30,21 @@ python -m wallet_interface.ops --max-runs 1 --fail-on-error
+ ```
+ 
+ The ops-health report checks repository state, encrypted storage availability,
+-proof mode, revocation propagation, and privacy-budget ledger readability. Each
+-run writes an `ops/health` audit event for every loaded wallet.
++proof mode, external verifier health when configured, revocation propagation,
++and privacy-budget ledger readability. Each run writes an `ops/health` audit
++event for every loaded wallet.
++
++Optional alert routing:
++
++- `WALLET_OPS_ALERT_WEBHOOK_URL`
++- `WALLET_OPS_ALERT_ON=warning|error`
++- `WALLET_OPS_ALERT_BEARER_TOKEN`
++- `WALLET_OPS_ALERT_HEADER_NAME`
++- `WALLET_OPS_ALERT_HEADER_VALUE`
++
++When configured, `python -m wallet_interface.ops` sends a JSON webhook for each
++matching report. This is the reference integration point for Slack, PagerDuty,
++incident routers, or internal alert collectors.
+ 
+ ## Lost Key Or Device
+ 
+@@ -75,6 +91,14 @@ If the user lost controller authority, use configured recovery contacts:
+ 4. Existing proof receipts remain auditable by receipt hash and verifier
+    metadata; do not expose witness data while debugging.
+ 
++If using the HTTP verifier adapter:
++
++5. Check connectivity and credentials for `WALLET_PROOF_SERVICE_URL`.
++6. Confirm the verifier returns the expected `verifier_id`, `proof_system`, and
++   circuit metadata for location-region proofs.
++7. Treat `/ops/health` `proof_registry=error` as a production outage for new
++   proof creation.
++
+ ## Storage Outage
+ 
+ 1. Run `/ops/health?verify_storage=true`.
+@@ -112,13 +136,16 @@ python -m wallet_interface.ops \
+   --watch \
+   --interval-seconds 300 \
+   --fail-on-error \
++  --alert-webhook-url https://ops.example.com/hooks/211-wallet \
++  --alert-on error \
++  --alert-bearer-token "${WALLET_OPS_ALERT_BEARER_TOKEN}" \
+   --output-jsonl /var/log/211-ai/wallet-ops-health.jsonl
+ ```
+ 
+ For cron, prefer a bounded run:
+ 
+ ```bash
+-*/5 * * * * cd /srv/211-AI && python -m wallet_interface.ops --max-runs 1 --fail-on-error --output-jsonl /var/log/211-ai/wallet-ops-health.jsonl
++*/5 * * * * cd /srv/211-AI && python -m wallet_interface.ops --max-runs 1 --fail-on-error --alert-webhook-url https://ops.example.com/hooks/211-wallet --alert-on error --alert-bearer-token "${WALLET_OPS_ALERT_BEARER_TOKEN}" --output-jsonl /var/log/211-ai/wallet-ops-health.jsonl
+ ```
+ 
+ ## Kubernetes Reference
+diff --git a/tests/test_wallet_interface.py b/tests/test_wallet_interface.py
+index 9c10ef3e..6fbcd9e3 100644
+--- a/tests/test_wallet_interface.py
++++ b/tests/test_wallet_interface.py
+@@ -6,6 +6,7 @@ from pathlib import Path
+ import pytest
+ 
+ from wallet_interface import ServiceRecord, WalletInterfaceService, match_services
++from wallet_interface.proof_backends import HttpLocationRegionProofBackend
+ from ipfs_datasets_py.wallet.crypto import random_key
+ from ipfs_datasets_py.wallet.ucan import resource_for_export, resource_for_location, resource_for_record, resource_for_wallet
+ 
+@@ -145,6 +146,71 @@ def test_wallet_interface_matches_from_derived_facts():
+     assert matches[0].service.id == "food-1"
+ 
+ 
++def test_wallet_interface_ops_health_reports_ready_http_proof_backend() -> None:
++    def fake_request_json(
++        method: str,
++        url: str,
++        payload: dict[str, object],
++        headers: dict[str, str],
++        timeout_seconds: float,
++    ) -> dict[str, object]:
++        assert method == "POST"
++        assert url == "https://verifier.example.test/health"
++        assert payload["verifier_id"] == "verifier-http-v1"
++        assert timeout_seconds == 5.0
++        return {"ok": True, "status": "ready", "version": "2026.05.04"}
++
++    app = WalletInterfaceService(
++        proof_backend=HttpLocationRegionProofBackend(
++            base_url="https://verifier.example.test",
++            verifier_id="verifier-http-v1",
++            proof_system="groth16",
++            circuit_id="location-region-v1",
++            timeout_seconds=5.0,
++            request_json=fake_request_json,
++        ),
++        allow_simulated_proofs=False,
++        services=_services(),
++    )
++
++    report = app.ops_health(verify_storage=False)
++    checks = {check["name"]: check for check in report["checks"]}
++
++    assert checks["proof_registry"]["status"] == "ok"
++    assert checks["proof_registry"]["details"]["verifier_id"] == "verifier-http-v1"
++    assert checks["proof_registry"]["details"]["backend_health"]["status"] == "ready"
++
++
++def test_wallet_interface_ops_health_reports_failed_http_proof_backend() -> None:
++    def fake_request_json(
++        method: str,
++        url: str,
++        payload: dict[str, object],
++        headers: dict[str, str],
++        timeout_seconds: float,
++    ) -> dict[str, object]:
++        return {"ok": False, "status": "down", "reason": "verifier unavailable"}
++
++    app = WalletInterfaceService(
++        proof_backend=HttpLocationRegionProofBackend(
++            base_url="https://verifier.example.test",
++            verifier_id="verifier-http-v1",
++            proof_system="groth16",
++            circuit_id="location-region-v1",
++            request_json=fake_request_json,
++        ),
++        allow_simulated_proofs=False,
++        services=_services(),
++    )
++
++    report = app.ops_health(verify_storage=False)
++    checks = {check["name"]: check for check in report["checks"]}
++
++    assert report["status"] == "error"
++    assert checks["proof_registry"]["status"] == "error"
++    assert checks["proof_registry"]["details"]["backend_health"]["status"] == "down"
++
++
+ def test_wallet_interface_document_analysis_grant_and_audit_timeline(tmp_path):
+     app = WalletInterfaceService(services=_services())
+     wallet = app.create_wallet(OWNER)
+@@ -314,6 +380,180 @@ def test_wallet_interface_delegates_grant_with_bounded_chain(tmp_path):
+     assert app.wallet_service.grants[child.grant_id].status == "revoked"
+ 
+ 
++def test_wallet_interface_grant_record_id_caveat_limits_wildcard_resource(tmp_path):
++    app = WalletInterfaceService(services=_services())
++    wallet = app.create_wallet(OWNER)
++    first_source = tmp_path / "allowed-record.txt"
++    second_source = tmp_path / "blocked-record.txt"
++    first_source.write_text("allowed record content", encoding="utf-8")
++    second_source.write_text("blocked record content", encoding="utf-8")
++    allowed_record = app.add_document(wallet.wallet_id, first_source, actor_did=OWNER)
++    blocked_record = app.add_document(wallet.wallet_id, second_source, actor_did=OWNER)
++    wildcard_resource = f"wallet://{wallet.wallet_id}/records/*"
++    grant = app.wallet_service.create_grant(
++        wallet_id=wallet.wallet_id,
++        issuer_did=OWNER,
++        audience_did=ADVOCATE,
++        resources=[wildcard_resource],
++        abilities=["record/analyze"],
++        caveats={
++            "purpose": "case_review",
++            "record_ids": [allowed_record.record_id],
++            "data_types": ["document"],
++        },
++    )
++
++    artifact = app.analyze_record_for_delegate(
++        wallet.wallet_id,
++        allowed_record.record_id,
++        actor_did=ADVOCATE,
++        grant_id=grant.grant_id,
++    )
++
++    assert artifact.source_record_ids == [allowed_record.record_id]
++    with pytest.raises(Exception, match="record_ids"):
++        app.analyze_record_for_delegate(
++            wallet.wallet_id,
++            blocked_record.record_id,
++            actor_did=ADVOCATE,
++            grant_id=grant.grant_id,
++        )
++
++
++def test_wallet_interface_not_before_caveat_blocks_grant_use(tmp_path):
++    app = WalletInterfaceService(services=_services())
++    wallet = app.create_wallet(OWNER)
++    source = tmp_path / "future-grant.txt"
++    source.write_text("future caveat content", encoding="utf-8")
++    record = app.add_document(wallet.wallet_id, source, actor_did=OWNER)
++    resource = resource_for_record(wallet.wallet_id, record.record_id)
++    grant = app.wallet_service.create_grant(
++        wallet_id=wallet.wallet_id,
++        issuer_did=OWNER,
++        audience_did=ADVOCATE,
++        resources=[resource],
++        abilities=["record/analyze"],
++        caveats={"purpose": "case_review", "not_before": "2999-01-01T00:00:00+00:00"},
++    )
++
++    with pytest.raises(Exception, match="not valid before"):
++        app.analyze_record_for_delegate(
++            wallet.wallet_id,
++            record.record_id,
++            actor_did=ADVOCATE,
++            grant_id=grant.grant_id,
++        )
++    with pytest.raises(Exception, match="not valid before"):
++        app.wallet_service.issue_invocation(
++            wallet.wallet_id,
++            grant_id=grant.grant_id,
++            actor_did=ADVOCATE,
++            resource=resource,
++            ability="record/analyze",
++        )
++
++
++def test_wallet_interface_delegated_grant_must_preserve_parent_record_caveat(tmp_path):
++    app = WalletInterfaceService(services=_services())
++    wallet = app.create_wallet(OWNER)
++    source = tmp_path / "parent-caveat.txt"
++    source.write_text("parent caveat content", encoding="utf-8")
++    record = app.add_document(wallet.wallet_id, source, actor_did=OWNER)
++    wildcard_resource = f"wallet://{wallet.wallet_id}/records/*"
++    parent = app.wallet_service.create_grant(
++        wallet_id=wallet.wallet_id,
++        issuer_did=OWNER,
++        audience_did=ADVOCATE,
++        resources=[wildcard_resource],
++        abilities=["record/analyze", "record/share"],
++        caveats={"purpose": "case_review", "record_ids": [record.record_id]},
++    )
++
++    with pytest.raises(Exception, match="preserve parent record_ids"):
++        app.delegate_grant(
++            wallet.wallet_id,
++            parent_grant_id=parent.grant_id,
++            issuer_did=ADVOCATE,
++            audience_did=CASE_MANAGER,
++            resources=[wildcard_resource],
++            abilities=["record/analyze"],
++            caveats={"purpose": "case_review"},
++        )
++
++    child = app.delegate_grant(
++        wallet.wallet_id,
++        parent_grant_id=parent.grant_id,
++        issuer_did=ADVOCATE,
++        audience_did=CASE_MANAGER,
++        resources=[wildcard_resource],
++        abilities=["record/analyze"],
++        caveats={"purpose": "case_review", "record_ids": [record.record_id]},
++    )
++    artifact = app.analyze_record_for_delegate(
++        wallet.wallet_id,
++        record.record_id,
++        actor_did=CASE_MANAGER,
++        grant_id=child.grant_id,
++    )
++
++    assert artifact.source_record_ids == [record.record_id]
++
++
++def test_wallet_interface_output_type_caveat_limits_document_outputs(tmp_path):
++    app = WalletInterfaceService(services=_services())
++    wallet = app.create_wallet(OWNER)
++    source = tmp_path / "output-policy.txt"
++    source.write_text("Output policy separates summaries from plaintext.", encoding="utf-8")
++    record = app.add_document(wallet.wallet_id, source, actor_did=OWNER)
++    resource = resource_for_record(wallet.wallet_id, record.record_id)
++    summary_only = app.wallet_service.create_grant(
++        wallet_id=wallet.wallet_id,
++        issuer_did=OWNER,
++        audience_did=ADVOCATE,
++        resources=[resource],
++        abilities=["record/analyze", "record/decrypt"],
++        caveats={"purpose": "case_review", "output_types": ["summary"]},
++    )
++    plaintext_only = app.wallet_service.create_grant(
++        wallet_id=wallet.wallet_id,
++        issuer_did=OWNER,
++        audience_did=CASE_MANAGER,
++        resources=[resource],
++        abilities=["record/analyze", "record/decrypt"],
++        caveats={"purpose": "case_review", "output_types": ["plaintext"]},
++    )
++
++    artifact = app.analyze_record_for_delegate(
++        wallet.wallet_id,
++        record.record_id,
++        actor_did=ADVOCATE,
++        grant_id=summary_only.grant_id,
++    )
++    plaintext = app.wallet_service.decrypt_record(
++        wallet.wallet_id,
++        record.record_id,
++        actor_did=CASE_MANAGER,
++        grant_id=plaintext_only.grant_id,
++    )
++
++    assert artifact.artifact_type == "summary"
++    assert plaintext == source.read_bytes()
++    with pytest.raises(Exception, match="output_types"):
++        app.wallet_service.decrypt_record(
++            wallet.wallet_id,
++            record.record_id,
++            actor_did=ADVOCATE,
++            grant_id=summary_only.grant_id,
++        )
++    with pytest.raises(Exception, match="output_types"):
++        app.analyze_record_for_delegate(
++            wallet.wallet_id,
++            record.record_id,
++            actor_did=CASE_MANAGER,
++            grant_id=plaintext_only.grant_id,
++        )
++
++
+ def test_wallet_interface_emergency_revoke_revokes_and_rotates(tmp_path):
+     app = WalletInterfaceService(services=_services())
+     wallet = app.create_wallet(OWNER)
+@@ -885,6 +1125,7 @@ def test_wallet_interface_export_bundle_is_grant_scoped_and_encrypted(tmp_path):
+         audience_did=ADVOCATE,
+         record_ids=[document.record_id, location.record_id],
+     )
++    assert grant.caveats["output_types"] == ["encrypted_export_bundle"]
+     bundle = app.create_export_bundle(
+         wallet.wallet_id,
+         actor_did=ADVOCATE,
+diff --git a/tests/test_wallet_interface_api.py b/tests/test_wallet_interface_api.py
+index 62d2fcb3..df2ab396 100644
+--- a/tests/test_wallet_interface_api.py
++++ b/tests/test_wallet_interface_api.py
+@@ -509,6 +509,135 @@ def test_wallet_api_document_analysis_invocation_flow() -> None:
+     assert "record/analyze" in actions
+ 
+ 
++def test_wallet_api_redacted_and_vector_document_analysis_outputs_are_safe() -> None:
++    client = _client()
++    owner_key = random_key().hex()
++    delegate_key = random_key().hex()
++    wallet = client.post("/wallets", json={"owner_did": "did:key:owner"}).json()
++    record = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "intake.txt",
++            "text": (
++                "Jane can be reached at jane@example.org or 503-555-1212. "
++                "SSN 123-45-6789. Needs rent, SNAP, and clinic help."
++            ),
++        },
++    ).json()
++    grant = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/grants",
++        json={
++            "issuer_did": "did:key:owner",
++            "audience_did": "did:key:delegate",
++            "issuer_key_hex": owner_key,
++            "audience_key_hex": delegate_key,
++            "abilities": ["record/analyze"],
++            "output_types": ["redacted_derived_only", "vector_profile"],
++        },
++    ).json()
++
++    redacted_invocation = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/analysis-invocations",
++        json={
++            "grant_id": grant["grant_id"],
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "output_types": ["redacted_derived_only"],
++        },
++    ).json()
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/analyze/redacted",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "invocation_token": redacted_invocation["token"],
++        },
++    )
++    assert response.status_code == 200
++    redacted = response.json()
++    redacted_output = json.dumps(redacted["output"])
++    assert redacted["artifact"]["artifact_type"] == "redacted_document_analysis"
++    assert redacted["output"]["output_policy"] == "redacted_derived_only"
++    assert "jane@example.org" not in redacted_output
++    assert "503-555-1212" not in redacted_output
++    assert "123-45-6789" not in redacted_output
++    assert set(redacted["output"]["derived_facts"]["need_categories"]) >= {"housing", "food", "health"}
++
++    vector_invocation = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/analysis-invocations",
++        json={
++            "grant_id": grant["grant_id"],
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "output_types": ["vector_profile"],
++        },
++    ).json()
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/vector-profile",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "invocation_token": vector_invocation["token"],
++            "chunk_size_words": 8,
++        },
++    )
++    assert response.status_code == 200
++    vector = response.json()
++    vector_output = json.dumps(vector["output"])
++    assert vector["artifact"]["artifact_type"] == "redacted_document_vector_profile"
++    assert vector["output"]["output_policy"] == "encrypted_vector_profile"
++    assert "jane@example.org" not in vector_output
++    assert "503-555-1212" not in vector_output
++    assert vector["output"]["profile"]["profile_type"] == "redacted_lexical_hash_vector"
++
++    actions = [event["action"] for event in client.get(f"/wallets/{wallet['wallet_id']}/audit").json()["events"]]
++    assert "record/analyze_redacted" in actions
++    assert "record/vector_profile" in actions
++
++
++def test_wallet_api_owner_can_create_cross_record_redacted_analysis() -> None:
++    client = _client()
++    owner_key = random_key().hex()
++    wallet = client.post("/wallets", json={"owner_did": "did:key:owner"}).json()
++    first = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "first.txt",
++            "text": "Email jane@example.org about rent assistance.",
++        },
++    ).json()
++    second = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "second.txt",
++            "text": "Call 503-555-1212 about SNAP and clinic referrals.",
++        },
++    ).json()
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/analyze/redacted",
++        json={
++            "actor_did": "did:key:owner",
++            "actor_key_hex": owner_key,
++            "record_ids": [first["record_id"], second["record_id"]],
++        },
++    )
++
++    assert response.status_code == 200
++    analysis = response.json()
++    serialized = json.dumps(analysis["output"])
++    assert analysis["artifact"]["artifact_type"] == "redacted_cross_document_analysis"
++    assert analysis["output"]["source_record_count"] == 2
++    assert "jane@example.org" not in serialized
++    assert "503-555-1212" not in serialized
++
++
+ def test_wallet_api_binary_document_upload_lists_record_and_storage() -> None:
+     client = _client()
+     owner_key = random_key().hex()
+@@ -536,6 +665,84 @@ def test_wallet_api_binary_document_upload_lists_record_and_storage() -> None:
+     assert response.json()["ok"] is True
+ 
+ 
++def test_wallet_api_owner_can_decrypt_document_without_grant() -> None:
++    client = _client()
++    owner_key = random_key().hex()
++    wallet = client.post("/wallets", json={"owner_did": "did:key:owner"}).json()
++    record = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "owner-preview.txt",
++            "text": "Owner can preview this stored document.",
++        },
++    ).json()
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt",
++        json={"actor_did": "did:key:owner", "actor_key_hex": owner_key},
++    )
++
++    assert response.status_code == 200
++    decrypted = response.json()
++    assert decrypted["text"] == "Owner can preview this stored document."
++    assert decrypted["size_bytes"] == len("Owner can preview this stored document.")
++
++
++def test_wallet_api_owner_creates_record_view_grant() -> None:
++    client = _client()
++    owner_key = random_key().hex()
++    delegate_key = random_key().hex()
++    wallet = client.post("/wallets", json={"owner_did": "did:key:owner"}).json()
++    record = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "share.txt",
++            "text": "Owner shared this document directly.",
++        },
++    ).json()
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/grants",
++        json={
++            "issuer_did": "did:key:owner",
++            "audience_did": "did:key:delegate",
++            "issuer_key_hex": owner_key,
++            "audience_key_hex": delegate_key,
++            "abilities": ["record/analyze", "record/decrypt"],
++            "purpose": "benefits_application",
++        },
++    )
++    assert response.status_code == 200
++    grant = response.json()
++    assert grant["abilities"] == ["record/analyze", "record/decrypt"]
++    assert grant["caveats"]["purpose"] == "benefits_application"
++    assert set(grant["caveats"]["output_types"]) == {"summary", "plaintext"}
++
++    response = client.get(
++        f"/wallets/{wallet['wallet_id']}/grant-receipts",
++        params={"audience_did": "did:key:delegate"},
++    )
++    assert response.status_code == 200
++    receipt = response.json()["receipts"][0]
++    assert receipt["grant_id"] == grant["grant_id"]
++    assert receipt["status"] == "active"
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "grant_id": grant["grant_id"],
++        },
++    )
++    assert response.status_code == 200
++    assert response.json()["text"] == "Owner shared this document directly."
++
++
+ def test_wallet_api_rotates_document_key() -> None:
+     service = WalletInterfaceService(services=[])
+     client = _client_with_service(service)
+@@ -806,6 +1013,87 @@ def test_wallet_api_access_request_can_delegate_document_view() -> None:
+     assert decrypted["size_bytes"] == len("Delegate may view this identity document.")
+ 
+ 
++def test_wallet_api_decrypt_invocation_satisfies_user_presence_caveat() -> None:
++    client = _client()
++    owner_key = random_key().hex()
++    delegate_key = random_key().hex()
++    wallet = client.post("/wallets", json={"owner_did": "did:key:owner"}).json()
++    record = client.post(
++        f"/wallets/{wallet['wallet_id']}/documents/text",
++        json={
++            "actor_did": "did:key:owner",
++            "key_hex": owner_key,
++            "filename": "presence.txt",
++            "text": "User presence protected document.",
++        },
++    ).json()
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/grants",
++        json={
++            "issuer_did": "did:key:owner",
++            "audience_did": "did:key:delegate",
++            "issuer_key_hex": owner_key,
++            "audience_key_hex": delegate_key,
++            "abilities": ["record/decrypt"],
++            "purpose": "identity_verification",
++            "user_presence_required": True,
++        },
++    )
++    assert response.status_code == 200
++    grant = response.json()
++    assert grant["caveats"]["user_presence_required"] is True
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "grant_id": grant["grant_id"],
++        },
++    )
++    assert response.status_code == 400
++    assert "user presence" in response.json()["detail"]
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt-invocations",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "grant_id": grant["grant_id"],
++        },
++    )
++    assert response.status_code == 400
++    assert "user presence" in response.json()["detail"]
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt-invocations",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "grant_id": grant["grant_id"],
++            "purpose": "identity_verification",
++            "user_present": True,
++        },
++    )
++    assert response.status_code == 200
++    invocation = response.json()["invocation"]
++    invocation_token = response.json()["token"]
++    assert invocation["caveats"]["purpose"] == "identity_verification"
++    assert invocation["caveats"]["user_present"] is True
++
++    response = client.post(
++        f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/decrypt",
++        json={
++            "actor_did": "did:key:delegate",
++            "actor_key_hex": delegate_key,
++            "invocation_token": invocation_token,
++        },
++    )
++    assert response.status_code == 200
++    assert response.json()["text"] == "User presence protected document."
++
++
+ def test_wallet_api_revoked_access_blocks_invocation() -> None:
+     client = _client()
+     owner_key = random_key().hex()
+@@ -1420,6 +1708,7 @@ def test_wallet_api_export_bundle_uses_export_grant_without_plaintext() -> None:
+             "record_ids": [document["record_id"], location["record_id"]],
+         },
+     ).json()
++    assert grant["caveats"]["output_types"] == ["encrypted_export_bundle"]
+     invocation = client.post(
+         f"/wallets/{wallet['wallet_id']}/exports/invocations",
+         json={
+diff --git a/tests/test_wallet_interface_deploy.py b/tests/test_wallet_interface_deploy.py
+index 70770f92..193864f2 100644
+--- a/tests/test_wallet_interface_deploy.py
++++ b/tests/test_wallet_interface_deploy.py
+@@ -45,17 +45,39 @@ def test_wallet_compose_references_api_ui_and_ops() -> None:
+     assert "wallet_interface.ops" in compose
+     assert "wallet_interface/deploy/Dockerfile.api" in compose
+     assert "wallet_interface/deploy/Dockerfile.ui" in compose
++    assert "WALLET_OPS_HEALTH_SHARED_SECRET" in compose
++    assert "WALLET_OPS_ALERT_WEBHOOK_URL" in compose
++    assert "WALLET_OPS_ALERT_ON" in compose
++    assert "WALLET_OPS_ALERT_BEARER_TOKEN" in compose
++    assert "WALLET_OPS_ALERT_HEADER_NAME" in compose
++    assert "WALLET_OPS_ALERT_HEADER_VALUE" in compose
++    assert "WALLET_PROOF_SERVICE_URL" in compose
++    assert "WALLET_PROOF_VERIFIER_ID" in compose
++    assert "WALLET_PROOF_BEARER_TOKEN" in compose
+ 
+ 
+ def test_wallet_kubernetes_manifests_reference_ops_and_persistence() -> None:
+     api_manifest = (K8S_ROOT / "api-deployment.yaml").read_text(encoding="utf-8")
+     ops_manifest = (K8S_ROOT / "ops-deployment.yaml").read_text(encoding="utf-8")
+     pvc_manifest = (K8S_ROOT / "pvc.yaml").read_text(encoding="utf-8")
++    config_map = (K8S_ROOT / "configmap.yaml").read_text(encoding="utf-8")
++    secrets = (K8S_ROOT / "secrets.example.yaml").read_text(encoding="utf-8")
+ 
+     assert "wallet-state-pvc" in api_manifest
+     assert "wallet-state-pvc" in ops_manifest
+     assert "wallet_interface.ops" in ops_manifest
+     assert "PersistentVolumeClaim" in pvc_manifest
++    assert "secretRef" in api_manifest
++    assert "secretRef" in ops_manifest
++    assert "WALLET_OPS_ALERT_ON" in config_map
++    assert "WALLET_OPS_HEALTH_SHARED_SECRET" in secrets
++    assert "WALLET_OPS_ALERT_WEBHOOK_URL" in secrets
++    assert "WALLET_OPS_ALERT_BEARER_TOKEN" in secrets
++    assert "WALLET_OPS_ALERT_HEADER_NAME" in secrets
++    assert "WALLET_OPS_ALERT_HEADER_VALUE" in secrets
++    assert "WALLET_PROOF_SERVICE_URL" in secrets
++    assert "WALLET_PROOF_VERIFIER_ID" in secrets
++    assert "WALLET_PROOF_BEARER_TOKEN" in secrets
+ 
+ 
+ def test_wallet_cloudflare_assets_reference_ops_health_and_origin() -> None:
+@@ -70,6 +92,7 @@ def test_wallet_cloudflare_assets_reference_ops_health_and_origin() -> None:
+     assert '"/health"' in worker
+     assert "x-wallet-ops-scheduled" in worker
+     assert "wrangler deploy" in readme
++    assert "Cloudflare Access" in readme
+ 
+ 
+ def test_wallet_kubernetes_manifests_validate_when_kubectl_available() -> None:
+diff --git a/tests/test_wallet_interface_ops.py b/tests/test_wallet_interface_ops.py
+index 9529e3bc..e606616d 100644
+--- a/tests/test_wallet_interface_ops.py
++++ b/tests/test_wallet_interface_ops.py
+@@ -70,3 +70,74 @@ def test_ops_health_cli_writes_jsonl_file(tmp_path) -> None:
+     report = json.loads(output_path.read_text(encoding="utf-8"))
+     assert report["check_count"] >= 5
+ 
++
++def test_ops_health_worker_sends_webhook_alert_for_error_status() -> None:
++    service = WalletInterfaceService()
++    service.wallet_service.analytics_query_budget_spent["bad-budget"] = -0.5
++    output = StringIO()
++    sent: list[tuple[str, dict[str, object], dict[str, str]]] = []
++
++    result = WalletOpsHealthWorker(
++        service=service,
++        verify_storage=False,
++        max_runs=1,
++        output=output,
++        alert_webhook_url="https://ops.example.test/hooks/wallet",
++        alert_on="error",
++        alert_sender=lambda url, payload, headers: sent.append((url, payload, headers)),
++    ).run()
++
++    assert result.alert_count == 1
++    assert len(sent) == 1
++    url, payload, headers = sent[0]
++    assert url == "https://ops.example.test/hooks/wallet"
++    assert payload["status"] == "error"
++    assert payload["source"] == "wallet_interface.ops"
++    assert headers == {}
++    assert any(check["name"] == "privacy_budget" for check in payload["checks"])
++
++
++def test_ops_health_worker_does_not_send_webhook_alert_below_threshold() -> None:
++    service = WalletInterfaceService()
++    output = StringIO()
++    sent: list[tuple[str, dict[str, object], dict[str, str]]] = []
++
++    result = WalletOpsHealthWorker(
++        service=service,
++        verify_storage=False,
++        max_runs=1,
++        output=output,
++        alert_webhook_url="https://ops.example.test/hooks/wallet",
++        alert_on="error",
++        alert_sender=lambda url, payload, headers: sent.append((url, payload, headers)),
++    ).run()
++
++    report = json.loads(output.getvalue())
++    assert report["status"] == "warning"
++    assert result.alert_count == 0
++    assert sent == []
++
++
++def test_ops_health_worker_reads_alert_auth_headers_from_env(monkeypatch) -> None:
++    service = WalletInterfaceService()
++    service.wallet_service.analytics_query_budget_spent["bad-budget"] = -0.5
++    output = StringIO()
++    sent: list[tuple[str, dict[str, object], dict[str, str]]] = []
++    monkeypatch.setenv("WALLET_OPS_ALERT_BEARER_TOKEN", "alert-token")
++    monkeypatch.setenv("WALLET_OPS_ALERT_HEADER_NAME", "x-wallet-alert-key")
++    monkeypatch.setenv("WALLET_OPS_ALERT_HEADER_VALUE", "shared-header")
++
++    WalletOpsHealthWorker(
++        service=service,
++        verify_storage=False,
++        max_runs=1,
++        output=output,
++        alert_webhook_url="https://ops.example.test/hooks/wallet",
++        alert_on="error",
++        alert_sender=lambda url, payload, headers: sent.append((url, payload, headers)),
++    ).run()
++
++    assert len(sent) == 1
++    _, _, headers = sent[0]
++    assert headers["authorization"] == "Bearer alert-token"
++    assert headers["x-wallet-alert-key"] == "shared-header"
+diff --git a/tests/test_wallet_interface_proof_backends.py b/tests/test_wallet_interface_proof_backends.py
+new file mode 100644
+index 00000000..bf008210
+--- /dev/null
++++ b/tests/test_wallet_interface_proof_backends.py
+@@ -0,0 +1,111 @@
++from __future__ import annotations
++
++from wallet_interface.app_service import _proof_backend_from_env
++from wallet_interface.proof_backends import HttpLocationRegionProofBackend
++
++
++def test_http_location_region_proof_backend_round_trip() -> None:
++    calls: list[tuple[str, str, dict[str, object], dict[str, str], float]] = []
++
++    def fake_request_json(
++        method: str,
++        url: str,
++        payload: dict[str, object],
++        headers: dict[str, str],
++        timeout_seconds: float,
++    ) -> dict[str, object]:
++        calls.append((method, url, payload, headers, timeout_seconds))
++        if url.endswith("/prove/location-region"):
++            return {
++                "proof_id": "proof-http-1",
++                "wallet_id": str(payload["wallet_id"]),
++                "proof_type": "location_region",
++                "statement": payload["statement"],
++                "verifier_id": "verifier-http-v1",
++                "public_inputs": payload["public_inputs"],
++                "proof_hash": "proof-hash-1",
++                "witness_record_ids": payload["witness_record_ids"],
++                "is_simulated": False,
++                "proof_system": "groth16",
++                "circuit_id": "location-region-v1",
++                "verification_status": "verified",
++                "proof_artifact_ref": "https://verifier.example.test/proofs/proof-http-1",
++            }
++        if url.endswith("/health"):
++            return {"ok": True, "status": "ready", "version": "2026.05.04"}
++        return {"verified": True}
++
++    backend = HttpLocationRegionProofBackend(
++        base_url="https://verifier.example.test",
++        verifier_id="verifier-http-v1",
++        proof_system="groth16",
++        circuit_id="location-region-v1",
++        bearer_token="verifier-secret",
++        extra_headers={"x-wallet-proof-key": "shared"},
++        request_json=fake_request_json,
++    )
++
++    receipt = backend.prove_location_region(
++        wallet_id="wallet-123",
++        statement={"claim": "location_in_region"},
++        public_inputs={"region_id": "multnomah"},
++        witness={"lat": 45.5, "lon": -122.6},
++        witness_record_ids=["record-1"],
++    )
++
++    assert receipt.wallet_id == "wallet-123"
++    assert receipt.verifier_id == "verifier-http-v1"
++    assert receipt.proof_system == "groth16"
++    assert receipt.circuit_id == "location-region-v1"
++    assert receipt.is_simulated is False
++    assert backend.verify(receipt) is True
++
++    prove_call, verify_call = calls
++    assert prove_call[0] == "POST"
++    assert prove_call[1] == "https://verifier.example.test/prove/location-region"
++    assert prove_call[3]["authorization"] == "Bearer verifier-secret"
++    assert prove_call[3]["x-wallet-proof-key"] == "shared"
++    assert verify_call[1] == "https://verifier.example.test/verify"
++    assert verify_call[2]["receipt"]["proof_id"] == "proof-http-1"
++    health = backend.healthcheck()
++    assert health["ok"] is True
++    assert health["status"] == "ready"
++
++
++def test_proof_backend_from_env_selects_http_backend(monkeypatch) -> None:
++    monkeypatch.setenv("WALLET_PROOF_BACKEND", "http-location-region")
++    monkeypatch.setenv("WALLET_PROOF_SERVICE_URL", "https://verifier.example.test")
++    monkeypatch.setenv("WALLET_PROOF_VERIFIER_ID", "verifier-http-v1")
++    monkeypatch.setenv("WALLET_PROOF_SYSTEM", "groth16")
++    monkeypatch.setenv("WALLET_PROOF_CIRCUIT_ID", "location-region-v1")
++    monkeypatch.setenv("WALLET_PROOF_PROVE_PATH", "/prove/location-region")
++    monkeypatch.setenv("WALLET_PROOF_VERIFY_PATH", "/verify")
++    monkeypatch.setenv("WALLET_PROOF_BEARER_TOKEN", "verifier-secret")
++    monkeypatch.setenv("WALLET_PROOF_HTTP_HEADER_NAME", "x-wallet-proof-key")
++    monkeypatch.setenv("WALLET_PROOF_HTTP_HEADER_VALUE", "shared")
++    monkeypatch.setenv("WALLET_PROOF_TIMEOUT_SECONDS", "12.5")
++
++    backend = _proof_backend_from_env()
++
++    assert isinstance(backend, HttpLocationRegionProofBackend)
++    assert backend.base_url == "https://verifier.example.test"
++    assert backend.verifier_id == "verifier-http-v1"
++    assert backend.proof_system == "groth16"
++    assert backend.circuit_id == "location-region-v1"
++    assert backend.timeout_seconds == 12.5
++    assert backend.extra_headers["authorization"] == "Bearer verifier-secret"
++    assert backend.extra_headers["x-wallet-proof-key"] == "shared"
++
++
++def test_proof_backend_from_env_requires_header_value(monkeypatch) -> None:
++    monkeypatch.setenv("WALLET_PROOF_BACKEND", "http-location-region")
++    monkeypatch.setenv("WALLET_PROOF_SERVICE_URL", "https://verifier.example.test")
++    monkeypatch.setenv("WALLET_PROOF_HTTP_HEADER_NAME", "x-wallet-proof-key")
++    monkeypatch.delenv("WALLET_PROOF_HTTP_HEADER_VALUE", raising=False)
++
++    try:
++        _proof_backend_from_env()
++    except ValueError as exc:
++        assert "WALLET_PROOF_HTTP_HEADER_VALUE" in str(exc)
++    else:
++        assert False, "expected ValueError when proof header value is missing"
+diff --git a/wallet_interface/api.py b/wallet_interface/api.py
+index aac33003..e127b3d9 100644
+--- a/wallet_interface/api.py
++++ b/wallet_interface/api.py
+@@ -83,6 +83,8 @@ class CoarseLocationInvocationRequest(BaseModel):
+     actor_did: str
+     actor_key_hex: str | None = None
+     expires_at: str | None = None
++    purpose: str | None = None
++    user_present: bool = False
+ 
+ 
+ class LocationRegionProofGrantRequest(BaseModel):
+@@ -113,11 +115,29 @@ class AnalysisGrantRequest(BaseModel):
+     expires_at: str | None = None
+ 
+ 
++class RecordGrantRequest(BaseModel):
++    issuer_did: str
++    audience_did: str
++    abilities: List[str] = Field(default_factory=lambda: ["record/analyze"])
++    purpose: str = "service_matching"
++    output_types: List[str] = Field(default_factory=list)
++    user_presence_required: bool = False
++    caveats: Dict[str, Any] = Field(default_factory=dict)
++    issuer_key_hex: str | None = None
++    audience_key_hex: str | None = None
++    approval_id: str | None = None
++    expires_at: str | None = None
++    max_delegation_depth: int | None = None
++
++
+ class AnalysisInvocationRequest(BaseModel):
+     grant_id: str
+     actor_did: str
+     actor_key_hex: str | None = None
+     expires_at: str | None = None
++    purpose: str | None = None
++    output_types: List[str] = Field(default_factory=list)
++    user_present: bool = False
+ 
+ 
+ class AccessRequestCreateRequest(BaseModel):
+@@ -183,6 +203,7 @@ class ExportGrantRequest(BaseModel):
+     purpose: str = "user_export"
+     expires_at: str | None = None
+     approval_id: str | None = None
++    output_types: List[str] = Field(default_factory=list)
+ 
+ 
+ class ExportBundleRequest(BaseModel):
+@@ -213,6 +234,9 @@ class ExportInvocationRequest(BaseModel):
+     actor_key_hex: str | None = None
+     record_ids: List[str] = Field(default_factory=list)
+     expires_at: str | None = None
++    purpose: str | None = None
++    output_types: List[str] = Field(default_factory=list)
++    user_present: bool = False
+ 
+ 
+ class AnalyzeRecordRequest(BaseModel):
+@@ -223,6 +247,29 @@ class AnalyzeRecordRequest(BaseModel):
+     max_chars: int = 200
+ 
+ 
++class RedactedAnalyzeRecordRequest(BaseModel):
++    actor_did: str
++    actor_key_hex: str | None = None
++    grant_id: str | None = None
++    invocation_token: str | None = None
++    max_chars: int = 500
++
++
++class VectorProfileRequest(BaseModel):
++    actor_did: str
++    actor_key_hex: str | None = None
++    grant_id: str | None = None
++    invocation_token: str | None = None
++    chunk_size_words: int = 80
++
++
++class RedactedAnalyzeRecordsRequest(BaseModel):
++    actor_did: str
++    actor_key_hex: str | None = None
++    grant_id: str | None = None
++    record_ids: List[str] = Field(default_factory=list)
++
++
+ class DecryptRecordRequest(BaseModel):
+     actor_did: str
+     actor_key_hex: str | None = None
+@@ -537,6 +584,8 @@ def create_app(*, service: WalletInterfaceService | None = None):
+                 actor_did=request.actor_did,
+                 actor_secret=_key_from_optional_hex(request.actor_key_hex),
+                 expires_at=request.expires_at,
++                purpose=request.purpose,
++                user_present=request.user_present,
+             )
+             return {"invocation": invocation.to_dict(), "token": invocation_to_token(invocation)}
+         except Exception as exc:
+@@ -646,6 +695,33 @@ def create_app(*, service: WalletInterfaceService | None = None):
+         except Exception as exc:
+             raise HTTPException(status_code=400, detail=str(exc)) from exc
+ 
++    @app.post("/wallets/{wallet_id}/records/{record_id}/grants")
++    def create_record_grant(
++        wallet_id: str,
++        record_id: str,
++        request: RecordGrantRequest,
++    ) -> Dict[str, Any]:
++        try:
++            grant = app_service.create_record_grant(
++                wallet_id,
++                record_id,
++                issuer_did=request.issuer_did,
++                audience_did=request.audience_did,
++                abilities=request.abilities,
++                purpose=request.purpose,
++                issuer_secret=_key_from_optional_hex(request.issuer_key_hex),
++                audience_secret=_key_from_optional_hex(request.audience_key_hex),
++                approval_id=request.approval_id,
++                expires_at=request.expires_at,
++                max_delegation_depth=request.max_delegation_depth,
++                output_types=request.output_types or None,
++                user_presence_required=request.user_presence_required,
++                extra_caveats=request.caveats,
++            )
++            return grant.to_dict()
++        except Exception as exc:
++            raise HTTPException(status_code=400, detail=str(exc)) from exc
++
+     @app.post("/wallets/{wallet_id}/records/{record_id}/analysis-invocations")
+     def issue_analysis_invocation(
+         wallet_id: str,
+@@ -660,6 +736,9 @@ def create_app(*, service: WalletInterfaceService | None = None):
+                 actor_did=request.actor_did,
+                 actor_secret=_key_from_optional_hex(request.actor_key_hex),
+                 expires_at=request.expires_at,
++                purpose=request.purpose,
++                output_types=request.output_types or None,
++                user_present=request.user_present,
+             )
+             return {"invocation": invocation.to_dict(), "token": invocation_to_token(invocation)}
+         except Exception as exc:
+@@ -679,6 +758,9 @@ def create_app(*, service: WalletInterfaceService | None = None):
+                 actor_did=request.actor_did,
+                 actor_secret=_key_from_optional_hex(request.actor_key_hex),
+                 expires_at=request.expires_at,
++                purpose=request.purpose,
++                output_types=request.output_types or None,
++                user_present=request.user_present,
+             )
+             return {"invocation": invocation.to_dict(), "token": invocation_to_token(invocation)}
+         except Exception as exc:
+@@ -898,6 +980,7 @@ def create_app(*, service: WalletInterfaceService | None = None):
+                 purpose=request.purpose,
+                 expires_at=request.expires_at,
+                 approval_id=request.approval_id,
++                output_types=request.output_types or None,
+             )
+             return grant.to_dict()
+         except Exception as exc:
+@@ -913,6 +996,9 @@ def create_app(*, service: WalletInterfaceService | None = None):
+                 actor_secret=_key_from_optional_hex(request.actor_key_hex),
+                 record_ids=request.record_ids or None,
+                 expires_at=request.expires_at,
++                purpose=request.purpose,
++                output_types=request.output_types or None,
++                user_present=request.user_present,
+             )
+             return {
+                 **invocation.to_dict(),
+@@ -1028,6 +1114,85 @@ def create_app(*, service: WalletInterfaceService | None = None):
+         except Exception as exc:
+             raise HTTPException(status_code=400, detail=str(exc)) from exc
+ 
++    @app.post("/wallets/{wallet_id}/records/{record_id}/analyze/redacted")
++    def analyze_record_redacted(
++        wallet_id: str,
++        record_id: str,
++        request: RedactedAnalyzeRecordRequest,
++    ) -> Dict[str, Any]:
++        try:
++            actor_secret = _key_from_optional_hex(request.actor_key_hex)
++            if request.invocation_token:
++                result = app_service.analyze_record_redacted_with_invocation(
++                    wallet_id,
++                    record_id,
++                    actor_did=request.actor_did,
++                    invocation=invocation_from_token(request.invocation_token),
++                    actor_secret=actor_secret,
++                    max_chars=request.max_chars,
++                )
++            else:
++                result = app_service.analyze_record_redacted(
++                    wallet_id,
++                    record_id,
++                    actor_did=request.actor_did,
++                    grant_id=request.grant_id,
++                    actor_secret=actor_secret,
++                    max_chars=request.max_chars,
++                )
++            return _analysis_result_to_dict(result)
++        except Exception as exc:
++            raise HTTPException(status_code=400, detail=str(exc)) from exc
++
++    @app.post("/wallets/{wallet_id}/records/{record_id}/vector-profile")
++    def create_document_vector_profile(
++        wallet_id: str,
++        record_id: str,
++        request: VectorProfileRequest,
++    ) -> Dict[str, Any]:
++        try:
++            actor_secret = _key_from_optional_hex(request.actor_key_hex)
++            if request.invocation_token:
++                result = app_service.create_document_vector_profile_with_invocation(
++                    wallet_id,
++                    record_id,
++                    actor_did=request.actor_did,
++                    invocation=invocation_from_token(request.invocation_token),
++                    actor_secret=actor_secret,
++                    chunk_size_words=request.chunk_size_words,
++                )
++            else:
++                result = app_service.create_document_vector_profile(
++                    wallet_id,
++                    record_id,
++                    actor_did=request.actor_did,
++                    grant_id=request.grant_id,
++                    actor_secret=actor_secret,
++                    chunk_size_words=request.chunk_size_words,
++                )
++            return _analysis_result_to_dict(result)
++        except Exception as exc:
++            raise HTTPException(status_code=400, detail=str(exc)) from exc
++
++    @app.post("/wallets/{wallet_id}/records/analyze/redacted")
++    def analyze_records_redacted(
++        wallet_id: str,
++        request: RedactedAnalyzeRecordsRequest,
++    ) -> Dict[str, Any]:
++        try:
++            if not request.record_ids:
++                raise ValueError("redacted cross-record analysis requires at least one record_id")
++            result = app_service.analyze_records_redacted(
++                wallet_id,
++                request.record_ids,
++                actor_did=request.actor_did,
++                grant_id=request.grant_id,
++                actor_secret=_key_from_optional_hex(request.actor_key_hex),
++            )
++            return _analysis_result_to_dict(result)
++        except Exception as exc:
++            raise HTTPException(status_code=400, detail=str(exc)) from exc
++
+     @app.post("/wallets/{wallet_id}/records/{record_id}/rotate-key")
+     def rotate_record_key(
+         wallet_id: str,
+@@ -1282,6 +1447,15 @@ def _match_to_dict(match) -> Dict[str, Any]:
+     }
+ 
+ 
++def _analysis_result_to_dict(result: Dict[str, Any]) -> Dict[str, Any]:
++    artifact = result["artifact"]
++    artifact_data = artifact.to_dict() if hasattr(artifact, "to_dict") else dict(artifact)
++    return {
++        "artifact": artifact_data,
++        "output": result["output"],
++    }
++
++
+ def _key_from_optional_hex(value: str | None) -> bytes | None:
+     if value is None:
+         return None
+diff --git a/wallet_interface/app_service.py b/wallet_interface/app_service.py
+index 4535ae7a..614beccf 100644
+--- a/wallet_interface/app_service.py
++++ b/wallet_interface/app_service.py
+@@ -28,6 +28,7 @@ from ipfs_datasets_py.wallet.ucan import (  # noqa: E402
+     resource_for_record,
+     resource_for_wallet,
+ )
++from .proof_backends import HttpLocationRegionProofBackend
+ 
+ 
+ def _utc_now() -> str:
+@@ -92,8 +93,26 @@ def _proof_backend_from_env() -> ProofBackend | None:
+         return None if not backend or backend == "default" else SimulatedProofBackend()
+     if backend in {"deterministic", "deterministic-location-region", "integration"}:
+         return DeterministicLocationRegionProofBackend()
++    if backend in {"http", "http-location-region", "remote-http", "verifier-http"}:
++        verifier_headers: Dict[str, str] = {}
++        if header_name := str(os.getenv("WALLET_PROOF_HTTP_HEADER_NAME") or "").strip():
++            header_value = str(os.getenv("WALLET_PROOF_HTTP_HEADER_VALUE") or "").strip()
++            if not header_value:
++                raise ValueError("WALLET_PROOF_HTTP_HEADER_VALUE is required when header name is set")
++            verifier_headers[header_name] = header_value
++        return HttpLocationRegionProofBackend(
++            base_url=str(os.getenv("WALLET_PROOF_SERVICE_URL") or "").strip(),
++            verifier_id=str(os.getenv("WALLET_PROOF_VERIFIER_ID") or "remote-location-region-v1").strip(),
++            proof_system=str(os.getenv("WALLET_PROOF_SYSTEM") or "groth16").strip(),
++            circuit_id=str(os.getenv("WALLET_PROOF_CIRCUIT_ID") or "location-region").strip(),
++            prove_path=str(os.getenv("WALLET_PROOF_PROVE_PATH") or "/prove/location-region").strip(),
++            verify_path=str(os.getenv("WALLET_PROOF_VERIFY_PATH") or "/verify").strip(),
++            bearer_token=str(os.getenv("WALLET_PROOF_BEARER_TOKEN") or "").strip() or None,
++            extra_headers=verifier_headers,
++            timeout_seconds=float(str(os.getenv("WALLET_PROOF_TIMEOUT_SECONDS") or "30").strip()),
++        )
+     raise ValueError(
+-        "WALLET_PROOF_BACKEND must be default, simulated, or deterministic-location-region"
++        "WALLET_PROOF_BACKEND must be default, simulated, deterministic-location-region, or http-location-region"
+     )
+ 
+ 
+@@ -316,15 +335,42 @@ class WalletInterfaceService:
+ 
+         proof_backend_name = self.wallet_service.proof_backend.__class__.__name__
+         simulated_enabled = bool(self.wallet_service.allow_simulated_proofs)
++        proof_status = "warning" if simulated_enabled else "ok"
++        proof_summary = (
++            "Simulated proof receipts are enabled; configure a production proof backend before launch."
++            if simulated_enabled
++            else "Production proof mode rejects simulated proof receipts."
++        )
++        proof_health_details: Dict[str, Any] | None = None
++        if not simulated_enabled and hasattr(self.wallet_service.proof_backend, "healthcheck"):
++            try:
++                raw_health = getattr(self.wallet_service.proof_backend, "healthcheck")()
++                if isinstance(raw_health, Mapping):
++                    proof_health_details = dict(raw_health)
++                    if not bool(raw_health.get("ok", False)):
++                        proof_status = "error"
++                        proof_summary = "Configured proof backend health check failed."
++                    elif str(raw_health.get("status") or "").lower() not in {"", "ok", "healthy", "ready"}:
++                        proof_status = "warning"
++                        proof_summary = "Configured proof backend reported a non-ready health status."
++                else:
++                    proof_status = "error"
++                    proof_summary = "Configured proof backend health check returned an invalid payload."
++                    proof_health_details = {"ok": False, "details": raw_health}
++            except Exception as exc:  # pragma: no cover - backend/network specific failure path.
++                proof_status = "error"
++                proof_summary = "Configured proof backend health check raised an exception."
++                proof_health_details = {"ok": False, "error": str(exc)}
+         add_check(
+             "proof_registry",
+-            "warning" if simulated_enabled else "ok",
+-            (
+-                "Simulated proof receipts are enabled; configure a production proof backend before launch."
+-                if simulated_enabled
+-                else "Production proof mode rejects simulated proof receipts."
+-            ),
++            proof_status,
++            proof_summary,
+             backend=proof_backend_name,
++            verifier_id=getattr(self.wallet_service.proof_backend, "verifier_id", None),
++            proof_system=getattr(self.wallet_service.proof_backend, "proof_system", None),
++            backend_mode=getattr(self.wallet_service.proof_backend, "mode", None),
++            is_simulated_backend=bool(getattr(self.wallet_service.proof_backend, "is_simulated", False)),
++            backend_health=proof_health_details,
+             allow_simulated_proofs=simulated_enabled,
+             env_vars=["WALLET_PROOF_MODE", "WALLET_PROOF_BACKEND", "WALLET_ALLOW_SIMULATED_PROOFS"],
+         )
+@@ -668,6 +714,68 @@ class WalletInterfaceService:
+         self._persist_wallet_if_configured(wallet_id)
+         return grant
+ 
++    def create_record_grant(
++        self,
++        wallet_id: str,
++        record_id: str,
++        *,
++        issuer_did: str,
++        audience_did: str,
++        abilities: Sequence[str],
++        purpose: str = "service_matching",
++        issuer_secret: bytes | None = None,
++        audience_secret: bytes | None = None,
++        approval_id: str | None = None,
++        expires_at: str | None = None,
++        max_delegation_depth: int | None = None,
++        output_types: Sequence[str] | None = None,
++        user_presence_required: bool = False,
++        extra_caveats: Mapping[str, Any] | None = None,
++    ):
++        allowed_abilities = {"record/analyze", "record/decrypt", "record/share"}
++        normalized_abilities = []
++        for ability in abilities:
++            if ability not in allowed_abilities:
++                raise ValueError(f"record grants do not support ability: {ability}")
++            if ability not in normalized_abilities:
++                normalized_abilities.append(ability)
++        if not normalized_abilities:
++            raise ValueError("record grants require at least one ability")
++        if normalized_abilities == ["record/share"]:
++            raise ValueError("record/share must be paired with analyze or decrypt access")
++
++        caveats: Dict[str, Any] = dict(extra_caveats or {})
++        caveats["purpose"] = purpose or caveats.get("purpose") or "service_matching"
++        if output_types is not None:
++            caveats["output_types"] = list(output_types)
++        elif "output_types" not in caveats and "allowed_output_types" not in caveats:
++            default_output_types = []
++            if "record/analyze" in normalized_abilities:
++                default_output_types.append("summary")
++            if "record/decrypt" in normalized_abilities:
++                default_output_types.append("plaintext")
++            if default_output_types:
++                caveats["output_types"] = default_output_types
++        if user_presence_required:
++            caveats["user_presence_required"] = True
++        if max_delegation_depth is not None:
++            caveats["max_delegation_depth"] = max(0, int(max_delegation_depth))
++
++        grant = self.wallet_service.create_grant(
++            wallet_id=wallet_id,
++            issuer_did=issuer_did,
++            audience_did=audience_did,
++            resources=[resource_for_record(wallet_id, record_id)],
++            abilities=normalized_abilities,
++            caveats=caveats,
++            expires_at=expires_at,
++            approval_id=approval_id,
++            issuer_secret=issuer_secret,
++            audience_secret=audience_secret,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return grant
++
+     def analyze_record_for_delegate(
+         self,
+         wallet_id: str,
+@@ -689,6 +797,127 @@ class WalletInterfaceService:
+         self._persist_wallet_if_configured(wallet_id)
+         return artifact
+ 
++    def analyze_record_redacted(
++        self,
++        wallet_id: str,
++        record_id: str,
++        *,
++        actor_did: str,
++        grant_id: str | None = None,
++        actor_secret: bytes | None = None,
++        max_chars: int = 500,
++    ) -> Dict[str, Any]:
++        result = self.wallet_service.analyze_document_with_redaction(
++            wallet_id,
++            record_id,
++            actor_did=actor_did,
++            grant_id=grant_id,
++            actor_secret=actor_secret,
++            max_chars=max_chars,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return result
++
++    def analyze_record_redacted_with_invocation(
++        self,
++        wallet_id: str,
++        record_id: str,
++        *,
++        actor_did: str,
++        invocation,
++        actor_secret: bytes | None = None,
++        max_chars: int = 500,
++    ) -> Dict[str, Any]:
++        self.wallet_service.verify_invocation(
++            wallet_id,
++            invocation,
++            actor_did=actor_did,
++            resource=resource_for_record(wallet_id, record_id),
++            ability="record/analyze",
++            actor_secret=actor_secret,
++        )
++        result = self.wallet_service.analyze_document_with_redaction(
++            wallet_id,
++            record_id,
++            actor_did=actor_did,
++            grant_id=invocation.grant_id,
++            actor_secret=actor_secret,
++            max_chars=max_chars,
++            invocation_caveats=invocation.caveats,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return result
++
++    def create_document_vector_profile(
++        self,
++        wallet_id: str,
++        record_id: str,
++        *,
++        actor_did: str,
++        grant_id: str | None = None,
++        actor_secret: bytes | None = None,
++        chunk_size_words: int = 80,
++    ) -> Dict[str, Any]:
++        result = self.wallet_service.create_document_vector_profile(
++            wallet_id,
++            record_id,
++            actor_did=actor_did,
++            grant_id=grant_id,
++            actor_secret=actor_secret,
++            chunk_size_words=chunk_size_words,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return result
++
++    def create_document_vector_profile_with_invocation(
++        self,
++        wallet_id: str,
++        record_id: str,
++        *,
++        actor_did: str,
++        invocation,
++        actor_secret: bytes | None = None,
++        chunk_size_words: int = 80,
++    ) -> Dict[str, Any]:
++        self.wallet_service.verify_invocation(
++            wallet_id,
++            invocation,
++            actor_did=actor_did,
++            resource=resource_for_record(wallet_id, record_id),
++            ability="record/analyze",
++            actor_secret=actor_secret,
++        )
++        result = self.wallet_service.create_document_vector_profile(
++            wallet_id,
++            record_id,
++            actor_did=actor_did,
++            grant_id=invocation.grant_id,
++            actor_secret=actor_secret,
++            chunk_size_words=chunk_size_words,
++            invocation_caveats=invocation.caveats,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return result
++
++    def analyze_records_redacted(
++        self,
++        wallet_id: str,
++        record_ids: Sequence[str],
++        *,
++        actor_did: str,
++        grant_id: str | None = None,
++        actor_secret: bytes | None = None,
++    ) -> Dict[str, Any]:
++        result = self.wallet_service.analyze_documents_with_redaction(
++            wallet_id,
++            list(record_ids),
++            actor_did=actor_did,
++            grant_id=grant_id,
++            actor_secret=actor_secret,
++        )
++        self._persist_wallet_if_configured(wallet_id)
++        return result
++
+     def issue_record_analysis_invocation(
+         self,
+         wallet_id: str,
+@@ -698,6 +927,9 @@ class WalletInterfaceService:
+         actor_did: str,
+         actor_secret: bytes | None = None,
+         expires_at: str | None = None,
++        purpose: str | None = None,
++        output_types: Sequence[str] | None = None,
++        user_present: bool = False,
+     ):
+         invocation = self.wallet_service.issue_invocation(
+             wallet_id,
+@@ -706,7 +938,13 @@ class WalletInterfaceService:
+             resource=resource_for_record(wallet_id, record_id),
+             ability="record/analyze",
+             actor_secret=actor_secret,
+-            caveats={"purpose": "service_matching"},
++            caveats=self._invocation_caveats(
++                grant_id,
++                fallback_purpose="service_matching",
++                purpose=purpose,
++                output_types=output_types,
++                user_present=user_present,
++            ),
+             expires_at=expires_at,
+         )
+         self._persist_wallet_if_configured(wallet_id)
+@@ -721,6 +959,9 @@ class WalletInterfaceService:
+         actor_did: str,
+         actor_secret: bytes | None = None,
+         expires_at: str | None = None,
++        purpose: str | None = None,
++        output_types: Sequence[str] | None = None,
++        user_present: bool = False,
+     ):
+         invocation = self.wallet_service.issue_invocation(
+             wallet_id,
+@@ -729,12 +970,38 @@ class WalletInterfaceService:
+             resource=resource_for_record(wallet_id, record_id),
+             ability="record/decrypt",
+             actor_secret=actor_secret,
+-            caveats={"purpose": "document_view"},
++            caveats=self._invocation_caveats(
++                grant_id,
++                fallback_purpose="document_view",
++                purpose=purpose,
++                output_types=output_types,
++                user_present=user_present,
++            ),
+             expires_at=expires_at,
+         )
+         self._persist_wallet_if_configured(wallet_id)
+         return invocation
+ 
++    def _invocation_caveats(
++        self,
++        grant_id: str,
++        *,
++        fallback_purpose: str,
++        purpose: str | None = None,
++        output_types: Sequence[str] | None = None,
++        user_present: bool = False,
++        extra: Mapping[str, Any] | None = None,
++    ) -> Dict[str, Any]:
++        grant = self.wallet_service.grants.get(grant_id)
++        caveats: Dict[str, Any] = dict(extra or {})
++        grant_purpose = grant.caveats.get("purpose") if grant is not None else None
++        caveats["purpose"] = purpose or (str(grant_purpose) if grant_purpose else fallback_purpose)
++        if output_types:
++            caveats["output_types"] = list(output_types)
++        if user_present:
++            caveats["user_present"] = True
++        return caveats
++
+     def request_record_access(
+         self,
+         wallet_id: str,
+@@ -996,6 +1263,7 @@ class WalletInterfaceService:
+         purpose: str = "user_export",
+         expires_at: str | None = None,
+         approval_id: str | None = None,
++        output_types: Sequence[str] | None = None,
+     ):
+         grant = self.wallet_service.create_grant(
+             wallet_id=wallet_id,
+@@ -1003,7 +1271,11 @@ class WalletInterfaceService:
+             audience_did=audience_did,
+             resources=[resource_for_export(wallet_id)],
+             abilities=["export/create"],
+-            caveats={"purpose": purpose, "record_ids": list(record_ids)},
++            caveats={
++                "purpose": purpose,
++                "record_ids": list(record_ids),
++                "output_types": list(output_types) if output_types is not None else ["encrypted_export_bundle"],
++            },
+             issuer_secret=issuer_secret,
+             audience_secret=audience_secret,
+             expires_at=expires_at,
+@@ -1042,8 +1314,17 @@ class WalletInterfaceService:
+         actor_secret: bytes | None = None,
+         record_ids: Sequence[str] | None = None,
+         expires_at: str | None = None,
++        purpose: str | None = None,
++        output_types: Sequence[str] | None = None,
++        user_present: bool = False,
+     ):
+-        caveats: Dict[str, Any] = {"purpose": "user_export"}
++        caveats = self._invocation_caveats(
++            grant_id,
++            fallback_purpose="user_export",
++            purpose=purpose,
++            output_types=output_types,
++            user_present=user_present,
++        )
+         if record_ids is not None:
+             caveats["record_ids"] = list(record_ids)
+         invocation = self.wallet_service.issue_invocation(
+@@ -1317,6 +1598,8 @@ class WalletInterfaceService:
+         actor_did: str,
+         actor_secret: bytes | None = None,
+         expires_at: str | None = None,
++        purpose: str | None = None,
++        user_present: bool = False,
+     ):
+         invocation = self.wallet_service.issue_invocation(
+             wallet_id,
+@@ -1325,7 +1608,13 @@ class WalletInterfaceService:
+             resource=resource_for_location(wallet_id, location_record_id),
+             ability="location/read_coarse",
+             actor_secret=actor_secret,
+-            caveats={"purpose": "service_matching", "precision": "coarse"},
++            caveats=self._invocation_caveats(
++                grant_id,
++                fallback_purpose="service_matching",
++                purpose=purpose,
++                user_present=user_present,
++                extra={"precision": "coarse"},
++            ),
+             expires_at=expires_at,
+         )
+         self._persist_wallet_if_configured(wallet_id)
+diff --git a/wallet_interface/deploy/README.md b/wallet_interface/deploy/README.md
+index 9bd8ed82..4f9de692 100644
+--- a/wallet_interface/deploy/README.md
++++ b/wallet_interface/deploy/README.md
+@@ -9,6 +9,23 @@ Build context is the repository root:
+ docker compose -f wallet_interface/deploy/docker-compose.wallet.yml up --build
+ ```
+ 
++When using the compose file for anything beyond local integration, export:
++
++```bash
++export WALLET_OPS_HEALTH_SHARED_SECRET=replace-me
++export WALLET_OPS_ALERT_WEBHOOK_URL=https://ops.example.com/hooks/211-wallet
++export WALLET_OPS_ALERT_ON=error
++export WALLET_OPS_ALERT_BEARER_TOKEN=replace-me
++export WALLET_OPS_ALERT_HEADER_NAME=x-wallet-alert-key
++export WALLET_OPS_ALERT_HEADER_VALUE=replace-me
++export WALLET_PROOF_BACKEND=http-location-region
++export WALLET_PROOF_SERVICE_URL=https://verifier.example.com
++export WALLET_PROOF_VERIFIER_ID=verifier-http-v1
++export WALLET_PROOF_SYSTEM=groth16
++export WALLET_PROOF_CIRCUIT_ID=location-region-v1
++export WALLET_PROOF_BEARER_TOKEN=replace-me
++```
++
+ Services:
+ 
+ - `wallet-api`: runs `uvicorn wallet_interface.asgi:app` on port `8000`.
+@@ -32,17 +49,36 @@ Required production environment:
+   storage for production, for example local primary plus S3/IPFS/Filecoin
+   mirrors.
+ - `WALLET_PROOF_MODE=production`: disables simulated proof acceptance.
+-- `WALLET_PROOF_BACKEND`: production verifier backend selection.
++- `WALLET_PROOF_BACKEND`: production verifier backend selection. Supported
++  values now include `http-location-region` for an external verifier service.
++- `WALLET_PROOF_SERVICE_URL`: required when
++  `WALLET_PROOF_BACKEND=http-location-region`.
++- `WALLET_PROOF_VERIFIER_ID`, `WALLET_PROOF_SYSTEM`,
++  `WALLET_PROOF_CIRCUIT_ID`: verifier metadata for the HTTP backend.
++- `WALLET_PROOF_PROVE_PATH`, `WALLET_PROOF_VERIFY_PATH`: optional HTTP backend
++  endpoint overrides.
++- `WALLET_PROOF_BEARER_TOKEN`: optional bearer token for the proof service.
++- `WALLET_PROOF_HTTP_HEADER_NAME` / `WALLET_PROOF_HTTP_HEADER_VALUE`: optional
++  custom header pair for the proof service.
++- `WALLET_PROOF_TIMEOUT_SECONDS`: optional proof backend timeout.
+ - `WALLET_AUTO_LOAD_REPOSITORY=true`: loads wallet snapshots on API/worker
+   start.
+ - `WALLET_AUTO_PERSIST=true`: persists snapshots after state-changing wallet
+   operations, including ops-health audit events.
+ - `WALLET_OPS_HEALTH_SHARED_SECRET`: when set, `/ops/health` requires either
+   `Authorization: Bearer ...` or `X-Wallet-Ops-Shared-Secret`.
++- `WALLET_OPS_ALERT_WEBHOOK_URL`: optional webhook target for warning/error
++  ops-health alerts emitted by `python -m wallet_interface.ops`.
++- `WALLET_OPS_ALERT_ON`: optional minimum alert severity, `warning` or `error`.
++- `WALLET_OPS_ALERT_BEARER_TOKEN`: optional bearer token for the alert webhook.
++- `WALLET_OPS_ALERT_HEADER_NAME` / `WALLET_OPS_ALERT_HEADER_VALUE`: optional
++  custom header pair for receivers that do not use bearer auth.
+ 
+-The included compose file uses local volumes and the deterministic
++The included compose file uses local volumes and defaults to the deterministic
+ location-region proof backend as an integration-safe production-mode stand-in.
+-Replace storage and proof settings before handling real user data.
++Switch `WALLET_PROOF_BACKEND` to `http-location-region` and provide the proof
++service vars before handling real user data. `GET /ops/health` will actively
++probe that verifier backend when configured.
+ 
+ The Cloudflare Worker assets are reference glue only. They do not replace the
+ Python API or local `wallet_interface.ops` worker; they front or trigger those
+diff --git a/wallet_interface/deploy/cloudflare/README.md b/wallet_interface/deploy/cloudflare/README.md
+index 9404e791..8cb88817 100644
+--- a/wallet_interface/deploy/cloudflare/README.md
++++ b/wallet_interface/deploy/cloudflare/README.md
+@@ -34,6 +34,13 @@ Worker-specific vars:
+ - `OPS_HEALTH_SHARED_SECRET`: bearer secret for scheduled ops checks
+ - `OPS_HEALTH_VERIFY_STORAGE`: optional, defaults to `true`
+ 
++Optional origin auth adaptation:
++
++- if the origin sits behind Cloudflare Access, tunnel auth, or another edge
++  identity layer, add the required outbound headers in `src/index.ts`
++- keep `OPS_HEALTH_SHARED_SECRET` even in that case so `/ops/health` stays
++  independently protected at the application layer
++
+ Origin API env:
+ 
+ - `WALLET_OPS_HEALTH_SHARED_SECRET`: should match
+diff --git a/wallet_interface/deploy/docker-compose.wallet.yml b/wallet_interface/deploy/docker-compose.wallet.yml
+index 2407eba4..2c9dfaef 100644
+--- a/wallet_interface/deploy/docker-compose.wallet.yml
++++ b/wallet_interface/deploy/docker-compose.wallet.yml
+@@ -8,9 +8,23 @@ services:
+       WALLET_STORAGE_CONFIG: >-
+         {"primary":{"type":"local","root":"/var/lib/211-ai/wallet-blobs"}}
+       WALLET_PROOF_MODE: production
+-      WALLET_PROOF_BACKEND: deterministic-location-region
++      WALLET_PROOF_BACKEND: ${WALLET_PROOF_BACKEND:-deterministic-location-region}
++      WALLET_PROOF_SERVICE_URL: ${WALLET_PROOF_SERVICE_URL:-}
++      WALLET_PROOF_VERIFIER_ID: ${WALLET_PROOF_VERIFIER_ID:-}
++      WALLET_PROOF_SYSTEM: ${WALLET_PROOF_SYSTEM:-}
++      WALLET_PROOF_CIRCUIT_ID: ${WALLET_PROOF_CIRCUIT_ID:-}
++      WALLET_PROOF_PROVE_PATH: ${WALLET_PROOF_PROVE_PATH:-}
++      WALLET_PROOF_VERIFY_PATH: ${WALLET_PROOF_VERIFY_PATH:-}
++      WALLET_PROOF_BEARER_TOKEN: ${WALLET_PROOF_BEARER_TOKEN:-}
++      WALLET_PROOF_HTTP_HEADER_NAME: ${WALLET_PROOF_HTTP_HEADER_NAME:-}
++      WALLET_PROOF_HTTP_HEADER_VALUE: ${WALLET_PROOF_HTTP_HEADER_VALUE:-}
++      WALLET_PROOF_TIMEOUT_SECONDS: ${WALLET_PROOF_TIMEOUT_SECONDS:-30}
+       WALLET_AUTO_LOAD_REPOSITORY: "true"
+       WALLET_AUTO_PERSIST: "true"
++      WALLET_OPS_HEALTH_SHARED_SECRET: ${WALLET_OPS_HEALTH_SHARED_SECRET:-change-me}
++      WALLET_OPS_ALERT_BEARER_TOKEN: ${WALLET_OPS_ALERT_BEARER_TOKEN:-}
++      WALLET_OPS_ALERT_HEADER_NAME: ${WALLET_OPS_ALERT_HEADER_NAME:-}
++      WALLET_OPS_ALERT_HEADER_VALUE: ${WALLET_OPS_ALERT_HEADER_VALUE:-}
+     ports:
+       - "8000:8000"
+     volumes:
+@@ -35,9 +49,25 @@ services:
+       WALLET_STORAGE_CONFIG: >-
+         {"primary":{"type":"local","root":"/var/lib/211-ai/wallet-blobs"}}
+       WALLET_PROOF_MODE: production
+-      WALLET_PROOF_BACKEND: deterministic-location-region
++      WALLET_PROOF_BACKEND: ${WALLET_PROOF_BACKEND:-deterministic-location-region}
++      WALLET_PROOF_SERVICE_URL: ${WALLET_PROOF_SERVICE_URL:-}
++      WALLET_PROOF_VERIFIER_ID: ${WALLET_PROOF_VERIFIER_ID:-}
++      WALLET_PROOF_SYSTEM: ${WALLET_PROOF_SYSTEM:-}
++      WALLET_PROOF_CIRCUIT_ID: ${WALLET_PROOF_CIRCUIT_ID:-}
++      WALLET_PROOF_PROVE_PATH: ${WALLET_PROOF_PROVE_PATH:-}
++      WALLET_PROOF_VERIFY_PATH: ${WALLET_PROOF_VERIFY_PATH:-}
++      WALLET_PROOF_BEARER_TOKEN: ${WALLET_PROOF_BEARER_TOKEN:-}
++      WALLET_PROOF_HTTP_HEADER_NAME: ${WALLET_PROOF_HTTP_HEADER_NAME:-}
++      WALLET_PROOF_HTTP_HEADER_VALUE: ${WALLET_PROOF_HTTP_HEADER_VALUE:-}
++      WALLET_PROOF_TIMEOUT_SECONDS: ${WALLET_PROOF_TIMEOUT_SECONDS:-30}
+       WALLET_AUTO_LOAD_REPOSITORY: "true"
+       WALLET_AUTO_PERSIST: "true"
++      WALLET_OPS_HEALTH_SHARED_SECRET: ${WALLET_OPS_HEALTH_SHARED_SECRET:-change-me}
++      WALLET_OPS_ALERT_WEBHOOK_URL: ${WALLET_OPS_ALERT_WEBHOOK_URL:-}
++      WALLET_OPS_ALERT_ON: ${WALLET_OPS_ALERT_ON:-error}
++      WALLET_OPS_ALERT_BEARER_TOKEN: ${WALLET_OPS_ALERT_BEARER_TOKEN:-}
++      WALLET_OPS_ALERT_HEADER_NAME: ${WALLET_OPS_ALERT_HEADER_NAME:-}
++      WALLET_OPS_ALERT_HEADER_VALUE: ${WALLET_OPS_ALERT_HEADER_VALUE:-}
+     volumes:
+       - wallet_state:/var/lib/211-ai
+       - wallet_logs:/var/log/211-ai
+@@ -56,4 +86,3 @@ services:
+ volumes:
+   wallet_state:
+   wallet_logs:
+-
+diff --git a/wallet_interface/deploy/kubernetes/README.md b/wallet_interface/deploy/kubernetes/README.md
+index b139d2b6..756f709a 100644
+--- a/wallet_interface/deploy/kubernetes/README.md
++++ b/wallet_interface/deploy/kubernetes/README.md
+@@ -30,8 +30,16 @@ Before production use:
+ 
+ - Replace `wallet-interface-api:latest` and `wallet-interface-ui:latest` with
+   registry-published image references.
+-- Replace the deterministic proof backend with the production verifier.
++- Replace the deterministic proof backend with the production verifier by
++  setting `WALLET_PROOF_BACKEND=http-location-region` plus
++  `WALLET_PROOF_SERVICE_URL`, `WALLET_PROOF_VERIFIER_ID`,
++  `WALLET_PROOF_SYSTEM`, and verifier auth secrets.
+ - Move `WALLET_STORAGE_CONFIG` and any provider credentials into a real Secret
+   or external secret manager.
++- Set `WALLET_OPS_HEALTH_SHARED_SECRET` for the API and any edge caller, and
++  set `WALLET_OPS_ALERT_WEBHOOK_URL` if ops-health alerts should route to an
++  incident system.
++- Set `WALLET_OPS_ALERT_BEARER_TOKEN` or a custom
++  `WALLET_OPS_ALERT_HEADER_NAME` / `WALLET_OPS_ALERT_HEADER_VALUE` pair if the
++  alert receiver requires webhook authentication.
+ - Change the ingress host and storage class to the target cluster settings.
+-
+diff --git a/wallet_interface/deploy/kubernetes/api-deployment.yaml b/wallet_interface/deploy/kubernetes/api-deployment.yaml
+index fa39daf6..f8919c41 100644
+--- a/wallet_interface/deploy/kubernetes/api-deployment.yaml
++++ b/wallet_interface/deploy/kubernetes/api-deployment.yaml
+@@ -22,6 +22,8 @@ spec:
+           envFrom:
+             - configMapRef:
+                 name: wallet-interface-config
++            - secretRef:
++                name: wallet-interface-secrets
+           ports:
+             - containerPort: 8000
+               name: http
+@@ -51,4 +53,3 @@ spec:
+         - name: wallet-state
+           persistentVolumeClaim:
+             claimName: wallet-state-pvc
+-
+diff --git a/wallet_interface/deploy/kubernetes/configmap.yaml b/wallet_interface/deploy/kubernetes/configmap.yaml
+index a6eb9704..7c1e4bc7 100644
+--- a/wallet_interface/deploy/kubernetes/configmap.yaml
++++ b/wallet_interface/deploy/kubernetes/configmap.yaml
+@@ -9,7 +9,8 @@ data:
+     {"primary":{"type":"local","root":"/var/lib/211-ai/wallet-blobs"}}
+   WALLET_PROOF_MODE: production
+   WALLET_PROOF_BACKEND: deterministic-location-region
++  WALLET_PROOF_TIMEOUT_SECONDS: "30"
+   WALLET_AUTO_LOAD_REPOSITORY: "true"
+   WALLET_AUTO_PERSIST: "true"
+   WALLET_OPS_INTERVAL_SECONDS: "300"
+-
++  WALLET_OPS_ALERT_ON: "error"
+diff --git a/wallet_interface/deploy/kubernetes/ops-deployment.yaml b/wallet_interface/deploy/kubernetes/ops-deployment.yaml
+index 8eb75aef..a5ddab15 100644
+--- a/wallet_interface/deploy/kubernetes/ops-deployment.yaml
++++ b/wallet_interface/deploy/kubernetes/ops-deployment.yaml
+@@ -27,10 +27,13 @@ spec:
+               --watch
+               --interval-seconds "${WALLET_OPS_INTERVAL_SECONDS}"
+               --fail-on-error
++              --alert-on "${WALLET_OPS_ALERT_ON}"
+               --output-jsonl /var/log/211-ai/wallet-ops-health.jsonl
+           envFrom:
+             - configMapRef:
+                 name: wallet-interface-config
++            - secretRef:
++                name: wallet-interface-secrets
+           resources:
+             requests:
+               cpu: 100m
+diff --git a/wallet_interface/deploy/kubernetes/secrets.example.yaml b/wallet_interface/deploy/kubernetes/secrets.example.yaml
+index 2fde4026..34b776bc 100644
+--- a/wallet_interface/deploy/kubernetes/secrets.example.yaml
++++ b/wallet_interface/deploy/kubernetes/secrets.example.yaml
+@@ -5,7 +5,20 @@ metadata:
+   namespace: wallet-interface
+ type: Opaque
+ stringData:
++  WALLET_OPS_HEALTH_SHARED_SECRET: change-me
++  WALLET_OPS_ALERT_WEBHOOK_URL: https://ops.example.com/hooks/211-wallet
++  WALLET_OPS_ALERT_BEARER_TOKEN: change-me
++  WALLET_OPS_ALERT_HEADER_NAME: x-wallet-alert-key
++  WALLET_OPS_ALERT_HEADER_VALUE: change-me
++  WALLET_PROOF_SERVICE_URL: https://verifier.example.com
++  WALLET_PROOF_VERIFIER_ID: verifier-http-v1
++  WALLET_PROOF_SYSTEM: groth16
++  WALLET_PROOF_CIRCUIT_ID: location-region-v1
++  WALLET_PROOF_PROVE_PATH: /prove/location-region
++  WALLET_PROOF_VERIFY_PATH: /verify
++  WALLET_PROOF_BEARER_TOKEN: change-me
++  WALLET_PROOF_HTTP_HEADER_NAME: x-wallet-proof-key
++  WALLET_PROOF_HTTP_HEADER_VALUE: change-me
+   WALLET_STORAGE_CONFIG: |
+     {"primary":{"type":"local","root":"/var/lib/211-ai/wallet-blobs"}}
+   WALLET_PROOF_BACKEND: deterministic-location-region
+-
+diff --git a/wallet_interface/ops.py b/wallet_interface/ops.py
+index c63250e6..c1289970 100644
+--- a/wallet_interface/ops.py
++++ b/wallet_interface/ops.py
+@@ -4,11 +4,13 @@ from __future__ import annotations
+ 
+ import argparse
+ import json
++import os
+ import sys
+ import time
+ from dataclasses import dataclass, field
+ from pathlib import Path
+ from typing import Any, Callable, IO, Sequence
++from urllib import request as urllib_request
+ 
+ from .app_service import WalletInterfaceService
+ 
+@@ -19,9 +21,46 @@ class OpsHealthRunResult:
+ 
+     report_count: int
+     statuses: list[str] = field(default_factory=list)
++    alert_count: int = 0
+     exit_code: int = 0
+ 
+ 
++def _alert_rank(status: str) -> int:
++    if status == "error":
++        return 2
++    if status == "warning":
++        return 1
++    return 0
++
++
++def _alert_headers_from_env() -> dict[str, str]:
++    headers: dict[str, str] = {}
++    bearer_token = str(os.getenv("WALLET_OPS_ALERT_BEARER_TOKEN") or "").strip()
++    if bearer_token:
++        headers["authorization"] = f"Bearer {bearer_token}"
++    header_name = str(os.getenv("WALLET_OPS_ALERT_HEADER_NAME") or "").strip()
++    header_value = str(os.getenv("WALLET_OPS_ALERT_HEADER_VALUE") or "").strip()
++    if header_name and header_value:
++        headers[header_name] = header_value
++    return headers
++
++
++def _default_alert_sender(url: str, payload: dict[str, Any], headers: dict[str, str] | None = None) -> None:
++    body = json.dumps(payload, sort_keys=True).encode("utf-8")
++    request_headers = {"content-type": "application/json"}
++    if headers:
++        request_headers.update(headers)
++    req = urllib_request.Request(
++        url,
++        data=body,
++        headers=request_headers,
++        method="POST",
++    )
++    with urllib_request.urlopen(req, timeout=10) as response:
++        if response.status >= 400:
++            raise RuntimeError(f"alert webhook returned HTTP {response.status}")
++
++
+ class WalletOpsHealthWorker:
+     """Run wallet ops-health checks on a schedule and emit JSONL reports."""
+ 
+@@ -34,6 +73,10 @@ class WalletOpsHealthWorker:
+         max_runs: int | None = 1,
+         fail_on_error: bool = False,
+         fail_on_warning: bool = False,
++        alert_webhook_url: str | None = None,
++        alert_on: str = "error",
++        alert_headers: dict[str, str] | None = None,
++        alert_sender: Callable[[str, dict[str, Any], dict[str, str]], None] | None = None,
+         output: IO[str] | None = None,
+         sleep: Callable[[float], None] = time.sleep,
+     ) -> None:
+@@ -47,22 +90,35 @@ class WalletOpsHealthWorker:
+         self.max_runs = max_runs
+         self.fail_on_error = fail_on_error
+         self.fail_on_warning = fail_on_warning
++        self.alert_webhook_url = str(
++            alert_webhook_url or os.getenv("WALLET_OPS_ALERT_WEBHOOK_URL") or ""
++        ).strip() or None
++        normalized_alert_on = str(alert_on or os.getenv("WALLET_OPS_ALERT_ON") or "error").strip().lower()
++        if normalized_alert_on not in {"warning", "error"}:
++            raise ValueError("alert_on must be warning or error")
++        self.alert_on = normalized_alert_on
++        self.alert_headers = dict(alert_headers or _alert_headers_from_env())
++        self.alert_sender = alert_sender or _default_alert_sender
+         self.output = output or sys.stdout
+         self.sleep = sleep
+ 
+     def run_once(self) -> dict[str, Any]:
+         report = self.service.ops_health(verify_storage=self.verify_storage)
+         self._write_report(report)
++        self._send_alert_if_needed(report)
+         return report
+ 
+     def run(self) -> OpsHealthRunResult:
+         statuses: list[str] = []
+         report_count = 0
++        alert_count = 0
+         try:
+             while self.max_runs is None or report_count < self.max_runs:
+                 report = self.run_once()
+                 statuses.append(str(report.get("status", "unknown")))
+                 report_count += 1
++                if self._should_alert(str(report.get("status", "unknown"))):
++                    alert_count += 1
+                 if self.max_runs is not None and report_count >= self.max_runs:
+                     break
+                 self.sleep(self.interval_seconds)
+@@ -71,6 +127,7 @@ class WalletOpsHealthWorker:
+         return OpsHealthRunResult(
+             report_count=report_count,
+             statuses=statuses,
++            alert_count=alert_count,
+             exit_code=self._exit_code(statuses),
+         )
+ 
+@@ -86,6 +143,34 @@ class WalletOpsHealthWorker:
+         self.output.write("\n")
+         self.output.flush()
+ 
++    def _should_alert(self, status: str) -> bool:
++        return bool(self.alert_webhook_url) and _alert_rank(status) >= _alert_rank(self.alert_on)
++
++    def _send_alert_if_needed(self, report: dict[str, Any]) -> None:
++        status = str(report.get("status", "unknown"))
++        if not self._should_alert(status):
++            return
++        check_summaries = [
++            {
++                "name": str(check.get("name")),
++                "status": str(check.get("status")),
++                "summary": str(check.get("summary")),
++            }
++            for check in report.get("checks", [])
++            if isinstance(check, dict) and str(check.get("status")) in {"warning", "error"}
++        ]
++        payload = {
++            "source": "wallet_interface.ops",
++            "status": status,
++            "generated_at": report.get("generated_at"),
++            "wallet_count": report.get("wallet_count"),
++            "check_count": report.get("check_count"),
++            "checks": check_summaries,
++            "report": report,
++        }
++        assert self.alert_webhook_url is not None
++        self.alert_sender(self.alert_webhook_url, payload, dict(self.alert_headers))
++
+ 
+ def build_parser() -> argparse.ArgumentParser:
+     parser = argparse.ArgumentParser(description="Run 211-AI wallet ops-health checks.")
+@@ -130,6 +215,28 @@ def build_parser() -> argparse.ArgumentParser:
+         "--output-jsonl",
+         help="Append JSONL reports to this file instead of stdout.",
+     )
++    parser.add_argument(
++        "--alert-webhook-url",
++        help="POST matching warning/error reports to this webhook. Defaults to WALLET_OPS_ALERT_WEBHOOK_URL.",
++    )
++    parser.add_argument(
++        "--alert-on",
++        choices=("warning", "error"),
++        default=os.getenv("WALLET_OPS_ALERT_ON", "error"),
++        help="Minimum report status that triggers webhook alerts. Default: error.",
++    )
++    parser.add_argument(
++        "--alert-bearer-token",
++        help="Bearer token for the alert webhook. Defaults to WALLET_OPS_ALERT_BEARER_TOKEN.",
++    )
++    parser.add_argument(
++        "--alert-header-name",
++        help="Custom header name for the alert webhook. Defaults to WALLET_OPS_ALERT_HEADER_NAME.",
++    )
++    parser.add_argument(
++        "--alert-header-value",
++        help="Custom header value for the alert webhook. Defaults to WALLET_OPS_ALERT_HEADER_VALUE.",
++    )
+     return parser
+ 
+ 
+@@ -147,6 +254,11 @@ def main(argv: Sequence[str] | None = None) -> int:
+             output_path = Path(args.output_jsonl)
+             output_path.parent.mkdir(parents=True, exist_ok=True)
+             output = output_path.open("a", encoding="utf-8")
++        alert_headers = _alert_headers_from_env()
++        if args.alert_bearer_token:
++            alert_headers["authorization"] = f"Bearer {args.alert_bearer_token}"
++        if args.alert_header_name and args.alert_header_value:
++            alert_headers[args.alert_header_name] = args.alert_header_value
+         service = WalletInterfaceService(repository_root=args.repository_root)
+         worker = WalletOpsHealthWorker(
+             service=service,
+@@ -155,6 +267,9 @@ def main(argv: Sequence[str] | None = None) -> int:
+             max_runs=max_runs,
+             fail_on_error=args.fail_on_error,
+             fail_on_warning=args.fail_on_warning,
++            alert_webhook_url=args.alert_webhook_url,
++            alert_on=args.alert_on,
++            alert_headers=alert_headers,
+             output=output or sys.stdout,
+         )
+         return worker.run().exit_code
+@@ -165,4 +280,3 @@ def main(argv: Sequence[str] | None = None) -> int:
+ 
+ if __name__ == "__main__":  # pragma: no cover
+     raise SystemExit(main())
+-
+diff --git a/wallet_interface/proof_backends.py b/wallet_interface/proof_backends.py
+new file mode 100644
+index 00000000..7e3a99e9
+--- /dev/null
++++ b/wallet_interface/proof_backends.py
+@@ -0,0 +1,169 @@
++"""External proof backend adapters for the 211-AI wallet interface."""
++
++from __future__ import annotations
++
++import json
++from dataclasses import fields
++from typing import Any, Callable, Dict
++from urllib import request as urllib_request
++
++from ._vendor import ensure_ipfs_datasets_py_path
++
++ensure_ipfs_datasets_py_path()
++
++from ipfs_datasets_py.wallet.models import ProofReceipt  # noqa: E402
++from ipfs_datasets_py.wallet.proofs import verifier_digest  # noqa: E402
++
++
++def _default_request_json(
++    method: str,
++    url: str,
++    payload: Dict[str, Any],
++    headers: Dict[str, str],
++    timeout_seconds: float,
++) -> Dict[str, Any]:
++    request_headers = {"content-type": "application/json", **headers}
++    body = json.dumps(payload, sort_keys=True).encode("utf-8")
++    req = urllib_request.Request(
++        url,
++        data=body,
++        headers=request_headers,
++        method=method,
++    )
++    with urllib_request.urlopen(req, timeout=timeout_seconds) as response:
++        raw = response.read().decode("utf-8")
++    data = json.loads(raw or "{}")
++    if not isinstance(data, dict):
++        raise ValueError("Proof verifier response must be a JSON object")
++    return data
++
++
++class HttpLocationRegionProofBackend:
++    """HTTP-backed location-region proof adapter.
++
++    This is a narrow production adapter for an external verifier service. The
++    service contract is intentionally small:
++
++    - POST `{base_url}{prove_path}` with prove inputs, returning a serialized
++      `ProofReceipt`
++    - POST `{base_url}{verify_path}` with `{"receipt": ...}`, returning
++      `{"verified": true|false}`
++    """
++
++    mode = "production"
++    is_simulated = False
++
++    def __init__(
++        self,
++        *,
++        base_url: str,
++        verifier_id: str,
++        proof_system: str,
++        circuit_id: str | None = None,
++        prove_path: str = "/prove/location-region",
++        verify_path: str = "/verify",
++        health_path: str = "/health",
++        bearer_token: str | None = None,
++        extra_headers: Dict[str, str] | None = None,
++        timeout_seconds: float = 30.0,
++        request_json: Callable[[str, str, Dict[str, Any], Dict[str, str], float], Dict[str, Any]] | None = None,
++    ) -> None:
++        resolved_base_url = str(base_url or "").strip().rstrip("/")
++        if not resolved_base_url:
++            raise ValueError("HTTP proof backend requires a base_url")
++        self.base_url = resolved_base_url
++        self.verifier_id = str(verifier_id or "").strip()
++        self.proof_system = str(proof_system or "").strip()
++        if not self.verifier_id or not self.proof_system:
++            raise ValueError("HTTP proof backend requires verifier_id and proof_system")
++        self.circuit_id = str(circuit_id or "").strip() or None
++        self.prove_path = self._normalize_path(prove_path)
++        self.verify_path = self._normalize_path(verify_path)
++        self.health_path = self._normalize_path(health_path)
++        self.timeout_seconds = float(timeout_seconds)
++        if self.timeout_seconds <= 0:
++            raise ValueError("timeout_seconds must be positive")
++        self.extra_headers = dict(extra_headers or {})
++        if bearer_token:
++            self.extra_headers["authorization"] = f"Bearer {bearer_token}"
++        self.request_json = request_json or _default_request_json
++
++    @staticmethod
++    def _normalize_path(path: str) -> str:
++        value = str(path or "").strip()
++        if not value:
++            raise ValueError("proof backend path must not be empty")
++        return value if value.startswith("/") else f"/{value}"
++
++    def prove_location_region(
++        self,
++        *,
++        wallet_id: str,
++        statement: Dict[str, Any],
++        public_inputs: Dict[str, Any],
++        witness: Dict[str, Any],
++        witness_record_ids: list[str],
++    ) -> ProofReceipt:
++        payload = {
++            "wallet_id": wallet_id,
++            "proof_type": "location_region",
++            "statement": statement,
++            "public_inputs": public_inputs,
++            "witness": witness,
++            "witness_record_ids": list(witness_record_ids),
++            "verifier_id": self.verifier_id,
++            "proof_system": self.proof_system,
++            "circuit_id": self.circuit_id,
++        }
++        response = self.request_json(
++            "POST",
++            f"{self.base_url}{self.prove_path}",
++            payload,
++            dict(self.extra_headers),
++            self.timeout_seconds,
++        )
++        return self._receipt_from_response(response, wallet_id=wallet_id)
++
++    def verify(self, receipt: ProofReceipt) -> bool:
++        response = self.request_json(
++            "POST",
++            f"{self.base_url}{self.verify_path}",
++            {"receipt": receipt.to_dict()},
++            dict(self.extra_headers),
++            self.timeout_seconds,
++        )
++        return bool(response.get("verified"))
++
++    def healthcheck(self) -> Dict[str, Any]:
++        response = self.request_json(
++            "POST",
++            f"{self.base_url}{self.health_path}",
++            {"verifier_id": self.verifier_id, "proof_system": self.proof_system},
++            dict(self.extra_headers),
++            self.timeout_seconds,
++        )
++        return {
++            "ok": bool(response.get("ok", True)),
++            "status": str(response.get("status") or "ok"),
++            "details": response,
++        }
++
++    def _receipt_from_response(self, payload: Dict[str, Any], *, wallet_id: str) -> ProofReceipt:
++        if "receipt" in payload and isinstance(payload["receipt"], dict):
++            payload = payload["receipt"]
++        allowed = {field.name for field in fields(ProofReceipt)}
++        normalized = {key: value for key, value in payload.items() if key in allowed}
++        normalized.setdefault("wallet_id", wallet_id)
++        normalized.setdefault("proof_type", "location_region")
++        normalized.setdefault("verifier_id", self.verifier_id)
++        normalized.setdefault("proof_system", self.proof_system)
++        normalized.setdefault("circuit_id", self.circuit_id)
++        normalized.setdefault("is_simulated", False)
++        normalized.setdefault(
++            "verifier_digest",
++            verifier_digest(
++                str(normalized["verifier_id"]),
++                str(normalized["proof_system"]),
++            ),
++        )
++        return ProofReceipt(**normalized)
+diff --git a/wallet_interface/ui/README.md b/wallet_interface/ui/README.md
+index 9afc92ad..c91cffe6 100644
+--- a/wallet_interface/ui/README.md
++++ b/wallet_interface/ui/README.md
+@@ -20,6 +20,17 @@ access-request and receipt state for demos and tests.
+ The uploads screen also uses the same API config to list encrypted document
+ records and add files through the multipart wallet document endpoint, with a
+ text-document fallback for simpler local API deployments.
++API-backed uploads expose owner document viewing through the wallet decrypt
++endpoint; plaintext is shown only after the connected wallet actor requests it.
++Owners can also create record-scoped grants from an uploaded document for
++analysis, document viewing, or bounded re-delegation. View and delegation
++grants can request a record-scoped multi-sig approval inline, then reuse the
++returned approval ID when creating the grant. Document-view grants can also
++require recipient presence, which the recipient access flow satisfies through a
++signed invocation before decrypting.
++The Security screen lists threshold approvals for the wallet so controllers can
++review pending record-grant and wallet-governance approvals without copying IDs
++between screens.
+ API-loaded documents show encrypted storage health by calling each record's
+ storage verification endpoint. If a stored record reports a storage problem,
+ the uploads screen can call the wallet storage repair endpoint for that record.
+@@ -33,6 +44,9 @@ expose a separate document-view action that decrypts only after the recipient
+ invokes that specific grant. Active receipts held by the current actor that
+ include `record/share` or `document/share` can also create attenuated delegated
+ grants for another DID through the wallet API.
++The API client also exposes redacted document analysis and vector-profile calls
++that return safe derived output alongside encrypted artifact metadata, matching
++the wallet package's `redacted_derived_only` and `vector_profile` output caveats.
+ When connected to the wallet API, the audit screen loads the wallet audit
+ timeline so grant, invocation, analysis, repair, and revocation events remain
+ traceable with actor, resource, decision, and grant metadata.
+diff --git a/wallet_interface/ui/src/app/App.tsx b/wallet_interface/ui/src/app/App.tsx
+index 5466ae71..b2d5d363 100644
+--- a/wallet_interface/ui/src/app/App.tsx
++++ b/wallet_interface/ui/src/app/App.tsx
+@@ -71,6 +71,7 @@ import {
+   addTextDocument,
+   analyzeRecordWithGrant,
+   createLocationRegionProof,
++  createRecordGrant,
+   createWalletAnalyticsConsent,
+   createVerifiedExportBundleView,
+   delegateGrant,
+@@ -84,6 +85,7 @@ import {
+   loadWalletSnapshot,
+   loadWalletAccessState,
+   loadWalletDetails,
++  listThresholdApprovals,
+   listWalletAuditEvents,
+   listAnalyticsTemplates,
+   listWalletAnalyticsConsents,
+@@ -94,6 +96,7 @@ import {
+   repairWalletStorage,
+   recoverWalletController,
+   removeWalletController,
++  requestRecordGrantApproval,
+   requestWalletAdminApproval,
+   rotateRecordKey,
+   revokeWalletAnalyticsConsent,
+@@ -105,6 +108,7 @@ import {
+   verifyWalletStorage,
+   EmergencyRevokeReport,
+   OpsHealthReport,
++  ThresholdApprovalResponse,
+   WalletDetails,
+   WalletAnalyticsConsent,
+   WalletAdminOperation,
+@@ -546,6 +550,7 @@ export function App() {
+         {activeRoute === "uploads" ? (
+           <UploadsScreen
+             apiConfig={walletApiConfig}
++            refreshWalletAccessState={refreshWalletAccessState}
+             refreshWalletAuditEvents={refreshWalletAuditEvents}
+             uploads={uploads}
+             setUploads={setUploads}
+@@ -640,7 +645,9 @@ function readUrlWalletApiConfig(): WalletApiConfig | undefined {
+   return {
+     apiBaseUrl,
+     walletId,
+-    actorDid: params.get("actorDid") ?? undefined
++    actorDid: params.get("actorDid") ?? undefined,
++    issuerKeyHex: params.get("issuerKeyHex") ?? undefined,
++    audienceKeyHex: params.get("audienceKeyHex") ?? undefined
+   };
+ }
+ 
+@@ -1299,19 +1306,84 @@ function SharingRulesScreen({
+   );
+ }
+ 
++type UploadSharePermission = "analyze" | "view" | "analyze_view" | "analyze_view_share";
++
++interface UploadShareDraft {
++  audienceDid: string;
++  audienceKeyHex: string;
++  permission: UploadSharePermission;
++  purpose: string;
++  expiresAt: string;
++  approvalId: string;
++  requirePresence: boolean;
++}
++
++function defaultUploadShareDraft(): UploadShareDraft {
++  return {
++    audienceDid: "",
++    audienceKeyHex: "",
++    permission: "analyze",
++    purpose: "service_matching",
++    expiresAt: "",
++    approvalId: "",
++    requirePresence: false
++  };
++}
++
++function uploadShareAbilities(permission: UploadSharePermission): string[] {
++  if (permission === "view") return ["record/decrypt"];
++  if (permission === "analyze_view") return ["record/analyze", "record/decrypt"];
++  if (permission === "analyze_view_share") return ["record/analyze", "record/decrypt", "record/share"];
++  return ["record/analyze"];
++}
++
++function uploadShareNeedsApproval(permission: UploadSharePermission) {
++  return uploadShareAbilities(permission).some((ability) => ability === "record/decrypt" || ability === "record/share");
++}
++
++function uploadShareCanRequirePresence(permission: UploadSharePermission) {
++  return uploadShareAbilities(permission).includes("record/decrypt");
++}
++
++function receiptRequiresUserPresence(receipt: WalletGrantReceipt) {
++  return Boolean(receipt.caveats?.user_presence_required || receipt.caveats?.require_user_presence);
++}
++
+ function UploadsScreen({
+   apiConfig,
++  refreshWalletAccessState,
+   refreshWalletAuditEvents,
+   uploads,
+   setUploads
+ }: {
+   apiConfig?: WalletApiConfig;
++  refreshWalletAccessState: () => Promise<void>;
+   refreshWalletAuditEvents: () => Promise<void>;
+   uploads: UploadItem[];
+   setUploads: (uploads: UploadItem[]) => void;
+ }) {
+   const [repairingUploadIds, setRepairingUploadIds] = useState<string[]>([]);
+   const [rotatingUploadIds, setRotatingUploadIds] = useState<string[]>([]);
++  const [viewingUploadIds, setViewingUploadIds] = useState<string[]>([]);
++  const [decryptedUploadsById, setDecryptedUploadsById] = useState<Record<string, DecryptedRecordView>>({});
++  const [shareDraftsById, setShareDraftsById] = useState<Record<string, UploadShareDraft>>({});
++  const [sharingUploadIds, setSharingUploadIds] = useState<string[]>([]);
++  const [requestingShareApprovalIds, setRequestingShareApprovalIds] = useState<string[]>([]);
++  const [shareMessagesById, setShareMessagesById] = useState<Record<string, string>>({});
++
++  function shareDraftFor(upload: UploadItem) {
++    return shareDraftsById[upload.id] ?? defaultUploadShareDraft();
++  }
++
++  function updateShareDraft(upload: UploadItem, patch: Partial<UploadShareDraft>) {
++    setShareDraftsById((drafts) => ({
++      ...drafts,
++      [upload.id]: {
++        ...(drafts[upload.id] ?? defaultUploadShareDraft()),
++        ...patch
++      }
++    }));
++  }
+ 
+   async function addUpload(file: File | null) {
+     if (!file) return;
+@@ -1386,6 +1458,98 @@ function UploadsScreen({
+     }
+   }
+ 
++  async function viewUpload(upload: UploadItem) {
++    if (!apiConfig?.actorDid || !upload.recordId) return;
++    setViewingUploadIds((uploadIds) => [...uploadIds, upload.id]);
++    try {
++      const decrypted = await decryptRecordWithGrant(apiConfig, { recordId: upload.recordId });
++      setDecryptedUploadsById({
++        ...decryptedUploadsById,
++        [upload.id]: decrypted
++      });
++      await refreshWalletAuditEvents();
++    } catch {
++      setDecryptedUploadsById({
++        ...decryptedUploadsById,
++        [upload.id]: {
++          recordId: upload.recordId,
++          text: "Document view unavailable.",
++          sizeBytes: 0
++        }
++      });
++    } finally {
++      setViewingUploadIds((uploadIds) => uploadIds.filter((id) => id !== upload.id));
++    }
++  }
++
++  async function shareUpload(event: FormEvent<HTMLFormElement>, upload: UploadItem) {
++    event.preventDefault();
++    if (!apiConfig?.actorDid || !upload.recordId) return;
++    const draft = shareDraftFor(upload);
++    const audienceDid = draft.audienceDid.trim();
++    if (!audienceDid) return;
++    setSharingUploadIds((uploadIds) => [...uploadIds, upload.id]);
++    setShareMessagesById({ ...shareMessagesById, [upload.id]: "" });
++    try {
++      const grant = await createRecordGrant(apiConfig, {
++        recordId: upload.recordId,
++        audienceDid,
++        audienceKeyHex: draft.audienceKeyHex.trim() || undefined,
++        abilities: uploadShareAbilities(draft.permission),
++        purpose: draft.purpose.trim() || "service_matching",
++        expiresAt: dateInputValueToIso(draft.expiresAt),
++        approvalId: draft.approvalId.trim() || undefined,
++        maxDelegationDepth: draft.permission === "analyze_view_share" ? 1 : undefined,
++        userPresenceRequired: uploadShareCanRequirePresence(draft.permission) ? draft.requirePresence : false
++      });
++      setUploads(uploads.map((item) => (item.id === upload.id ? { ...item, shared: true } : item)));
++      setShareDraftsById({
++        ...shareDraftsById,
++        [upload.id]: defaultUploadShareDraft()
++      });
++      setShareMessagesById({
++        ...shareMessagesById,
++        [upload.id]: `Shared with ${audienceDid}: ${grant.abilities.join(", ")}.`
++      });
++      await refreshWalletAccessState();
++      await refreshWalletAuditEvents();
++    } catch {
++      setShareMessagesById({
++        ...shareMessagesById,
++        [upload.id]: "Document share failed. Check the DID, key, or required approval."
++      });
++    } finally {
++      setSharingUploadIds((uploadIds) => uploadIds.filter((id) => id !== upload.id));
++    }
++  }
++
++  async function requestShareApproval(upload: UploadItem) {
++    if (!apiConfig?.actorDid || !upload.recordId) return;
++    const draft = shareDraftFor(upload);
++    const abilities = uploadShareAbilities(draft.permission);
++    setRequestingShareApprovalIds((uploadIds) =>
++      uploadIds.includes(upload.id) ? uploadIds : [...uploadIds, upload.id]
++    );
++    setShareMessagesById((messages) => ({ ...messages, [upload.id]: "" }));
++    try {
++      const approval = await requestRecordGrantApproval(apiConfig, {
++        recordId: upload.recordId,
++        abilities,
++        requestedBy: apiConfig.actorDid,
++        expiresAt: dateInputValueToIso(draft.expiresAt)
++      });
++      updateShareDraft(upload, { approvalId: approval.approval_id });
++      setShareMessagesById((messages) => ({
++        ...messages,
++        [upload.id]: `Approval ${approval.approval_id} requested.`
++      }));
++    } catch {
++      setShareMessagesById((messages) => ({ ...messages, [upload.id]: "Approval request failed." }));
++    } finally {
++      setRequestingShareApprovalIds((uploadIds) => uploadIds.filter((id) => id !== upload.id));
++    }
++  }
++
+   return (
+     <div className="screen">
+       <div className="page-title">
+@@ -1408,55 +1572,186 @@ function UploadsScreen({
+         </label>
+       </Section>
+       <div className="list-stack">
+-        {uploads.map((upload) => (
+-          <article className="list-item upload-list-item" key={upload.id}>
+-            <div>
+-              <h3>{upload.fileName}</h3>
+-              <p>{upload.category}</p>
+-              <small className="upload-machine-summary">{toShortSummaryTitle(upload.machineSummary)}</small>
+-              <div className="badge-row">
+-                <Badge tone="success">{upload.status}</Badge>
+-                <Badge tone="warning">{upload.sensitivity}</Badge>
+-                {upload.storageOk !== undefined ? (
+-                  <Badge tone={upload.storageOk ? "success" : "warning"}>
+-                    {upload.storageOk ? "storage verified" : "storage needs repair"}
+-                  </Badge>
+-                ) : null}
+-                <Badge>{upload.shared ? "Shared" : "Private"}</Badge>
++        {uploads.map((upload) => {
++          const decryptedUpload = decryptedUploadsById[upload.id];
++          const shareDraft = shareDraftFor(upload);
++          const shareFormOpen = Boolean(shareDraftsById[upload.id]);
++          const shareMessage = shareMessagesById[upload.id];
++          const shareApprovalRequired = uploadShareNeedsApproval(shareDraft.permission);
++          const sharePresenceAvailable = uploadShareCanRequirePresence(shareDraft.permission);
++          return (
++            <article className="list-item upload-list-item" key={upload.id}>
++              <div className="upload-list-main">
++                <div>
++                  <h3>{upload.fileName}</h3>
++                  <p>{upload.category}</p>
++                  <small className="upload-machine-summary">{toShortSummaryTitle(upload.machineSummary)}</small>
++                  <div className="badge-row">
++                    <Badge tone="success">{upload.status}</Badge>
++                    <Badge tone="warning">{upload.sensitivity}</Badge>
++                    {upload.storageOk !== undefined ? (
++                      <Badge tone={upload.storageOk ? "success" : "warning"}>
++                        {upload.storageOk ? "storage verified" : "storage needs repair"}
++                      </Badge>
++                    ) : null}
++                    <Badge>{upload.shared ? "Shared" : "Private"}</Badge>
++                  </div>
++                </div>
++                <div className="row-actions list-item-action">
++                  {upload.recordId && apiConfig?.actorDid ? (
++                    <Button
++                      onClick={() => updateShareDraft(upload, {})}
++                      variant="secondary"
++                    >
++                      <UserPlus aria-hidden="true" size={18} />
++                      Share document
++                    </Button>
++                  ) : null}
++                  {upload.recordId && apiConfig?.actorDid ? (
++                    <Button
++                      disabled={viewingUploadIds.includes(upload.id)}
++                      onClick={() => viewUpload(upload)}
++                      variant="secondary"
++                    >
++                      <LockKeyhole aria-hidden="true" size={18} />
++                      {viewingUploadIds.includes(upload.id) ? "Opening" : "View document"}
++                    </Button>
++                  ) : null}
++                  {upload.recordId && apiConfig?.actorDid ? (
++                    <Button
++                      disabled={rotatingUploadIds.includes(upload.id)}
++                      onClick={() => rotateUploadKey(upload)}
++                      variant="secondary"
++                    >
++                      <KeyRound aria-hidden="true" size={18} />
++                      {rotatingUploadIds.includes(upload.id) ? "Rotating" : "Rotate key"}
++                    </Button>
++                  ) : null}
++                  {upload.storageOk === false && upload.recordId && apiConfig?.actorDid ? (
++                    <Button
++                      disabled={repairingUploadIds.includes(upload.id)}
++                      onClick={() => repairUploadStorage(upload)}
++                      variant="secondary"
++                    >
++                      <Wrench aria-hidden="true" size={18} />
++                      {repairingUploadIds.includes(upload.id) ? "Repairing" : "Repair storage"}
++                    </Button>
++                  ) : null}
++                  <Button
++                    onClick={() =>
++                      setUploads(
++                        uploads.map((item) => (item.id === upload.id ? { ...item, shared: !item.shared } : item))
++                      )
++                    }
++                    variant="secondary"
++                  >
++                    {upload.shared ? "Mark private" : "Mark eligible"}
++                  </Button>
++                </div>
+               </div>
+-            </div>
+-            <div className="row-actions list-item-action">
+-              {upload.recordId && apiConfig?.actorDid ? (
+-                <Button
+-                  disabled={rotatingUploadIds.includes(upload.id)}
+-                  onClick={() => rotateUploadKey(upload)}
+-                  variant="secondary"
+-                >
+-                  <KeyRound aria-hidden="true" size={18} />
+-                  {rotatingUploadIds.includes(upload.id) ? "Rotating" : "Rotate key"}
+-                </Button>
++              {shareFormOpen ? (
++                <form className="form-grid" onSubmit={(event) => shareUpload(event, upload)}>
++                  <Field label="Recipient DID" required>
++                    <input
++                      onChange={(event) => updateShareDraft(upload, { audienceDid: event.target.value })}
++                      placeholder="did:key:case-worker"
++                      value={shareDraft.audienceDid}
++                    />
++                  </Field>
++                  <Field label="Permission">
++                    <select
++                      onChange={(event) =>
++                        updateShareDraft(upload, { permission: event.target.value as UploadSharePermission })
++                      }
++                      value={shareDraft.permission}
++                    >
++                      <option value="analyze">Analyze only</option>
++                      <option value="view">View document</option>
++                      <option value="analyze_view">Analyze and view</option>
++                      <option value="analyze_view_share">Analyze, view, and delegate</option>
++                    </select>
++                  </Field>
++                  <Field label="Purpose">
++                    <input
++                      onChange={(event) => updateShareDraft(upload, { purpose: event.target.value })}
++                      placeholder="service_matching"
++                      value={shareDraft.purpose}
++                    />
++                  </Field>
++                  <Field label="Expires">
++                    <input
++                      onChange={(event) => updateShareDraft(upload, { expiresAt: event.target.value })}
++                      type="date"
++                      value={shareDraft.expiresAt}
++                    />
++                  </Field>
++                  <Field label="Recipient key hex">
++                    <input
++                      onChange={(event) => updateShareDraft(upload, { audienceKeyHex: event.target.value })}
++                      placeholder="optional"
++                      value={shareDraft.audienceKeyHex}
++                    />
++                  </Field>
++                  <Field label="Approval ID">
++                    <input
++                      onChange={(event) => updateShareDraft(upload, { approvalId: event.target.value })}
++                      placeholder="optional for multi-sig"
++                      value={shareDraft.approvalId}
++                    />
++                  </Field>
++                  {sharePresenceAvailable ? (
++                    <label className="captcha-box full-span">
++                      <input
++                        checked={shareDraft.requirePresence}
++                        onChange={(event) => updateShareDraft(upload, { requirePresence: event.target.checked })}
++                        type="checkbox"
++                      />
++                      <span>Require recipient presence before viewing</span>
++                    </label>
++                  ) : null}
++                  <div className="row-actions full-span">
++                    {shareApprovalRequired ? (
++                      <Button
++                        disabled={requestingShareApprovalIds.includes(upload.id)}
++                        onClick={() => requestShareApproval(upload)}
++                        type="button"
++                        variant="secondary"
++                      >
++                        <ShieldCheck aria-hidden="true" size={18} />
++                        {requestingShareApprovalIds.includes(upload.id) ? "Requesting" : "Request approval"}
++                      </Button>
++                    ) : null}
++                    <Button
++                      disabled={!shareDraft.audienceDid.trim() || sharingUploadIds.includes(upload.id)}
++                      type="submit"
++                      variant="secondary"
++                    >
++                      <ShieldCheck aria-hidden="true" size={18} />
++                      {sharingUploadIds.includes(upload.id) ? "Sharing" : "Create grant"}
++                    </Button>
++                  </div>
++                </form>
+               ) : null}
+-              {upload.storageOk === false && upload.recordId && apiConfig?.actorDid ? (
+-                <Button
+-                  disabled={repairingUploadIds.includes(upload.id)}
+-                  onClick={() => repairUploadStorage(upload)}
+-                  variant="secondary"
+-                >
+-                  <Wrench aria-hidden="true" size={18} />
+-                  {repairingUploadIds.includes(upload.id) ? "Repairing" : "Repair storage"}
+-                </Button>
++              {shareMessage ? (
++                <StatusBanner tone={shareMessage.includes("failed") ? "warning" : "success"}>
++                  {shareMessage}
++                </StatusBanner>
+               ) : null}
+-              <Button
+-                onClick={() =>
+-                  setUploads(uploads.map((item) => (item.id === upload.id ? { ...item, shared: !item.shared } : item)))
+-                }
+-                variant="secondary"
+-              >
+-                {upload.shared ? "Mark private" : "Mark eligible"}
+-              </Button>
+-            </div>
+-          </article>
+-        ))}
++              {decryptedUpload ? (
++                <div className="disclosure-package">
++                  <div className="disclosure-row">
++                    <strong>Document view</strong>
++                    <span className="document-preview-text">{decryptedUpload.text}</span>
++                  </div>
++                  <div className="disclosure-row">
++                    <strong>Plaintext size</strong>
++                    <span>{decryptedUpload.sizeBytes} bytes</span>
++                  </div>
++                </div>
++              ) : null}
++            </article>
++          );
++        })}
+       </div>
+     </div>
+   );
+@@ -2614,7 +2909,8 @@ function RecipientAccessScreen({
+                 try {
+                   invocationToken = await issueRecordDecryptInvocation(apiConfig, {
+                     grantId: receipt.grantId,
+-                    recordId
++                    recordId,
++                    userPresent: receiptRequiresUserPresence(receipt)
+                   });
+                 } catch {
+                   invocationToken = undefined;
+@@ -3728,6 +4024,42 @@ function shortHash(value?: string): string {
+   return value.length > 24 ? `${value.slice(0, 12)}...${value.slice(-8)}` : value;
+ }
+ 
++function thresholdApprovalCount(approval: ThresholdApprovalResponse): number {
++  const approvers = new Set(approval.approver_dids ?? []);
++  return Object.keys(approval.approvals ?? {}).filter((did) => approvers.size === 0 || approvers.has(did)).length;
++}
++
++function thresholdApprovalTone(status: string): "neutral" | "success" | "warning" {
++  if (status === "approved") return "success";
++  if (status === "pending") return "warning";
++  return "neutral";
++}
++
++function thresholdApprovalDateLabel(value?: string): string {
++  if (!value) return "Unavailable";
++  const date = new Date(value);
++  if (Number.isNaN(date.getTime())) return value;
++  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
++}
++
++function opsHealthTone(status?: string): string {
++  if (status === "error") return "warning";
++  if (status === "warning") return "info";
++  if (status === "ok") return "success";
++  return "neutral";
++}
++
++function stringDetail(details: Record<string, unknown> | undefined, key: string): string | null {
++  const value = details?.[key];
++  return typeof value === "string" && value.trim() ? value.trim() : null;
++}
++
++function objectDetail(details: Record<string, unknown> | undefined, key: string): Record<string, unknown> | null {
++  const value = details?.[key];
++  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
++  return value as Record<string, unknown>;
++}
++
+ function SecurityScreen({
+   apiConfig,
+   onSnapshotLoaded,
+@@ -3747,6 +4079,10 @@ function SecurityScreen({
+   const [opsStatus, setOpsStatus] = useState<"idle" | "checking" | "checked" | "failed">("idle");
+   const [opsHealthReport, setOpsHealthReport] = useState<OpsHealthReport | null>(null);
+   const [walletDetails, setWalletDetails] = useState<WalletDetails | null>(null);
++  const [thresholdApprovals, setThresholdApprovals] = useState<ThresholdApprovalResponse[]>([]);
++  const [approvalQueueStatus, setApprovalQueueStatus] = useState<
++    "idle" | "loading" | "loaded" | "approving" | "failed"
++  >("idle");
+   const [controllerDid, setControllerDid] = useState("");
+   const [controllerApprovalId, setControllerApprovalId] = useState("");
+   const [deviceDid, setDeviceDid] = useState("");
+@@ -3771,9 +4107,19 @@ function SecurityScreen({
+     walletDetails?.governance_policy?.approver_dids ?? walletDetails?.controller_dids ?? [];
+   const recoveryPolicy = walletDetails?.governance_policy?.recovery_policy;
+   const recoveryContacts = recoveryPolicy?.contact_dids ?? [];
++  const pendingThresholdApprovals = thresholdApprovals.filter((approval) => approval.status === "pending");
+   const opsCheckSummary = opsHealthReport
+     ? opsHealthReport.checks.map((check) => `${check.name}: ${check.status}`).join(", ")
+     : "Not checked";
++  const proofRegistryCheck = opsHealthReport?.checks.find((check) => check.name === "proof_registry") ?? null;
++  const proofRegistryDetails = proofRegistryCheck?.details;
++  const proofBackendHealth = objectDetail(proofRegistryDetails, "backend_health");
++  const proofBackendVerifier = [stringDetail(proofRegistryDetails, "verifier_id"), stringDetail(proofRegistryDetails, "proof_system")]
++    .filter(Boolean)
++    .join(" / ");
++  const proofBackendMode = stringDetail(proofRegistryDetails, "backend_mode");
++  const proofBackendHealthStatus = stringDetail(proofBackendHealth ?? undefined, "status");
++  const proofBackendHealthError = stringDetail(proofBackendHealth ?? undefined, "error");
+   const storageProviderSummary =
+     walletStorageReport && Object.keys(walletStorageReport.storage_types).length
+       ? Object.entries(walletStorageReport.storage_types)
+@@ -3802,15 +4148,33 @@ function SecurityScreen({
+     setWalletDetails(await loadWalletDetails(apiConfig));
+   }
+ 
++  async function refreshThresholdApprovalQueue() {
++    if (!apiConfig) {
++      setThresholdApprovals([]);
++      setApprovalQueueStatus("idle");
++      return;
++    }
++    setApprovalQueueStatus("loading");
++    try {
++      const approvals = await listThresholdApprovals(apiConfig, "all");
++      setThresholdApprovals(approvals);
++      setApprovalQueueStatus("loaded");
++    } catch {
++      setThresholdApprovals([]);
++      setApprovalQueueStatus("failed");
++    }
++  }
++
+   useEffect(() => {
+     if (!apiConfig) return;
+     let cancelled = false;
+-    Promise.all([refreshSnapshotState(), refreshWalletDetails()])
++    Promise.all([refreshSnapshotState(), refreshWalletDetails(), refreshThresholdApprovalQueue()])
+       .then(() => undefined)
+       .catch(() => {
+         if (!cancelled) {
+           setSnapshotReport(null);
+           setWalletDetails(null);
++          setThresholdApprovals([]);
+         }
+       })
+     return () => {
+@@ -3911,6 +4275,7 @@ function SecurityScreen({
+       }
+       setGovernanceMessage(`Approval ${approval.approval_id}`);
+       setGovernanceStatus("requested");
++      await refreshThresholdApprovalQueue();
+     } catch {
+       setGovernanceMessage("Wallet approval request failed.");
+       setGovernanceStatus("failed");
+@@ -3966,13 +4331,19 @@ function SecurityScreen({
+   async function recordGovernanceApproval(approvalId: string) {
+     if (!apiConfig || !approvalId.trim()) return;
+     setGovernanceStatus("saving");
++    setApprovalQueueStatus("approving");
+     try {
+-      await approveThresholdApproval(apiConfig, approvalId.trim());
++      const approval = await approveThresholdApproval(apiConfig, approvalId.trim());
++      setThresholdApprovals((approvals) =>
++        approvals.map((item) => (item.approval_id === approval.approval_id ? approval : item))
++      );
++      await refreshThresholdApprovalQueue();
+       setGovernanceMessage("Approval recorded.");
+       setGovernanceStatus("saved");
+     } catch {
+       setGovernanceMessage("Approval failed.");
+       setGovernanceStatus("failed");
++      setApprovalQueueStatus("failed");
+     }
+   }
+ 
+@@ -4150,7 +4521,51 @@ function SecurityScreen({
+             <strong>Ops checks</strong>
+             <span>{opsCheckSummary}</span>
+           </div>
++          <div className="disclosure-row">
++            <strong>Proof backend</strong>
++            <span>{proofBackendVerifier || proofBackendMode || "Not checked"}</span>
++          </div>
++          <div className="disclosure-row">
++            <strong>Proof backend health</strong>
++            <span>
++              {proofRegistryCheck ? (
++                <>
++                  <Badge tone={opsHealthTone(proofRegistryCheck.status)}>{proofRegistryCheck.status}</Badge>
++                  {proofBackendHealthStatus ? ` ${proofBackendHealthStatus}` : ""}
++                  {proofBackendHealthError ? ` (${proofBackendHealthError})` : ""}
++                </>
++              ) : (
++                "Not checked"
++              )}
++            </span>
++          </div>
+         </div>
++        {opsHealthReport ? (
++          <div className="disclosure-package" aria-live="polite">
++            {opsHealthReport.checks.map((check) => {
++              const verifierLabel =
++                check.name === "proof_registry"
++                  ? [stringDetail(check.details, "verifier_id"), stringDetail(check.details, "proof_system")]
++                      .filter(Boolean)
++                      .join(" / ")
++                  : null;
++              const health = objectDetail(check.details, "backend_health");
++              const healthStatus = stringDetail(health ?? undefined, "status");
++              const healthError = stringDetail(health ?? undefined, "error");
++              return (
++                <div className="disclosure-row" key={check.name}>
++                  <strong>{check.name}</strong>
++                  <span>
++                    <Badge tone={opsHealthTone(check.status)}>{check.status}</Badge> {check.summary}
++                    {verifierLabel ? ` (${verifierLabel})` : ""}
++                    {healthStatus ? ` [${healthStatus}]` : ""}
++                    {healthError ? ` ${healthError}` : ""}
++                  </span>
++                </div>
++              );
++            })}
++          </div>
++        ) : null}
+         <div className="row-actions">
+           <Button disabled={!apiConfig || snapshotStatus === "saving" || snapshotStatus === "loading"} onClick={saveSnapshot}>
+             <Archive size={18} /> {snapshotStatus === "saving" ? "Saving" : "Save snapshot"}
+@@ -4181,6 +4596,82 @@ function SecurityScreen({
+           </Button>
+         </div>
+       </Section>
++      <Section
++        title="Approval queue"
++        actions={
++          <Badge tone={pendingThresholdApprovals.length ? "warning" : "success"}>
++            {pendingThresholdApprovals.length ? `${pendingThresholdApprovals.length} pending` : "clear"}
++          </Badge>
++        }
++      >
++        {approvalQueueStatus === "failed" ? (
++          <StatusBanner tone="warning">Approval queue unavailable.</StatusBanner>
++        ) : null}
++        <div className="row-actions">
++          <Button
++            disabled={!apiConfig || approvalQueueStatus === "loading" || approvalQueueStatus === "approving"}
++            onClick={refreshThresholdApprovalQueue}
++            variant="secondary"
++          >
++            <RefreshCw size={18} /> {approvalQueueStatus === "loading" ? "Loading" : "Refresh approvals"}
++          </Button>
++        </div>
++        <div className="list-stack">
++          {thresholdApprovals.length ? (
++            thresholdApprovals.map((approval) => {
++              const approvedCount = thresholdApprovalCount(approval);
++              const actorDid = apiConfig?.actorDid ?? "";
++              const actorRecorded = Boolean(actorDid && approval.approvals?.[actorDid]);
++              const canRecord = Boolean(apiConfig?.actorDid && approval.status === "pending" && !actorRecorded);
++              return (
++                <article className="list-item" key={approval.approval_id}>
++                  <div>
++                    <div className="scope-header">
++                      <div>
++                        <h3>{approval.operation}</h3>
++                        <p>{approval.requested_by}</p>
++                      </div>
++                      <Badge tone={thresholdApprovalTone(approval.status)}>{approval.status}</Badge>
++                    </div>
++                    <div className="badge-row">
++                      <Badge>{shortHash(approval.approval_id)}</Badge>
++                      <Badge tone={approvedCount >= approval.threshold ? "success" : "warning"}>
++                        {approvedCount}/{approval.threshold} approvals
++                      </Badge>
++                      <Badge>{thresholdApprovalDateLabel(approval.created_at)}</Badge>
++                    </div>
++                    <div className="disclosure-package">
++                      <div className="disclosure-row">
++                        <strong>Abilities</strong>
++                        <span>{approval.abilities.join(", ")}</span>
++                      </div>
++                      <div className="disclosure-row">
++                        <strong>Resources</strong>
++                        <span>{approval.resources.join(", ")}</span>
++                      </div>
++                      <div className="disclosure-row">
++                        <strong>Approvers</strong>
++                        <span>{approval.approver_dids?.join(", ") || "Wallet controllers"}</span>
++                      </div>
++                    </div>
++                  </div>
++                  <div className="row-actions">
++                    <Button
++                      disabled={!canRecord || approvalQueueStatus === "approving" || governanceStatus === "saving"}
++                      onClick={() => recordGovernanceApproval(approval.approval_id)}
++                      variant="secondary"
++                    >
++                      <KeyRound size={18} /> {actorRecorded ? "Recorded" : "Record approval"}
++                    </Button>
++                  </div>
++                </article>
++              );
++            })
++          ) : (
++            <small>No threshold approvals are waiting on this wallet.</small>
++          )}
++        </div>
++      </Section>
+       <Section
+         title="Wallet governance"
+         actions={
+diff --git a/wallet_interface/ui/src/models/abby.ts b/wallet_interface/ui/src/models/abby.ts
+index 76874bf5..6d3abdf6 100644
+--- a/wallet_interface/ui/src/models/abby.ts
++++ b/wallet_interface/ui/src/models/abby.ts
+@@ -146,6 +146,7 @@ export interface WalletGrantReceipt {
+   resourceLabel: string;
+   abilities: string[];
+   purpose: string;
++  caveats?: Record<string, unknown>;
+   receiptHash: string;
+   status: "active" | "revoked";
+   createdAt: string;
+@@ -161,6 +162,11 @@ export interface DerivedArtifactView {
+   createdAt: string;
+ }
+ 
++export interface DerivedAnalysisResultView {
++  artifact: DerivedArtifactView;
++  output: Record<string, unknown>;
++}
++
+ export interface DecryptedRecordView {
+   recordId: string;
+   text: string;
+diff --git a/wallet_interface/ui/src/services/walletApi.ts b/wallet_interface/ui/src/services/walletApi.ts
+index 2cc301f2..41cf6e39 100644
+--- a/wallet_interface/ui/src/services/walletApi.ts
++++ b/wallet_interface/ui/src/services/walletApi.ts
+@@ -2,6 +2,7 @@ import {
+   AuditEvent,
+   AnalyticsStudy,
+   DecryptedRecordView,
++  DerivedAnalysisResultView,
+   DerivedArtifactView,
+   ExportBundleView,
+   ProofReceiptView,
+@@ -38,6 +39,7 @@ interface GrantReceiptApiRecord {
+   resources: string[];
+   abilities: string[];
+   purpose: string | null;
++  caveats?: Record<string, unknown>;
+   receipt_hash: string;
+   status: "active" | "revoked";
+   created_at: string;
+@@ -238,6 +240,11 @@ interface DerivedArtifactApiResponse {
+   created_at: string;
+ }
+ 
++interface DerivedAnalysisResultApiResponse {
++  artifact: DerivedArtifactApiResponse;
++  output: Record<string, unknown>;
++}
++
+ interface DecryptedRecordApiResponse {
+   record_id?: string;
+   text: string;
+@@ -327,14 +334,36 @@ export interface DelegatedGrantResponse {
+   expires_at?: string | null;
+ }
+ 
++export interface RecordGrantResponse {
++  grant_id: string;
++  issuer_did: string;
++  audience_did: string;
++  resources: string[];
++  abilities: string[];
++  caveats?: Record<string, unknown>;
++  status?: string;
++  created_at?: string;
++  expires_at?: string | null;
++}
++
+ export interface ThresholdApprovalResponse {
+   approval_id: string;
+   wallet_id: string;
+   operation: string;
+   requested_by: string;
++  resources: string[];
++  abilities: string[];
+   threshold: number;
++  approver_dids?: string[];
+   approvals?: Record<string, string>;
+   status: string;
++  created_at?: string;
++  expires_at?: string | null;
++  details?: Record<string, unknown>;
++}
++
++interface ThresholdApprovalListResponse {
++  approvals: ThresholdApprovalResponse[];
+ }
+ 
+ export type WalletAdminOperation =
+@@ -652,6 +681,62 @@ export async function analyzeRecordWithGrant(
+   return toDerivedArtifactView(artifact);
+ }
+ 
++export async function analyzeRecordRedactedWithGrant(
++  config: WalletApiConfig,
++  {
++    recordId,
++    grantId,
++    invocationToken,
++    maxChars = 500
++  }: {
++    recordId: string;
++    grantId?: string;
++    invocationToken?: string;
++    maxChars?: number;
++  }
++): Promise<DerivedAnalysisResultView> {
++  const url = new URL(
++    `/wallets/${config.walletId}/records/${recordId}/analyze/redacted`,
++    normalizedBaseUrl(config.apiBaseUrl)
++  );
++  const result = await postJson<DerivedAnalysisResultApiResponse>(url, "Redacted record analysis", {
++    actor_did: requiredActorDid(config),
++    actor_key_hex: config.audienceKeyHex || config.issuerKeyHex,
++    grant_id: grantId || undefined,
++    invocation_token: invocationToken || undefined,
++    max_chars: maxChars
++  });
++  return toDerivedAnalysisResultView(result);
++}
++
++export async function createRecordVectorProfileWithGrant(
++  config: WalletApiConfig,
++  {
++    recordId,
++    grantId,
++    invocationToken,
++    chunkSizeWords = 80
++  }: {
++    recordId: string;
++    grantId?: string;
++    invocationToken?: string;
++    chunkSizeWords?: number;
++  }
++): Promise<DerivedAnalysisResultView> {
++  const url = new URL(
++    `/wallets/${config.walletId}/records/${recordId}/vector-profile`,
++    normalizedBaseUrl(config.apiBaseUrl)
++  );
++  const result = await postJson<DerivedAnalysisResultApiResponse>(url, "Record vector profile", {
++    actor_did: requiredActorDid(config),
++    actor_key_hex: config.audienceKeyHex || config.issuerKeyHex,
++    grant_id: grantId || undefined,
++    invocation_token: invocationToken || undefined,
++    chunk_size_words: chunkSizeWords
++  });
++  return toDerivedAnalysisResultView(result);
++}
++
+ export async function decryptRecordWithGrant(
+   config: WalletApiConfig,
+   {
+@@ -682,10 +767,12 @@ export async function issueRecordDecryptInvocation(
+   config: WalletApiConfig,
+   {
+     recordId,
+-    grantId
++    grantId,
++    userPresent = false
+   }: {
+     recordId: string;
+     grantId: string;
++    userPresent?: boolean;
+   }
+ ): Promise<string> {
+   const url = new URL(
+@@ -695,11 +782,81 @@ export async function issueRecordDecryptInvocation(
+   const response = await postJson<RecordInvocationApiResponse>(url, "Record decrypt invocation", {
+     actor_did: requiredActorDid(config),
+     actor_key_hex: config.audienceKeyHex || config.issuerKeyHex,
+-    grant_id: grantId
++    grant_id: grantId,
++    user_present: userPresent
+   });
+   return response.token;
+ }
+ 
++export async function createRecordGrant(
++  config: WalletApiConfig,
++  {
++    recordId,
++    audienceDid,
++    audienceKeyHex,
++    abilities,
++    purpose,
++    expiresAt,
++    approvalId,
++    maxDelegationDepth,
++    userPresenceRequired,
++    outputTypes,
++    caveats
++  }: {
++    recordId: string;
++    audienceDid: string;
++    audienceKeyHex?: string;
++    abilities: string[];
++    purpose?: string;
++    expiresAt?: string;
++    approvalId?: string;
++    maxDelegationDepth?: number;
++    userPresenceRequired?: boolean;
++    outputTypes?: string[];
++    caveats?: Record<string, unknown>;
++  }
++): Promise<RecordGrantResponse> {
++  const url = new URL(`/wallets/${config.walletId}/records/${recordId}/grants`, normalizedBaseUrl(config.apiBaseUrl));
++  return postJson<RecordGrantResponse>(url, "Record grant", {
++    abilities,
++    approval_id: approvalId || undefined,
++    audience_did: audienceDid,
++    audience_key_hex: audienceKeyHex || undefined,
++    expires_at: expiresAt || undefined,
++    issuer_did: requiredActorDid(config),
++    issuer_key_hex: config.issuerKeyHex,
++    max_delegation_depth: maxDelegationDepth,
++    output_types: outputTypes?.length ? outputTypes : undefined,
++    purpose: purpose || "service_matching",
++    user_presence_required: userPresenceRequired || undefined,
++    caveats: caveats || undefined
++  });
++}
++
++export async function requestRecordGrantApproval(
++  config: WalletApiConfig,
++  {
++    recordId,
++    abilities,
++    requestedBy = requiredActorDid(config),
++    expiresAt
++  }: {
++    recordId: string;
++    abilities: string[];
++    requestedBy?: string;
++    expiresAt?: string;
++  }
++): Promise<ThresholdApprovalResponse> {
++  const url = new URL(`/wallets/${config.walletId}/approvals`, normalizedBaseUrl(config.apiBaseUrl));
++  return postJson<ThresholdApprovalResponse>(url, "Record grant approval", {
++    abilities,
++    expires_at: expiresAt || undefined,
++    operation: "grant/create",
++    requested_by: requestedBy,
++    resources: [`wallet://${config.walletId}/records/${recordId}`]
++  });
++}
++
+ export async function listAccessRequests({
+   apiBaseUrl,
+   walletId,
+@@ -762,16 +919,29 @@ export async function revokeAccessRequest(
+   return toAccessRequestView(data);
+ }
+ 
+-export async function approveThresholdApproval(config: WalletApiConfig, approvalId: string): Promise<void> {
++export async function approveThresholdApproval(
++  config: WalletApiConfig,
++  approvalId: string
++): Promise<ThresholdApprovalResponse> {
+   const url = new URL(
+     `/wallets/${config.walletId}/approvals/${approvalId}/approve`,
+     normalizedBaseUrl(config.apiBaseUrl)
+   );
+-  await postJson<Record<string, unknown>>(url, "Threshold approval", {
++  return postJson<ThresholdApprovalResponse>(url, "Threshold approval", {
+     approver_did: requiredActorDid(config)
+   });
+ }
+ 
++export async function listThresholdApprovals(
++  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId">,
++  status = "all"
++): Promise<ThresholdApprovalResponse[]> {
++  const url = new URL(`/wallets/${config.walletId}/approvals`, normalizedBaseUrl(config.apiBaseUrl));
++  url.searchParams.set("status", status);
++  const data = await fetchJson<ThresholdApprovalListResponse>(url, "Threshold approvals");
++  return data.approvals;
++}
++
+ export async function requestWalletAdminApproval(
+   config: WalletApiConfig,
+   operation: WalletAdminOperation,
+@@ -1180,6 +1350,7 @@ function toGrantReceiptView(receipt: GrantReceiptApiRecord): WalletGrantReceipt
+     resourceLabel: labelFromResource(resource),
+     abilities: receipt.abilities,
+     purpose: receipt.purpose ?? "Shared wallet access",
++    caveats: receipt.caveats,
+     receiptHash: receipt.receipt_hash,
+     status: receipt.status,
+     createdAt: formatTimestamp(receipt.created_at),
+@@ -1202,6 +1373,13 @@ function toDerivedArtifactView(artifact: DerivedArtifactApiResponse): DerivedArt
+   };
+ }
+ 
++function toDerivedAnalysisResultView(result: DerivedAnalysisResultApiResponse): DerivedAnalysisResultView {
++  return {
++    artifact: toDerivedArtifactView(result.artifact),
++    output: result.output
++  };
++}
++
+ function toProofReceiptView(proof: ProofReceiptApiRecord): ProofReceiptView {
+   const claim = stringValue(proof.public_inputs.claim) || proof.proof_type;
+   return {
+diff --git a/wallet_interface/ui/tests/smoke.spec.ts b/wallet_interface/ui/tests/smoke.spec.ts
+index 90dec7e5..addf35c9 100644
+--- a/wallet_interface/ui/tests/smoke.spec.ts
++++ b/wallet_interface/ui/tests/smoke.spec.ts
+@@ -364,6 +364,9 @@ test("security screen saves and restores wallet snapshots", async ({ page }) =>
+   let emergencyRequests = 0;
+   let storageRequests = 0;
+   let storageRepairRequests = 0;
++  let approvalListRequests = 0;
++  let approvalRecordRequests = 0;
++  let ownerApprovalRecorded = false;
+   await page.route("**/wallets/**", async (route) => {
+     const url = new URL(route.request().url());
+     const path = url.pathname;
+@@ -391,6 +394,61 @@ test("security screen saves and restores wallet snapshots", async ({ page }) =>
+       });
+       return;
+     }
++    if (path === "/wallets/wallet-demo/approvals" && route.request().method() === "GET") {
++      approvalListRequests += 1;
++      await route.fulfill({
++        json: {
++          approvals: [
++            {
++              approval_id: "approval-record-share",
++              wallet_id: "wallet-demo",
++              operation: "grant/create",
++              requested_by: "did:key:owner",
++              resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
++              abilities: ["record/analyze", "record/decrypt"],
++              threshold: 2,
++              approver_dids: ["did:key:owner", "did:key:case-manager"],
++              approvals: ownerApprovalRecorded
++                ? {
++                    "did:key:case-manager": "2026-05-03T18:02:30Z",
++                    "did:key:owner": "2026-05-03T18:03:00Z"
++                  }
++                : {
++                    "did:key:case-manager": "2026-05-03T18:02:30Z"
++                  },
++              status: ownerApprovalRecorded ? "approved" : "pending",
++              created_at: "2026-05-03T18:02:00Z"
++            }
++          ]
++        }
++      });
++      return;
++    }
++    if (path === "/wallets/wallet-demo/approvals/approval-record-share/approve") {
++      approvalRecordRequests += 1;
++      expect(route.request().method()).toBe("POST");
++      expect(await route.request().postDataJSON()).toMatchObject({ approver_did: "did:key:owner" });
++      ownerApprovalRecorded = true;
++      await route.fulfill({
++        json: {
++          approval_id: "approval-record-share",
++          wallet_id: "wallet-demo",
++          operation: "grant/create",
++          requested_by: "did:key:owner",
++          resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
++          abilities: ["record/analyze", "record/decrypt"],
++          threshold: 2,
++          approver_dids: ["did:key:owner", "did:key:case-manager"],
++          approvals: {
++            "did:key:case-manager": "2026-05-03T18:02:30Z",
++            "did:key:owner": "2026-05-03T18:03:00Z"
++          },
++          status: "approved",
++          created_at: "2026-05-03T18:02:00Z"
++        }
++      });
++      return;
++    }
+     if (path.endsWith("/snapshot/load")) {
+       loadRequests += 1;
+       expect(route.request().method()).toBe("POST");
+@@ -510,6 +568,14 @@ test("security screen saves and restores wallet snapshots", async ({ page }) =>
+ 
+   await expect(page.getByRole("heading", { name: /Account safety/i })).toBeVisible();
+   await expect(page.getByText(/no snapshot/i)).toBeVisible();
++  const approvalQueue = page.locator("section").filter({ hasText: "Approval queue" });
++  await expect(approvalQueue.getByText(/approval-record-share/i)).toBeVisible();
++  await expect(approvalQueue.getByText(/record\/decrypt/i)).toBeVisible();
++  await expect(approvalQueue.getByText(/1\/2 approvals/i)).toBeVisible();
++  await approvalQueue.getByRole("button", { name: /Record approval/i }).click();
++  await expect(page.getByText(/Approval recorded/i)).toBeVisible();
++  await expect(approvalQueue.getByText(/2\/2 approvals/i)).toBeVisible();
++  await expect(approvalQueue.getByText(/approved/i)).toBeVisible();
+   await expect(page.getByRole("heading", { name: /Wallet governance/i })).toBeVisible();
+   await expect(page.getByText("did:key:case-manager", { exact: true })).toBeVisible();
+   await expect(page.getByText("did:key:phone", { exact: true })).toBeVisible();
+@@ -539,12 +605,19 @@ test("security screen saves and restores wallet snapshots", async ({ page }) =>
+   expect(emergencyRequests).toBe(1);
+   expect(storageRequests).toBe(1);
+   expect(storageRepairRequests).toBe(1);
++  expect(approvalListRequests).toBeGreaterThanOrEqual(2);
++  expect(approvalRecordRequests).toBe(1);
+ });
+ 
+ test("uploads can repair API-backed document storage", async ({ page }) => {
++  let decryptRequests = 0;
+   let repairRequests = 0;
+   let rotationRequests = 0;
++  let shareRequests = 0;
++  let approvalRequests = 0;
++  const documentPlaintext = "Owner can preview this benefits letter.";
+   const auditEvents: Array<Record<string, unknown>> = [];
++  const receipts: Array<Record<string, unknown>> = [];
+   await page.route("**/wallets/**", async (route) => {
+     const url = new URL(route.request().url());
+     const path = url.pathname;
+@@ -553,7 +626,7 @@ test("uploads can repair API-backed document storage", async ({ page }) => {
+       return;
+     }
+     if (path.endsWith("/grant-receipts")) {
+-      await route.fulfill({ json: { receipts: [] } });
++      await route.fulfill({ json: { receipts } });
+       return;
+     }
+     if (path.endsWith("/records") && url.searchParams.get("data_type") === "document") {
+@@ -573,6 +646,100 @@ test("uploads can repair API-backed document storage", async ({ page }) => {
+       });
+       return;
+     }
++    if (path === "/wallets/wallet-demo/approvals") {
++      approvalRequests += 1;
++      expect(route.request().method()).toBe("POST");
++      expect(await route.request().postDataJSON()).toMatchObject({
++        abilities: ["record/analyze", "record/decrypt"],
++        operation: "grant/create",
++        requested_by: "did:key:owner",
++        resources: ["wallet://wallet-demo/records/rec-benefits-letter"]
++      });
++      await route.fulfill({
++        json: {
++          approval_id: "approval-owner-share",
++          wallet_id: "wallet-demo",
++          operation: "grant/create",
++          requested_by: "did:key:owner",
++          threshold: 2,
++          approvals: {},
++          status: "pending",
++          resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
++          abilities: ["record/analyze", "record/decrypt"],
++          created_at: "2026-05-03T18:02:40Z"
++        }
++      });
++      return;
++    }
++    if (path.endsWith("/records/rec-benefits-letter/grants")) {
++      shareRequests += 1;
++      expect(route.request().method()).toBe("POST");
++      expect(await route.request().postDataJSON()).toMatchObject({
++        issuer_did: "did:key:owner",
++        audience_did: "did:key:case-worker",
++        abilities: ["record/analyze", "record/decrypt"],
++        purpose: "benefits_application",
++        approval_id: "approval-owner-share",
++        user_presence_required: true
++      });
++      receipts.push({
++        receipt_id: "receipt-owner-share",
++        grant_id: "grant-owner-share",
++        audience_did: "did:key:case-worker",
++        resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
++        abilities: ["record/analyze", "record/decrypt"],
++        purpose: "benefits_application",
++        caveats: { purpose: "benefits_application", user_presence_required: true },
++        receipt_hash: "receipt-hash-owner-share",
++        status: "active",
++        created_at: "2026-05-03T18:02:45Z"
++      });
++      auditEvents.push({
++        event_id: "audit-grant-create",
++        created_at: "2026-05-03T18:02:45Z",
++        actor_did: "did:key:owner",
++        action: "grant/create",
++        resource: "wallet://wallet-demo/records/rec-benefits-letter",
++        decision: "allow",
++        grant_id: "grant-owner-share"
++      });
++      await route.fulfill({
++        json: {
++          grant_id: "grant-owner-share",
++          issuer_did: "did:key:owner",
++          audience_did: "did:key:case-worker",
++          resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
++          abilities: ["record/analyze", "record/decrypt"],
++          caveats: { purpose: "benefits_application", user_presence_required: true },
++          proof_chain: [],
++          status: "active",
++          created_at: "2026-05-03T18:02:45Z"
++        }
++      });
++      return;
++    }
++    if (path.endsWith("/records/rec-benefits-letter/decrypt")) {
++      decryptRequests += 1;
++      expect(route.request().method()).toBe("POST");
++      expect(await route.request().postDataJSON()).toMatchObject({ actor_did: "did:key:owner" });
++      auditEvents.push({
++        event_id: "audit-record-decrypt",
++        created_at: "2026-05-03T18:02:30Z",
++        actor_did: "did:key:owner",
++        action: "record/decrypt",
++        resource: "wallet://wallet-demo/records/rec-benefits-letter",
++        decision: "allow",
++        grant_id: null
++      });
++      await route.fulfill({
++        json: {
++          record_id: "rec-benefits-letter",
++          text: documentPlaintext,
++          size_bytes: documentPlaintext.length
++        }
++      });
++      return;
++    }
+     if (path.endsWith("/records/rec-benefits-letter/storage/repair")) {
+       repairRequests += 1;
+       expect(route.request().method()).toBe("POST");
+@@ -630,6 +797,20 @@ test("uploads can repair API-backed document storage", async ({ page }) => {
+   );
+   const upload = page.locator(".upload-list-item").filter({ hasText: "Benefits letter" });
+   await expect(upload.getByText(/storage needs repair/i)).toBeVisible();
++  await upload.getByRole("button", { name: /View document/i }).click();
++  await expect(upload.getByText(documentPlaintext)).toBeVisible();
++  await expect(upload.getByText(`${documentPlaintext.length} bytes`)).toBeVisible();
++  await upload.getByRole("button", { name: /Share document/i }).click();
++  await upload.getByLabel(/Recipient DID/i).fill("did:key:case-worker");
++  await upload.getByLabel(/Permission/i).selectOption("analyze_view");
++  await upload.getByLabel(/Purpose/i).fill("benefits_application");
++  await upload.getByLabel(/Require recipient presence before viewing/i).check();
++  await upload.getByRole("button", { name: /Request approval/i }).click();
++  await expect(upload.getByText(/Approval approval-owner-share requested/i)).toBeVisible();
++  await expect(upload.getByLabel(/Approval ID/i)).toHaveValue("approval-owner-share");
++  await upload.getByRole("button", { name: /Create grant/i }).click();
++  await expect(upload.getByText(/Shared with did:key:case-worker/i)).toBeVisible();
++  await expect(upload.locator(".badge-row").getByText("Shared", { exact: true })).toBeVisible();
+   await upload.getByRole("button", { name: /Repair storage/i }).click();
+   await expect(upload.getByText(/storage verified/i)).toBeVisible();
+   await expect(upload.getByRole("button", { name: /Repair storage/i })).toHaveCount(0);
+@@ -641,13 +822,20 @@ test("uploads can repair API-backed document storage", async ({ page }) => {
+   const keyRotateEvent = page.getByRole("article").filter({ hasText: "record/key_rotate" });
+   await expect(storageRepairEvent.getByText(/wallet:\/\/wallet-demo\/records\/rec-benefits-letter/i)).toBeVisible();
+   await expect(keyRotateEvent.getByText(/wallet:\/\/wallet-demo\/records\/rec-benefits-letter/i)).toBeVisible();
++  await expect(page.getByText(/record\/decrypt/i)).toBeVisible();
++  await expect(page.getByText(/grant\/create/i)).toBeVisible();
++  await expect(page.getByText(/grant-owner-share/i)).toBeVisible();
++  expect(decryptRequests).toBe(1);
+   expect(repairRequests).toBe(1);
+   expect(rotationRequests).toBe(1);
++  expect(shareRequests).toBe(1);
++  expect(approvalRequests).toBe(1);
+ });
+ 
+ test("recipient receipt can create an encrypted derived analysis artifact", async ({ page }) => {
+   let analysisRequests = 0;
+   let decryptRequests = 0;
++  let decryptInvocationRequests = 0;
+   let delegationRequests = 0;
+   const documentPlaintext = "Delegate may view this identity document.";
+   const receipts: Array<Record<string, unknown>> = [
+@@ -658,6 +846,7 @@ test("recipient receipt can create an encrypted derived analysis artifact", asyn
+       resources: ["wallet://wallet-demo/records/rec-benefits-letter"],
+       abilities: ["record/analyze", "record/decrypt", "record/share"],
+       purpose: "service_matching",
++      caveats: { purpose: "service_matching", user_presence_required: true },
+       receipt_hash: "receipt-hash-analysis",
+       status: "active",
+       created_at: "2026-05-03T18:00:00Z"
+@@ -761,12 +950,41 @@ test("recipient receipt can create an encrypted derived analysis artifact", asyn
+       });
+       return;
+     }
++    if (path.endsWith("/records/rec-benefits-letter/decrypt-invocations")) {
++      decryptInvocationRequests += 1;
++      expect(route.request().method()).toBe("POST");
++      expect(await route.request().postDataJSON()).toMatchObject({
++        actor_did: "did:key:delegate",
++        actor_key_hex: "delegate-key",
++        grant_id: "grant-analysis",
++        user_present: true
++      });
++      await route.fulfill({
++        json: {
++          invocation: {
++            invocation_id: "invocation-presence",
++            grant_id: "grant-analysis",
++            audience_did: "did:key:delegate",
++            resource: "wallet://wallet-demo/records/rec-benefits-letter",
++            ability: "record/decrypt",
++            caveats: { purpose: "service_matching", user_present: true },
++            issued_at: "2026-05-03T18:02:20Z",
++            expires_at: null,
++            nonce: "nonce-presence",
++            signature: "sig-presence"
++          },
++          token: "wallet-ucan-v1.presence"
++        }
++      });
++      return;
++    }
+     if (path.endsWith("/records/rec-benefits-letter/decrypt")) {
+       decryptRequests += 1;
+       expect(route.request().method()).toBe("POST");
+       expect(await route.request().postDataJSON()).toMatchObject({
+         actor_did: "did:key:delegate",
+-        grant_id: "grant-analysis"
++        actor_key_hex: "delegate-key",
++        invocation_token: "wallet-ucan-v1.presence"
+       });
+       auditEvents.push({
+         event_id: "audit-record-decrypt",
+@@ -794,7 +1012,7 @@ test("recipient receipt can create an encrypted derived analysis artifact", asyn
+   });
+ 
+   await page.goto(
+-    "/?walletApiBaseUrl=http%3A%2F%2F127.0.0.1%3A5174&walletId=wallet-demo&actorDid=did%3Akey%3Adelegate#/recipient-access"
++    "/?walletApiBaseUrl=http%3A%2F%2F127.0.0.1%3A5174&walletId=wallet-demo&actorDid=did%3Akey%3Adelegate&audienceKeyHex=delegate-key#/recipient-access"
+   );
+   const receipt = page.getByRole("article", { name: /delegate/i }).filter({ hasText: "Receipt hash" });
+   await receipt.getByRole("button", { name: /Analyze safely/i }).click();
+@@ -818,6 +1036,7 @@ test("recipient receipt can create an encrypted derived analysis artifact", asyn
+   await expect(page.getByText(/grant-child/i)).toBeVisible();
+   expect(analysisRequests).toBe(1);
+   expect(decryptRequests).toBe(1);
++  expect(decryptInvocationRequests).toBe(1);
+   expect(delegationRequests).toBe(1);
+ });
+ 

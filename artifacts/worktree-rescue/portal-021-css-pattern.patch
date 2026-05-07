@@ -1,0 +1,682 @@
+diff --git a/wallet_interface/ui/src/app/App.tsx b/wallet_interface/ui/src/app/App.tsx
+index c8dd3ef5..7d04fc54 100644
+--- a/wallet_interface/ui/src/app/App.tsx
++++ b/wallet_interface/ui/src/app/App.tsx
+@@ -26,8 +26,7 @@ import { AgentChatDrawer } from "../components/agent/AgentChatDrawer";
+ import { getRouteLabel } from "../agent/surfaceRegistry";
+ import {
+   getServiceDetailDocIdFromHash,
+-  openCanonicalServiceDetailRoute,
+-  setLocationServiceDetailHash
++  openCanonicalServiceDetailRoute
+ } from "../agent/tools/serviceDetailTools";
+ import type { AppActionRuntime } from "./appActions";
+ import { useAgentChatService } from "../services/agentChatService";
+@@ -475,6 +474,17 @@ export function App() {
+     setMobileNavOpen(false);
+   }
+ 
++  function openServiceDetail(docId: string) {
++    openCanonicalServiceDetailRoute(docId, {
++      setActiveRoute: (route) => {
++        activeRouteRef.current = route;
++        setActiveRoute(route);
++      },
++      setServiceDetailDocId,
++      setMobileNavOpen
++    });
++  }
++
+   const nextCheckIn = useMemo(() => {
+     const next = new Date(policy.lastCheckInAt);
+     next.setDate(next.getDate() + policy.intervalDays);
+@@ -584,7 +594,9 @@ export function App() {
+         {serviceDetailDocId ? (
+           <ServiceDetailScreen docId={serviceDetailDocId} onBack={() => navigate("social-services")} />
+         ) : null}
+-        {activeRoute === "social-services" && !serviceDetailDocId ? <SocialServicesScreen /> : null}
++        {activeRoute === "social-services" && !serviceDetailDocId ? (
++          <SocialServicesScreen onOpenServiceDetail={openServiceDetail} />
++        ) : null}
+         {activeRoute === "shelter" ? (
+           <ShelterScreen
+             checklist={shelterChecklist}
+@@ -647,16 +659,7 @@ export function App() {
+         onCancelConfirmation={(confirmationId) => agentChat.denyConfirmation(confirmationId)}
+         onClose={() => setAgentChatOpen(false)}
+         onConfirmConfirmation={(confirmationId) => agentChat.approveConfirmation(confirmationId)}
+-        onOpenServiceDetail={(docId) =>
+-          openCanonicalServiceDetailRoute(docId, {
+-            setActiveRoute: (route) => {
+-              activeRouteRef.current = route;
+-              setActiveRoute(route);
+-            },
+-            setServiceDetailDocId,
+-            setMobileNavOpen
+-          })
+-        }
++        onOpenServiceDetail={openServiceDetail}
+         onSend={(message) => {
+           void agentChat.sendMessage(message);
+         }}
+@@ -1766,7 +1769,7 @@ function UploadsScreen({
+   );
+ }
+ 
+-function SocialServicesScreen() {
++function SocialServicesScreen({ onOpenServiceDetail }: { onOpenServiceDetail: (docId: string) => void }) {
+   const categories = ["Shelter", "Food", "Health", "Legal", "Benefits", "Transportation", "Employment", "Crisis"];
+   const suggestedPrompts = ["food pantry near Portland", "emergency shelter", "utility bill help"];
+   const [query, setQuery] = useState("");
+@@ -1855,7 +1858,7 @@ function SocialServicesScreen() {
+                   </div>
+                   <div className="row-actions list-item-action">
+                     {document.source_url ? <Badge tone="success">source</Badge> : null}
+-                    <Button onClick={() => setLocationServiceDetailHash(result.docId)} variant="secondary">
++                    <Button onClick={() => onOpenServiceDetail(result.docId)} variant="secondary">
+                       Open detail
+                     </Button>
+                   </div>
+diff --git a/wallet_interface/ui/src/app/ServiceDetailScreen.tsx b/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
+index 009e8bf7..9e8d45b8 100644
+--- a/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
++++ b/wallet_interface/ui/src/app/ServiceDetailScreen.tsx
+@@ -1,12 +1,14 @@
+ import { useEffect, useState } from "react";
+-import { ArrowLeft, ExternalLink, Link as LinkIcon } from "lucide-react";
++import { ArrowLeft, ExternalLink } from "lucide-react";
+ import { Badge, Button, Section, StatusBanner } from "../components/ui";
++import { ServiceProvenancePanel } from "../components/services/ServiceProvenancePanel";
+ import {
+   load211ArtifactManifest,
+   load211Documents,
+   load211GeneratedManifest,
+   type CorpusDocument,
+ } from "../lib/graphrag";
++import { build211InfoServiceProvenance } from "../services/graphRagService";
+ 
+ type ServiceDetailMetadata = {
+   buildManifestCid: string;
+@@ -129,6 +131,14 @@ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack:
+   const program = document.program_name || document.title || "Program not listed";
+   const sourceUrl = document.source_url;
+   const location = [document.city, document.state].filter(Boolean).join(", ");
++  const provenance = build211InfoServiceProvenance(document);
++  const metadataRows = [
++    { label: "Build manifest CID", value: metadata.buildManifestCid },
++    { label: "Documents artifact CID", value: metadata.documentsArtifactCid },
++    { label: "Detail loaded at", value: metadata.loadedAt },
++    { label: "Scrape timestamp", value: "Not included in the current browser corpus" },
++    { label: "Corpus document count", value: metadata.documentCount.toLocaleString() },
++  ];
+ 
+   return (
+     <div className="screen">
+@@ -179,48 +189,11 @@ export function ServiceDetailScreen({ docId, onBack }: { docId: string; onBack:
+         </div>
+       </Section>
+ 
+-      <Section title="Source and provenance">
+-        <div className="list-stack">
+-          <article className="list-item">
+-            <div>
+-              <h3>Source URL</h3>
+-              {sourceUrl ? (
+-                <p style={{ overflowWrap: "anywhere" }}>
+-                  <a href={sourceUrl} rel="noreferrer" target="_blank">
+-                    {sourceUrl}
+-                  </a>
+-                </p>
+-              ) : (
+-                <p>Source URL not listed</p>
+-              )}
+-            </div>
+-            {sourceUrl ? <LinkIcon aria-hidden="true" size={20} /> : null}
+-          </article>
+-          <ProvenanceRow label="Service document ID" value={document.doc_id} />
+-          <ProvenanceRow label="Source content CID" value={document.source_content_cid} />
+-          <ProvenanceRow label="Source page CID" value={document.source_page_cid} />
+-          <ProvenanceRow label="Build manifest CID" value={metadata.buildManifestCid} />
+-          <ProvenanceRow label="Documents artifact CID" value={metadata.documentsArtifactCid} />
+-          <ProvenanceRow label="Detail loaded at" value={metadata.loadedAt} />
+-          <ProvenanceRow label="Scrape timestamp" value="Not included in the current browser corpus" />
+-          <ProvenanceRow label="Corpus document count" value={metadata.documentCount.toLocaleString()} />
+-        </div>
+-      </Section>
++      <ServiceProvenancePanel metadataRows={metadataRows} provenance={provenance} />
+     </div>
+   );
+ }
+ 
+-function ProvenanceRow({ label, value }: { label: string; value: string }) {
+-  return (
+-    <article className="list-item">
+-      <div>
+-        <h3>{label}</h3>
+-        <p style={{ overflowWrap: "anywhere" }}>{value || "Not listed"}</p>
+-      </div>
+-    </article>
+-  );
+-}
+-
+ function toReadableSummary(text: string): string {
+   const cleanText = text.replace(/\s+/g, " ").trim();
+   if (!cleanText) return "No source summary is available for this 211 record.";
+diff --git a/wallet_interface/ui/src/services/graphRagService.ts b/wallet_interface/ui/src/services/graphRagService.ts
+index cb3a8ae0..87de0e0c 100644
+--- a/wallet_interface/ui/src/services/graphRagService.ts
++++ b/wallet_interface/ui/src/services/graphRagService.ts
+@@ -12,7 +12,7 @@ import {
+ } from "../lib/graphrag";
+ import { backendDetectionWorkerService } from "../lib/backendDetectionWorkerService";
+ import { clientEmbeddingWorkerService } from "../lib/clientEmbeddingWorkerService";
+-import type { GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
++import type { CorpusDocument, GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
+ import type { BackendDetectionStatus } from "../lib/backendDetectionWorkerService";
+ 
+ interface GraphRagRetrievalOptions {
+@@ -30,6 +30,40 @@ export interface GraphRagCitation {
+   pageCid?: string;
+ }
+ 
++export interface ServiceSourceSpan {
++  fieldKey: string;
++  fieldLabel: string;
++  start: number;
++  end: number;
++  text: string;
++  context: string;
++  sourceUrl?: string;
++  contentCid?: string;
++  pageCid?: string;
++}
++
++export interface ServiceFieldProvenance {
++  key: string;
++  label: string;
++  value: string;
++  confidence: number;
++  method: "metadata_exact" | "metadata_inferred" | "regex_extract" | "label_extract" | "cid_manifest";
++  span?: ServiceSourceSpan;
++  sourceUrl?: string;
++  contentCid?: string;
++  pageCid?: string;
++  warnings: string[];
++}
++
++export interface ServiceProvenance {
++  docId: string;
++  sourceUrl?: string;
++  contentCid?: string;
++  pageCid?: string;
++  fields: ServiceFieldProvenance[];
++  sourceSpans: ServiceSourceSpan[];
++}
++
+ export interface GraphRagRuntimeStatus {
+   corpusBaseUrl: string;
+   corpus: {
+@@ -108,6 +142,32 @@ export function build211InfoCitations(results: SearchResult[]): GraphRagCitation
+   });
+ }
+ 
++export function build211InfoServiceProvenance(document: CorpusDocument): ServiceProvenance {
++  const fields: ServiceFieldProvenance[] = [
++    metadataField(document, "title", "Title", document.title),
++    metadataField(document, "provider_name", "Provider", document.provider_name),
++    metadataField(document, "program_name", "Program", document.program_name),
++    metadataField(document, "categories", "Categories", document.categories),
++    metadataField(document, "location", "Location", [document.city, document.state].filter(Boolean).join(", ")),
++    cidField(document, "source_url", "Source URL", document.source_url),
++    cidField(document, "source_content_cid", "Source content CID", document.source_content_cid),
++    cidField(document, "source_page_cid", "Source page CID", document.source_page_cid),
++    labelExtractField(document, "eligibility", "Eligibility", /Eligibility:\s*/i),
++    labelExtractField(document, "hours", "Hours", /Hours:\s*/i),
++    regexExtractField(document, "phone", "Phone", /\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/),
++    regexExtractField(document, "email", "Email", /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i),
++  ].filter((field): field is ServiceFieldProvenance => Boolean(field));
++
++  return {
++    docId: document.doc_id,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++    fields,
++    sourceSpans: fields.map((field) => field.span).filter((span): span is ServiceSourceSpan => Boolean(span)),
++  };
++}
++
+ export function format211InfoCitations(results: SearchResult[], limit = 6): string {
+   return build211InfoCitations(results)
+     .slice(0, limit)
+@@ -118,6 +178,165 @@ export function format211InfoCitations(results: SearchResult[], limit = 6): stri
+     .join("\n");
+ }
+ 
++function metadataField(
++  document: CorpusDocument,
++  key: string,
++  label: string,
++  value: string,
++): ServiceFieldProvenance | undefined {
++  const cleanValue = normalizeFieldValue(value);
++  if (!cleanValue) return undefined;
++
++  const span = findSourceSpan(document, key, label, cleanValue);
++  return {
++    key,
++    label,
++    value: cleanValue,
++    confidence: span ? 0.95 : 0.72,
++    method: span ? "metadata_exact" : "metadata_inferred",
++    span,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++    warnings: span ? [] : ["Structured value was present in corpus metadata, but an exact text span was not found."],
++  };
++}
++
++function cidField(
++  document: CorpusDocument,
++  key: string,
++  label: string,
++  value: string,
++): ServiceFieldProvenance | undefined {
++  const cleanValue = normalizeFieldValue(value);
++  if (!cleanValue) return undefined;
++
++  const span = findSourceSpan(document, key, label, cleanValue);
++  return {
++    key,
++    label,
++    value: cleanValue,
++    confidence: 1,
++    method: "cid_manifest",
++    span,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++    warnings: span ? [] : ["Identifier comes from the corpus manifest and may not appear in page text."],
++  };
++}
++
++function labelExtractField(
++  document: CorpusDocument,
++  key: string,
++  label: string,
++  labelPattern: RegExp,
++): ServiceFieldProvenance | undefined {
++  const text = document.text || "";
++  const match = labelPattern.exec(text);
++  if (!match || match.index < 0) return undefined;
++
++  const valueStart = match.index + match[0].length;
++  const nextLabelStart = findNextLabelStart(text, valueStart);
++  const valueEnd = nextLabelStart > valueStart ? nextLabelStart : Math.min(text.length, valueStart + 220);
++  const rawValue = text
++    .slice(valueStart, valueEnd)
++    .replace(/\s+(Email|Get Directions|Visit Website|More Details).*$/i, "");
++  const trimmedRawValue = rawValue.trim();
++  const value = normalizeFieldValue(trimmedRawValue);
++  if (!value) return undefined;
++
++  const start = valueStart + rawValue.indexOf(trimmedRawValue);
++  const end = Math.min(start + trimmedRawValue.length, text.length);
++  const span = buildSourceSpan(document, key, label, start, end);
++  return {
++    key,
++    label,
++    value,
++    confidence: 0.88,
++    method: "label_extract",
++    span,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++    warnings: [],
++  };
++}
++
++function regexExtractField(
++  document: CorpusDocument,
++  key: string,
++  label: string,
++  pattern: RegExp,
++): ServiceFieldProvenance | undefined {
++  const text = document.text || "";
++  const match = pattern.exec(text);
++  if (!match || match.index < 0) return undefined;
++  const value = normalizeFieldValue(match[0]);
++  if (!value) return undefined;
++
++  return {
++    key,
++    label,
++    value,
++    confidence: 0.84,
++    method: "regex_extract",
++    span: buildSourceSpan(document, key, label, match.index, match.index + match[0].length),
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++    warnings: [],
++  };
++}
++
++function findSourceSpan(
++  document: CorpusDocument,
++  fieldKey: string,
++  fieldLabel: string,
++  value: string,
++): ServiceSourceSpan | undefined {
++  const text = document.text || "";
++  const start = text.toLowerCase().indexOf(value.toLowerCase());
++  if (start < 0) return undefined;
++  return buildSourceSpan(document, fieldKey, fieldLabel, start, start + value.length);
++}
++
++function buildSourceSpan(
++  document: CorpusDocument,
++  fieldKey: string,
++  fieldLabel: string,
++  start: number,
++  end: number,
++): ServiceSourceSpan {
++  const text = document.text || "";
++  const safeStart = Math.max(0, Math.min(start, text.length));
++  const safeEnd = Math.max(safeStart, Math.min(end, text.length));
++  const contextStart = Math.max(0, safeStart - 90);
++  const contextEnd = Math.min(text.length, safeEnd + 90);
++  return {
++    fieldKey,
++    fieldLabel,
++    start: safeStart,
++    end: safeEnd,
++    text: text.slice(safeStart, safeEnd),
++    context: `${contextStart > 0 ? "..." : ""}${text.slice(contextStart, contextEnd)}${contextEnd < text.length ? "..." : ""}`,
++    sourceUrl: document.source_url || undefined,
++    contentCid: document.source_content_cid || undefined,
++    pageCid: document.source_page_cid || undefined,
++  };
++}
++
++function findNextLabelStart(text: string, start: number): number {
++  const labelPattern = /\s(?:Eligibility|Hours|Email|Address|Phone|Intake|Fees|Documents|Languages|Accessibility):\s/gi;
++  labelPattern.lastIndex = start;
++  const next = labelPattern.exec(text);
++  return next?.index ?? -1;
++}
++
++function normalizeFieldValue(value: string): string {
++  return value.replace(/\s+/g, " ").trim();
++}
++
+ export function build211InfoFallbackSummary(evidence: GraphRagEvidence): string {
+   if (evidence.results.length === 0) {
+     return "I could not find a relevant record in the local 211 corpus for that question. For immediate service navigation, contact 211 directly.";
+diff --git a/wallet_interface/ui/src/styles/global.css b/wallet_interface/ui/src/styles/global.css
+index 111dc41c..da0f4257 100644
+--- a/wallet_interface/ui/src/styles/global.css
++++ b/wallet_interface/ui/src/styles/global.css
+@@ -922,6 +922,109 @@ body.playful-pulse .decor-shape {
+   margin-top: 4px;
+ }
+ 
++.service-provenance {
++  display: grid;
++  gap: 12px;
++}
++
++.service-provenance-summary {
++  display: grid;
++  gap: 10px;
++  grid-template-columns: 1fr;
++}
++
++.service-provenance-summary > div {
++  background: #ffffff;
++  border: 1px solid #d8dee6;
++  border-radius: 8px;
++  display: grid;
++  gap: 4px;
++  min-width: 0;
++  padding: 12px;
++}
++
++.service-provenance-summary small {
++  color: #5b6776;
++  font-weight: 700;
++}
++
++.service-provenance-summary strong {
++  overflow-wrap: anywhere;
++}
++
++.service-source-card p,
++.service-provenance .list-item p,
++.service-provenance-field p,
++.service-provenance-meta dd,
++.service-source-span,
++.service-provenance-warning {
++  overflow-wrap: anywhere;
++}
++
++.service-provenance-field {
++  background: #ffffff;
++  border: 1px solid #d8dee6;
++  border-radius: 8px;
++  display: grid;
++  gap: 10px;
++  padding: 14px;
++}
++
++.service-provenance-field-header {
++  align-items: flex-start;
++  display: flex;
++  gap: 12px;
++  justify-content: space-between;
++}
++
++.service-provenance-field-header > div {
++  min-width: 0;
++}
++
++.service-provenance-field-header p {
++  color: #4b5563;
++  margin: 4px 0 0;
++}
++
++.service-provenance-meta {
++  display: grid;
++  gap: 8px;
++  grid-template-columns: 1fr;
++  margin: 0;
++}
++
++.service-provenance-meta div {
++  min-width: 0;
++}
++
++.service-provenance-meta dt {
++  align-items: center;
++  color: #5b6776;
++  display: flex;
++  font-size: 12px;
++  font-weight: 800;
++  gap: 4px;
++  text-transform: uppercase;
++}
++
++.service-provenance-meta dd {
++  color: #17202a;
++  margin: 2px 0 0;
++}
++
++.service-source-span {
++  background: #f8fafc;
++  border-left: 4px solid #0f766e;
++  color: #17202a;
++  margin: 0;
++  padding: 10px 12px;
++}
++
++.service-provenance-warning {
++  color: #744b00;
++  margin: 0;
++}
++
+ .history-list {
+   border-top: 1px solid #d8dee6;
+   display: grid;
+@@ -1838,6 +1941,11 @@ body.playful-pulse .decor-shape {
+   color: #166534;
+ }
+ 
++.badge-info {
++  background: #dbeafe;
++  color: #174b74;
++}
++
+ .badge-warning {
+   background: #fef3c7;
+   color: #744b00;
+@@ -2040,6 +2148,11 @@ body.playful-pulse .decor-shape {
+     --abby-active-breakpoint: tablet;
+   }
+ 
++  .service-provenance-summary,
++  .service-provenance-meta {
++    grid-template-columns: repeat(3, minmax(0, 1fr));
++  }
++
+   .security-pattern-grid {
+     grid-template-columns: repeat(2, minmax(0, 1fr));
+   }
+diff --git a/tmp/211-ai-implementation-worktrees/portal-021-attempt-15-1778059386/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx b/tmp/211-ai-implementation-worktrees/portal-021-attempt-15-1778059386/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx
+new file mode 100644
+index 00000000..529a5818
+--- /dev/null
++++ b/tmp/211-ai-implementation-worktrees/portal-021-attempt-15-1778059386/wallet_interface/ui/src/components/services/ServiceProvenancePanel.tsx
+@@ -0,0 +1,121 @@
++import { ExternalLink, FileText, Hash } from "lucide-react";
++import { Badge, Section } from "../ui";
++import type { ServiceProvenance } from "../../services/graphRagService";
++
++export interface ServiceProvenanceMetadataRow {
++  label: string;
++  value: string;
++}
++
++export function ServiceProvenancePanel({
++  provenance,
++  metadataRows = []
++}: {
++  provenance: ServiceProvenance;
++  metadataRows?: ServiceProvenanceMetadataRow[];
++}) {
++  const spanCount = provenance.sourceSpans.length;
++
++  return (
++    <Section title="Source and provenance">
++      <div className="service-provenance">
++        <div className="service-provenance-summary">
++          <div>
++            <small>Extracted fields</small>
++            <strong>{provenance.fields.length}</strong>
++          </div>
++          <div>
++            <small>Source spans</small>
++            <strong>{spanCount}</strong>
++          </div>
++          <div>
++            <small>Record</small>
++            <strong>{provenance.docId}</strong>
++          </div>
++        </div>
++
++        <article className="list-item service-source-card">
++          <div>
++            <h3>Source record</h3>
++            {provenance.sourceUrl ? (
++              <p>
++                <a href={provenance.sourceUrl} rel="noreferrer" target="_blank">
++                  {provenance.sourceUrl}
++                </a>
++              </p>
++            ) : (
++              <p>Source URL not listed</p>
++            )}
++          </div>
++          {provenance.sourceUrl ? (
++            <ExternalLink aria-hidden="true" size={20} />
++          ) : (
++            <FileText aria-hidden="true" size={20} />
++          )}
++        </article>
++
++        <div className="list-stack">
++          {provenance.fields.map((field) => (
++            <article className="service-provenance-field" key={field.key}>
++              <div className="service-provenance-field-header">
++                <div>
++                  <h3>{field.label}</h3>
++                  <p>{field.value}</p>
++                </div>
++                <Badge tone={field.confidence >= 0.9 ? "success" : field.confidence >= 0.8 ? "info" : "warning"}>
++                  {Math.round(field.confidence * 100)}%
++                </Badge>
++              </div>
++              <dl className="service-provenance-meta">
++                <div>
++                  <dt>Method</dt>
++                  <dd>{formatMethod(field.method)}</dd>
++                </div>
++                {field.span ? (
++                  <div>
++                    <dt>Span</dt>
++                    <dd>
++                      {field.span.start}-{field.span.end}
++                    </dd>
++                  </div>
++                ) : null}
++                {field.contentCid ? (
++                  <div>
++                    <dt>
++                      <Hash aria-hidden="true" size={12} />
++                      Content CID
++                    </dt>
++                    <dd title={field.contentCid}>{field.contentCid}</dd>
++                  </div>
++                ) : null}
++              </dl>
++              {field.span ? <blockquote className="service-source-span">{field.span.context}</blockquote> : null}
++              {field.warnings.map((warning) => (
++                <p className="service-provenance-warning" key={warning}>
++                  {warning}
++                </p>
++              ))}
++            </article>
++          ))}
++        </div>
++
++        {metadataRows.length ? (
++          <div className="list-stack">
++            {metadataRows.map((row) => (
++              <article className="list-item" key={row.label}>
++                <div>
++                  <h3>{row.label}</h3>
++                  <p>{row.value || "Not listed"}</p>
++                </div>
++              </article>
++            ))}
++          </div>
++        ) : null}
++      </div>
++    </Section>
++  );
++}
++
++function formatMethod(method: string): string {
++  return method.replace(/_/g, " ");
++}
