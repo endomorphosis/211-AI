@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__family__hillsboro",
+  "kind": "service_location",
+  "key": "family__hillsboro",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_diapers_hillsboro#turn-1",
+      "scenarioId": "matrix_diapers_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find diapers in Hillsboro?",
+      "normalizedQuery": "diapers diaper baby hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:72a4239cdad3e299",
+        "service:c196660a779416f8",
+        "service:25f3554514a1b499",
+        "service:0de8e3b5ff9b859a",
+        "service:0661e27999f1553c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_diapers_beaverton#turn-1",
+          "score": 0.967202,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_beaverton",
+          "user": "Can you find diapers in Beaverton?"
+        },
+        {
+          "recordId": "diapers_portland#turn-1",
+          "score": 0.965515,
+          "route": "grounded_211_answer",
+          "scenarioId": "diapers_portland",
+          "user": "Where can I get diapers for my baby in Portland?"
+        },
+        {
+          "recordId": "matrix_diapers_portland#turn-1",
+          "score": 0.965515,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_portland",
+          "user": "Can you find diapers in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_child_care_hillsboro#turn-1",
+      "scenarioId": "matrix_child_care_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find child care help in Hillsboro?",
+      "normalizedQuery": "child care hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3df5550f3b59e475",
+        "service:a13c1f535d1869e8",
+        "service:b014dd11a9601424",
+        "service:f8b68f784b543580",
+        "service:08041e0df2054072"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_mental_health_hillsboro#turn-1",
+          "score": 0.857689,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_hillsboro",
+          "user": "Can you find mental health services in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_hillsboro#turn-1",
+          "score": 0.813674,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_hillsboro",
+          "user": "Can you find youth day center in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_child_care_clackamas#turn-1",
+          "score": 0.758619,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_clackamas",
+          "user": "Can you find child care help in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_diapers_hillsboro#turn-2",
+      "scenarioId": "matrix_broad_then_diapers_hillsboro",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Hillsboro and need diapers.",
+      "normalizedQuery": "hillsboro diapers diaper baby",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:72a4239cdad3e299",
+        "service:c196660a779416f8",
+        "service:25f3554514a1b499",
+        "service:0de8e3b5ff9b859a",
+        "service:0661e27999f1553c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_diapers_hillsboro#turn-1",
+          "score": 0.951972,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_hillsboro",
+          "user": "Can you find diapers in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_diapers_beaverton#turn-1",
+          "score": 0.920751,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_beaverton",
+          "user": "Can you find diapers in Beaverton?"
+        },
+        {
+          "recordId": "diapers_portland#turn-1",
+          "score": 0.919145,
+          "route": "grounded_211_answer",
+          "scenarioId": "diapers_portland",
+          "user": "Where can I get diapers for my baby in Portland?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_broad_then_diapers_hillsboro#turn-2",
+      "to": "matrix_diapers_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.951972,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

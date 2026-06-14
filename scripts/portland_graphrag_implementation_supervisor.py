@@ -23,6 +23,7 @@ from scripts.portal_implementation_supervisor import (
     _release_supervisor_pid_file,
 )
 from scripts.portland_graphrag_implementation_daemon import (
+    DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS,
     DEFAULT_STATE_DIR,
     DEFAULT_TODO_PATH,
     GRAPHRAG_STATE_PREFIX,
@@ -84,7 +85,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="",
         help="Command used by the daemon for implementation. Defaults to codex exec with local Copilot CLI fallback when available.",
     )
-    parser.add_argument("--implementation-timeout", type=float, default=1800.0)
+    parser.add_argument("--implementation-timeout", type=float, default=DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS)
     parser.add_argument(
         "--no-ephemeral-worktree",
         action="store_true",

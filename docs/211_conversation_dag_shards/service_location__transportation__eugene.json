@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__transportation__eugene",
+  "kind": "service_location",
+  "key": "transportation__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_transportation_eugene#turn-1",
+      "scenarioId": "matrix_transportation_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "transportation",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find transportation help in Eugene?",
+      "normalizedQuery": "transportation transport ride bus eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:156176ac73be0658",
+        "service:80bb5c1077a6fe59",
+        "page:bafkreicifdycolhdowclruqsr2hbdf6h6nneakgnbttfickhkas2ngdzte",
+        "page:bafkreifk3l6bkf4lo6e5jxb65gsntxanfwnm6knuopjdhtneyg7lmqzpf4",
+        "service:a52e78bc8469df64"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0579_transportation_eugene_3#turn-1",
+          "score": 0.949816,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0579_transportation_eugene_3",
+          "user": "Where should someone call for transportation help in Eugene?"
+        },
+        {
+          "recordId": "matrix_transportation_portland#turn-1",
+          "score": 0.91861,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_transportation_portland",
+          "user": "Can you find transportation help in Portland?"
+        },
+        {
+          "recordId": "matrix_transportation_hillsboro#turn-1",
+          "score": 0.900247,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_transportation_hillsboro",
+          "user": "Can you find transportation help in Hillsboro?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0371_transportation_eugene_11#turn-2",
+      "scenarioId": "stress_0371_transportation_eugene_11",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "transportation",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Eugene and need transportation help.",
+      "normalizedQuery": "eugene transportation transport ride bus",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:156176ac73be0658",
+        "service:80bb5c1077a6fe59",
+        "page:bafkreicifdycolhdowclruqsr2hbdf6h6nneakgnbttfickhkas2ngdzte",
+        "page:bafkreifk3l6bkf4lo6e5jxb65gsntxanfwnm6knuopjdhtneyg7lmqzpf4",
+        "service:a52e78bc8469df64"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0215_transportation_portland_11#turn-2",
+          "score": 0.957675,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0215_transportation_portland_11",
+          "user": "I am in Portland and need transportation help."
+        },
+        {
+          "recordId": "stress_0059_transportation_beaverton_11#turn-2",
+          "score": 0.940123,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0059_transportation_beaverton_11",
+          "user": "I am in Beaverton and need transportation help."
+        },
+        {
+          "recordId": "stress_0683_transportation_beaverton_11#turn-2",
+          "score": 0.940123,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0683_transportation_beaverton_11",
+          "user": "I am in Beaverton and need transportation help."
+        }
+      ]
+    },
+    {
+      "id": "stress_0579_transportation_eugene_3#turn-1",
+      "scenarioId": "stress_0579_transportation_eugene_3",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "transportation",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Where should someone call for transportation help in Eugene?",
+      "normalizedQuery": "should someone call transportation transport ride bus eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:156176ac73be0658",
+        "service:80bb5c1077a6fe59",
+        "page:bafkreicifdycolhdowclruqsr2hbdf6h6nneakgnbttfickhkas2ngdzte",
+        "service:98ac0349caf0cda6",
+        "page:bafkreifk3l6bkf4lo6e5jxb65gsntxanfwnm6knuopjdhtneyg7lmqzpf4"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_transportation_eugene#turn-1",
+          "score": 0.949816,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_transportation_eugene",
+          "user": "Can you find transportation help in Eugene?"
+        },
+        {
+          "recordId": "stress_0423_transportation_portland_3#turn-1",
+          "score": 0.929167,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0423_transportation_portland_3",
+          "user": "Where should someone call for transportation help in Portland?"
+        },
+        {
+          "recordId": "stress_0371_transportation_eugene_11#turn-2",
+          "score": 0.915452,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0371_transportation_eugene_11",
+          "user": "I am in Eugene and need transportation help."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_transportation_eugene#turn-1",
+      "to": "stress_0579_transportation_eugene_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.949816,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0371_transportation_eugene_11#turn-2",
+      "to": "stress_0371_transportation_eugene_11#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "stress_0579_transportation_eugene_3#turn-1",
+      "to": "matrix_transportation_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.949816,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0579_transportation_eugene_3#turn-1",
+      "to": "stress_0371_transportation_eugene_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.915452,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

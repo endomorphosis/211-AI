@@ -412,6 +412,87 @@ Path("docs/agent.md").write_text("implemented", encoding="utf-8")
     assert output.read_text(encoding="utf-8") == "implemented"
 
 
+def test_daemon_passes_playwright_port_to_implementation_prompt_and_validation(tmp_path, monkeypatch):
+    monkeypatch.setenv("IMPLEMENTATION_PLAYWRIGHT_PORT_BASE", "5400")
+    monkeypatch.delenv("IMPLEMENTATION_DAEMON_PLAYWRIGHT_PORT", raising=False)
+    monkeypatch.delenv("PLAYWRIGHT_PORT", raising=False)
+    repo_root = tmp_path / "repo"
+    todo_path = repo_root / "agent_todo.md"
+    state_dir = tmp_path / "state"
+    fake_worker = repo_root / "fake_worker.py"
+    validate_worker = repo_root / "validate_env.py"
+    repo_root.mkdir(parents=True)
+    todo_path.write_text(
+        """
+# Agent Todo
+
+## AGENT-000 Control Plane
+- Status: todo
+- Priority: P0
+- Track: platform
+- Depends on: none
+- Outputs: docs/agent.md
+- Validation: python validate_env.py
+- Acceptance: agent control plane exists
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_worker.write_text(
+        """
+from pathlib import Path
+import os
+import sys
+
+prompt = sys.stdin.read()
+port = os.environ["PLAYWRIGHT_PORT"]
+assert os.environ["IMPLEMENTATION_PLAYWRIGHT_PORT"] == port
+assert f"- Playwright port: {port}" in prompt
+assert f"PLAYWRIGHT_PORT={port}" in prompt
+Path("worker_port.txt").write_text(port, encoding="utf-8")
+Path("docs").mkdir(exist_ok=True)
+Path("docs/agent.md").write_text("implemented", encoding="utf-8")
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    validate_worker.write_text(
+        """
+from pathlib import Path
+import os
+
+port = os.environ["PLAYWRIGHT_PORT"]
+assert os.environ["IMPLEMENTATION_PLAYWRIGHT_PORT"] == port
+assert Path("worker_port.txt").read_text(encoding="utf-8") == port
+Path("validation_port.txt").write_text(port, encoding="utf-8")
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    daemon = PortalImplementationDaemon(
+        todo_path=todo_path,
+        state_path=state_dir / "worldid_ui_task_state.json",
+        strategy_path=state_dir / "worldid_ui_strategy.json",
+        events_path=state_dir / "worldid_ui_events.jsonl",
+        repo_root=repo_root,
+        task_header_prefix="AGENT-",
+        implement=True,
+        implementation_command=f"python {fake_worker}",
+        implementation_timeout=10,
+    )
+
+    result = daemon.run_once()
+    implementation = result["implementation_result"]
+    worker_port = (repo_root / "worker_port.txt").read_text(encoding="utf-8")
+    validation_port = (repo_root / "validation_port.txt").read_text(encoding="utf-8")
+
+    assert implementation["returncode"] == 0
+    assert implementation["playwright_port"] == worker_port
+    assert validation_port == worker_port
+    assert int(worker_port) >= 5400
+
+
 def test_daemon_default_command_uses_codex_with_copilot_fallback(tmp_path, monkeypatch):
     repo_root = tmp_path / "repo"
     repo_root.mkdir(parents=True)
@@ -536,6 +617,93 @@ Path("docs/agent.md").write_text("implemented in worktree", encoding="utf-8")
     assert branch_check.returncode != 0
 
 
+def test_daemon_passes_playwright_port_to_ephemeral_worktree_validation(tmp_path, monkeypatch):
+    monkeypatch.setenv("IMPLEMENTATION_PLAYWRIGHT_PORT_BASE", "5500")
+    monkeypatch.delenv("IMPLEMENTATION_DAEMON_PLAYWRIGHT_PORT", raising=False)
+    monkeypatch.delenv("PLAYWRIGHT_PORT", raising=False)
+    repo_root = tmp_path / "repo"
+    todo_path = repo_root / "agent_todo.md"
+    state_dir = tmp_path / "agent_state"
+    fake_worker = repo_root / "fake_worker.py"
+    validate_worker = repo_root / "validate_env.py"
+    worktree_root = tmp_path / "worktrees"
+    repo_root.mkdir(parents=True)
+    todo_path.write_text(
+        """
+# Agent Todo
+
+## AGENT-000 Control Plane
+- Status: todo
+- Priority: P0
+- Track: platform
+- Depends on: none
+- Outputs: docs/agent.md
+- Validation: python validate_env.py
+- Acceptance: agent control plane exists
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_worker.write_text(
+        """
+from pathlib import Path
+import os
+import sys
+
+prompt = sys.stdin.read()
+port = os.environ["PLAYWRIGHT_PORT"]
+assert os.environ["IMPLEMENTATION_PLAYWRIGHT_PORT"] == port
+assert f"- Playwright port: {port}" in prompt
+assert f"PLAYWRIGHT_PORT={port}" in prompt
+Path("docs").mkdir(exist_ok=True)
+Path("docs/agent.md").write_text("implemented in worktree", encoding="utf-8")
+Path("docs/implementation_port.txt").write_text(port, encoding="utf-8")
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    validate_worker.write_text(
+        """
+from pathlib import Path
+import os
+
+port = os.environ["PLAYWRIGHT_PORT"]
+assert os.environ["IMPLEMENTATION_PLAYWRIGHT_PORT"] == port
+assert Path("docs/implementation_port.txt").read_text(encoding="utf-8") == port
+Path("docs/validation_port.txt").write_text(port, encoding="utf-8")
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo_root)
+
+    daemon = PortalImplementationDaemon(
+        todo_path=todo_path,
+        state_path=state_dir / "provekit_task_state.json",
+        strategy_path=state_dir / "provekit_strategy.json",
+        events_path=state_dir / "provekit_events.jsonl",
+        repo_root=repo_root,
+        task_header_prefix="AGENT-",
+        implement=True,
+        implementation_command=f"python {fake_worker}",
+        implementation_timeout=10,
+        use_ephemeral_worktree=True,
+        worktree_root=worktree_root,
+    )
+
+    result = daemon.run_once()
+    implementation = result["implementation_result"]
+    implementation_port = (repo_root / "docs" / "implementation_port.txt").read_text(encoding="utf-8")
+    validation_port = (repo_root / "docs" / "validation_port.txt").read_text(encoding="utf-8")
+
+    assert implementation["returncode"] == 0
+    assert implementation["validation_result"]["passed"] is True
+    assert implementation["merge_result"]["merged"] is True
+    assert implementation["playwright_port"] == implementation_port
+    assert validation_port == implementation_port
+    assert int(implementation_port) >= 5500
+
+
 def test_daemon_validation_failure_blocks_commit_and_merge(tmp_path):
     repo_root = tmp_path / "repo"
     todo_path = repo_root / "agent_todo.md"
@@ -594,8 +762,8 @@ Path("docs/agent.md").write_text("implemented in worktree", encoding="utf-8")
     assert implementation["validation_result"]["passed"] is False
     assert implementation["commit_result"]["committed"] is False
     assert implementation["merge_result"]["merged"] is False
-    assert implementation["cleanup_result"]["cleaned"] is False
-    assert Path(implementation["worktree_path"]).exists()
+    assert implementation["cleanup_result"]["cleaned"] is True
+    assert not Path(implementation["worktree_path"]).exists()
     assert not (repo_root / "docs" / "agent.md").exists()
     branch_check = subprocess.run(
         ["git", "rev-parse", "--verify", implementation["branch"]],
@@ -604,7 +772,18 @@ Path("docs/agent.md").write_text("implemented in worktree", encoding="utf-8")
         text=True,
         check=False,
     )
-    assert branch_check.returncode == 0
+    assert branch_check.returncode != 0
+    failed_preservation = implementation["failed_preservation_result"]
+    assert failed_preservation["preserved"] is True
+    assert failed_preservation["commit_result"]["committed"] is True
+    rescue_branch_check = subprocess.run(
+        ["git", "rev-parse", "--verify", failed_preservation["rescue_branch"]],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert rescue_branch_check.returncode == 0
 
 
 def test_daemon_cleans_no_change_ephemeral_worktree(tmp_path):

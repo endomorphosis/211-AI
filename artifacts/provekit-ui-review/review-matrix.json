@@ -1,0 +1,36 @@
+{
+  "schema": "provekit-ui-review.v1",
+  "task_id": "PROVEKIT-270",
+  "reviewed_surfaces": [
+    "proof-center",
+    "wallet-uploads",
+    "provider-proofs",
+    "public-analytics",
+    "export-import",
+    "security-audit",
+    "audit-history"
+  ],
+  "viewport_coverage": [
+    {
+      "name": "Desktop Chrome",
+      "coverage": "Playwright project"
+    },
+    {
+      "name": "Mobile Safari",
+      "coverage": "Playwright project"
+    },
+    {
+      "name": "Mobile Chrome",
+      "coverage": "Chromium project with Pixel 5 viewport override"
+    }
+  ],
+  "checks": [
+    "proof-system labels distinguish simulated, Groth16, ProveKit WHIR, and recursive wrapper receipts",
+    "fail-closed states remain visible for disabled, unavailable, artifact mismatch, stale key, and verification failure receipts",
+    "keyboard focus reaches proof controls",
+    "touch targets meet the reviewed minimum size",
+    "screens do not horizontally overflow",
+    "copy does not claim ProveKit WHIR is on-chain ready without a recursive wrapper",
+    "visible UI and download metadata do not expose private witness or private axiom material"
+  ]
+}

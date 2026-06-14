@@ -1,6 +1,5 @@
 import {
   buildIcsEvent,
-  createIcsBlob,
   createIcsFileName,
   type IcsAlarmInput,
   type IcsEventInput,
@@ -55,7 +54,7 @@ export interface ServiceActionInvocationResult {
 }
 
 export interface CallActionInput {
-  phone: string;
+  phone?: string;
   label?: string;
   context?: ServiceActionContext;
 }
@@ -65,7 +64,7 @@ export interface TextActionInput extends CallActionInput {
 }
 
 export interface EmailActionInput {
-  email: string;
+  email?: string;
   subject?: string;
   body?: string;
   label?: string;
@@ -81,7 +80,7 @@ export interface MapActionInput {
 }
 
 export interface ShareActionInput {
-  title: string;
+  title?: string;
   text?: string;
   url?: string;
   sourceContentCid?: string;
@@ -90,9 +89,9 @@ export interface ShareActionInput {
 }
 
 export interface CalendarActionInput {
-  title: string;
+  title?: string;
   notes?: string;
-  startsAt: Date | string;
+  startsAt?: Date | string;
   endsAt?: Date | string;
   durationMinutes?: number;
   allDay?: boolean;
@@ -120,9 +119,14 @@ const CALENDAR_MIME_TYPE = "text/calendar;charset=utf-8";
 
 export function buildCallAction(input: CallActionInput): ServiceActionDescriptor {
   const phone = formatPhoneForUri(input.phone);
+  const label = input.label ?? `Call ${serviceLabel(input.context)}`;
+  if (!phone) {
+    return unavailableAction("call", label, "No dialable phone number is available.", input.context);
+  }
+
   return {
     kind: "call",
-    label: input.label ?? `Call ${serviceLabel(input.context)}`,
+    label,
     handoff: "link",
     observedStatus: "prepared",
     href: `tel:${phone}`,
@@ -134,13 +138,18 @@ export function buildCallAction(input: CallActionInput): ServiceActionDescriptor
 
 export function buildTextAction(input: TextActionInput): ServiceActionDescriptor {
   const phone = formatPhoneForUri(input.phone);
+  const label = input.label ?? `Text ${serviceLabel(input.context)}`;
+  if (!phone) {
+    return unavailableAction("text", label, "No dialable phone number is available for texting.", input.context);
+  }
+
   const body = input.body?.trim();
   return {
     kind: "text",
-    label: input.label ?? `Text ${serviceLabel(input.context)}`,
+    label,
     handoff: "link",
     observedStatus: "prepared",
-    href: `sms:${phone}${body ? `?&body=${encodeURIComponent(body)}` : ""}`,
+    href: `sms:${phone}${body ? `?body=${encodeUriComponentStrict(body)}` : ""}`,
     text: body,
     context: input.context,
     browserCanObserve: ["The sms: handoff was requested by the user."],
@@ -149,18 +158,22 @@ export function buildTextAction(input: TextActionInput): ServiceActionDescriptor
 }
 
 export function buildEmailAction(input: EmailActionInput): ServiceActionDescriptor {
-  const params = new URLSearchParams();
-  if (input.subject?.trim()) params.set("subject", input.subject.trim());
-  if (input.body?.trim()) params.set("body", input.body.trim());
+  const email = formatEmailForUri(input.email);
+  const label = input.label ?? `Email ${serviceLabel(input.context)}`;
+  if (!email) {
+    return unavailableAction("email", label, "No valid email address is available.", input.context);
+  }
 
-  const email = input.email.trim();
-  const query = params.toString();
+  const query = buildUriQuery([
+    ["subject", input.subject],
+    ["body", input.body],
+  ]);
   return {
     kind: "email",
-    label: input.label ?? `Email ${serviceLabel(input.context)}`,
+    label,
     handoff: "link",
     observedStatus: "prepared",
-    href: `mailto:${encodeURIComponent(email)}${query ? `?${query}` : ""}`,
+    href: `mailto:${email}${query ? `?${query}` : ""}`,
     text: input.body?.trim(),
     context: input.context,
     browserCanObserve: ["The mailto: handoff was requested by the user."],
@@ -171,7 +184,8 @@ export function buildEmailAction(input: EmailActionInput): ServiceActionDescript
 export function buildMapAction(input: MapActionInput): ServiceActionDescriptor {
   const provider = input.provider ?? "google";
   const query = buildMapQuery(input);
-  const href = provider === "source" ? input.context?.sourceUrl : query ? mapUrl(provider, query) : input.context?.sourceUrl;
+  const sourceUrl = normalizeHttpUrl(input.context?.sourceUrl);
+  const href = provider === "source" ? sourceUrl : query ? mapUrl(provider, query) : sourceUrl;
   const resolvedProvider: ServiceMapProvider = provider === "source" || !query ? "source" : provider;
 
   if (!href) {
@@ -201,15 +215,22 @@ export function buildMapLinks(input: Omit<MapActionInput, "provider">): Array<Se
 
 export function buildShareAction(input: ShareActionInput): ServiceActionDescriptor {
   const context = mergeShareContext(input);
-  const text = buildShareText(input, context);
-  const url = input.url ?? context.sourceUrl;
+  const title = firstPresent(input.title, context.serviceTitle, context.programName, context.providerName);
+  const url = normalizeHttpUrl(input.url ?? context.sourceUrl);
+  const shareDetails = buildShareDetailLines(input, context, url);
+  if (!title && shareDetails.length === 0) {
+    return unavailableAction("share", "Share service", "No service details are available to share.", context, "web_share");
+  }
+
+  const shareTitle = title ?? "Service details";
+  const text = buildShareText(shareDetails);
   return {
     kind: "share",
-    label: `Share ${input.title}`,
+    label: `Share ${shareTitle}`,
     handoff: "web_share",
     observedStatus: "prepared",
     text,
-    shareData: url ? { title: input.title, text, url } : { title: input.title, text },
+    shareData: url ? { title: shareTitle, text, url } : { title: shareTitle, text },
     context,
     browserCanObserve: ["The Web Share promise resolved or the clipboard write completed."],
     browserCannotObserve: ["Who received the shared details.", "Whether the recipient opened or acted on the shared details."],
@@ -217,14 +238,29 @@ export function buildShareAction(input: ShareActionInput): ServiceActionDescript
 }
 
 export function buildCalendarAction(input: CalendarActionInput): ServiceActionDescriptor {
-  const event = calendarInputToIcsEvent(input);
-  const ics = buildIcsEvent(event);
+  const title = firstPresent(input.title, input.context?.serviceTitle, input.context?.programName, input.context?.providerName);
+  const label = `Calendar ${title ?? "service reminder"}`;
+  if (!title || !input.startsAt) {
+    return unavailableAction("calendar", label, "A title and start time are required to create a calendar event.", input.context, "download");
+  }
+
+  let ics: string;
+  let fileName: string;
+  try {
+    const event = calendarInputToIcsEvent({ ...input, title, startsAt: input.startsAt });
+    ics = buildIcsEvent(event);
+    fileName = input.fileName ?? createIcsFileName(title, input.startsAt);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "Calendar event data is invalid.";
+    return unavailableAction("calendar", label, reason, input.context, "download");
+  }
+
   return {
     kind: "calendar",
-    label: `Calendar ${input.title}`,
+    label,
     handoff: "download",
     observedStatus: "prepared",
-    fileName: input.fileName ?? createIcsFileName(input.title, input.startsAt),
+    fileName,
     mimeType: CALENDAR_MIME_TYPE,
     ics,
     context: input.context,
@@ -279,6 +315,10 @@ export async function shareServiceAction(
   const browserNavigator = options.navigator ?? globalThis.navigator;
   const shareData = action.shareData;
 
+  if (!shareData) {
+    return invocationResult(false, action, "unavailable", "No service details are available to share.");
+  }
+
   if (shareData && browserNavigator?.share) {
     try {
       await browserNavigator.share(shareData);
@@ -319,15 +359,19 @@ export function downloadCalendarAction(
   const browserDocument = options.document ?? globalThis.document;
   const objectUrlApi = typeof URL !== "undefined" ? URL : undefined;
 
-  if (!browserDocument || !objectUrlApi) {
+  if (!action.ics) {
+    return invocationResult(false, action, "unavailable", "No calendar event is available to download.");
+  }
+
+  if (!browserDocument || !objectUrlApi || typeof Blob === "undefined") {
     return invocationResult(false, action, "unavailable", "A browser document is required to download the calendar file.");
   }
 
-  const blob = createIcsBlob(calendarInputToIcsEvent(input));
+  const blob = new Blob([action.ics], { type: CALENDAR_MIME_TYPE });
   const url = objectUrlApi.createObjectURL(blob);
   const anchor = browserDocument.createElement("a");
   anchor.href = url;
-  anchor.download = action.fileName ?? createIcsFileName(input.title, input.startsAt);
+  anchor.download = action.fileName ?? "calendar-event.ics";
   anchor.rel = "noreferrer";
   browserDocument.body.appendChild(anchor);
   anchor.click();
@@ -348,16 +392,20 @@ export async function shareCalendarAction(
 ): Promise<ServiceActionInvocationResult> {
   const action = buildCalendarAction(input);
   const browserNavigator = options.navigator ?? globalThis.navigator;
-  const fileName = action.fileName ?? createIcsFileName(input.title, input.startsAt);
+  const fileName = action.fileName ?? "calendar-event.ics";
+
+  if (!action.ics) {
+    return invocationResult(false, action, "unavailable", "No calendar event is available to share.");
+  }
 
   if (!browserNavigator?.share || typeof File === "undefined") {
     return invocationResult(false, action, "unavailable", "Calendar file sharing is unavailable.");
   }
 
-  const file = new File([action.ics ?? ""], fileName, { type: CALENDAR_MIME_TYPE });
+  const file = new File([action.ics], fileName, { type: CALENDAR_MIME_TYPE });
   const shareData: ShareData = {
-    title: input.title,
-    text: input.notes,
+    title: firstPresent(input.title, input.context?.serviceTitle, input.context?.programName, input.context?.providerName),
+    text: input.notes?.trim() || undefined,
     files: [file],
   };
 
@@ -378,12 +426,12 @@ export async function shareCalendarAction(
   }
 }
 
-function calendarInputToIcsEvent(input: CalendarActionInput): IcsEventInput {
+function calendarInputToIcsEvent(input: CalendarActionInput & { title: string; startsAt: Date | string }): IcsEventInput {
   return {
     title: input.title,
     description: input.notes,
     location: input.location,
-    url: input.url ?? input.context?.sourceUrl,
+    url: normalizeHttpUrl(input.url ?? input.context?.sourceUrl),
     startsAt: input.startsAt,
     endsAt: input.endsAt,
     durationMinutes: input.durationMinutes,
@@ -395,46 +443,56 @@ function calendarInputToIcsEvent(input: CalendarActionInput): IcsEventInput {
   };
 }
 
-function formatPhoneForUri(phone: string): string {
-  const trimmed = phone.trim();
+function formatPhoneForUri(phone: string | undefined): string | undefined {
+  const trimmed = phone?.trim();
   if (!trimmed) {
-    throw new Error("Phone number is required.");
+    return undefined;
   }
 
   const extensionMatch = trimmed.match(/(?:ext\.?|extension|x)\s*(\d{1,8})\s*$/i);
   const extension = extensionMatch?.[1];
   const withoutExtension = extensionMatch ? trimmed.slice(0, extensionMatch.index).trim() : trimmed;
   const normalized = withoutExtension.replace(/[^\d+*#]/g, "").replace(/(?!^)\+/g, "");
-  if (!normalized) {
-    throw new Error("Phone number must include dialable digits.");
+  if (!/\d/.test(normalized)) {
+    return undefined;
   }
   return `${normalized}${extension ? `;ext=${extension}` : ""}`;
 }
 
+function formatEmailForUri(email: string | undefined): string | undefined {
+  const trimmed = email?.trim();
+  if (!trimmed || /[\s\r\n]/.test(trimmed) || !/^[^@]+@[^@]+$/.test(trimmed)) {
+    return undefined;
+  }
+  return encodeUriComponentStrict(trimmed).replace(/%40/g, "@").replace(/%2B/g, "+");
+}
+
 function mapUrl(provider: ServiceMapProvider, query: string): string {
-  const encoded = encodeURIComponent(query);
+  const encoded = encodeUriComponentStrict(query);
   if (provider === "apple") return `https://maps.apple.com/?q=${encoded}`;
   if (provider === "geo") return `geo:0,0?q=${encoded}`;
   return `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 }
 
 function buildMapQuery(input: MapActionInput): string | undefined {
-  return firstPresent(input.query, input.address, input.context?.providerName, input.context?.programName, input.context?.serviceTitle);
+  return firstPresent(input.query, input.address);
 }
 
-function buildShareText(input: ShareActionInput, context: ServiceActionContext): string {
+function buildShareDetailLines(input: ShareActionInput, context: ServiceActionContext, sourceUrl: string | undefined): string[] {
   return [
     input.text,
     !input.text ? input.title : undefined,
     context.providerName ? `Provider: ${context.providerName}` : undefined,
     context.programName ? `Program: ${context.programName}` : undefined,
-    input.url ?? context.sourceUrl ? `Source: ${input.url ?? context.sourceUrl}` : undefined,
+    sourceUrl ? `Source: ${sourceUrl}` : undefined,
     context.sourceContentCid ? `Source CID: ${context.sourceContentCid}` : undefined,
     context.sourcePageCid ? `Page CID: ${context.sourcePageCid}` : undefined,
-    "Verify details before visiting or sharing private information.",
   ]
-    .filter(isPresent)
-    .join("\n");
+    .filter(isPresent);
+}
+
+function buildShareText(detailLines: string[]): string {
+  return [...detailLines, "Verify details before visiting or sharing private information."].join("\n");
 }
 
 function mergeShareContext(input: ShareActionInput): ServiceActionContext {
@@ -454,12 +512,13 @@ function unavailableAction(
   kind: ServiceActionKind,
   label: string,
   reason: string,
-  context?: ServiceActionContext
+  context?: ServiceActionContext,
+  handoff: ServiceActionHandoff = "link"
 ): ServiceActionDescriptor {
   return {
     kind,
     label,
-    handoff: "link",
+    handoff,
     observedStatus: "unavailable",
     context,
     browserCanObserve: [reason],
@@ -496,6 +555,32 @@ function serviceLabel(context: ServiceActionContext | undefined): string {
 
 function firstPresent(...values: Array<string | undefined>): string | undefined {
   return values.find((value) => Boolean(value?.trim()))?.trim();
+}
+
+function buildUriQuery(params: Array<[string, string | undefined]>): string {
+  return params
+    .map(([key, value]) => {
+      const trimmed = value?.trim();
+      return trimmed ? `${key}=${encodeUriComponentStrict(trimmed)}` : undefined;
+    })
+    .filter(isPresent)
+    .join("&");
+}
+
+function encodeUriComponentStrict(value: string): string {
+  return encodeURIComponent(value).replace(/[!'()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+function normalizeHttpUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || /[\r\n]/.test(trimmed)) return undefined;
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function isPresent(value: string | undefined): value is string {

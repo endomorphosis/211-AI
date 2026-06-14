@@ -4,6 +4,7 @@ import type {
 } from "./commandSchemas";
 import type { EvidenceBundle, EvidenceItem } from "./types";
 import type { GraphRagAnswer, GraphRagEvidence, SearchResult } from "../lib/graphrag";
+import { build211ServiceEvidenceExcerpt } from "../lib/graphrag";
 import {
   answer211InfoQuestion,
   build211InfoCitations,
@@ -12,6 +13,7 @@ import {
   search211Info,
   type GraphRagCitation,
 } from "../services/graphRagService";
+import type { WalletApiConfig } from "../services/walletApi";
 
 export interface ServiceNavigationEvidence {
   query: string;
@@ -42,11 +44,13 @@ export interface ServiceNavigationAnswerResponse {
   recordIds: string[];
   usedLocalModel: boolean;
   nextSteps: string[];
+  metadata?: GraphRagAnswer["metadata"];
 }
 
 export interface ServiceNavigationAgentOptions {
   useEmbedding?: boolean;
   maxTokens?: number;
+  walletApiConfig?: WalletApiConfig;
 }
 
 const serviceNavigationPattern =
@@ -63,6 +67,7 @@ export async function buildServiceNavigationEvidence(
 ): Promise<ServiceNavigationEvidence> {
   const evidence = await build211InfoEvidence(query, limit, {
     useEmbedding: options.useEmbedding,
+    walletApiConfig: options.walletApiConfig,
   });
   const citations = build211InfoCitations(evidence.results);
   const evidenceBundle = evidenceBundleFromGraphEvidence(query, evidence);
@@ -84,6 +89,7 @@ export async function searchServiceNavigation(
   const query = [input.query, input.city, input.category].filter(Boolean).join(" ");
   const results = await search211Info(query, input.limit ?? 8, {
     useEmbedding: options.useEmbedding,
+    walletApiConfig: options.walletApiConfig,
   });
   const evidenceBundle = evidenceBundleFromResults(input.query, results);
   const citations = build211InfoCitations(results);
@@ -105,21 +111,31 @@ export async function answerServiceNavigationQuestion(
   const graphRagAnswer = await answer211InfoQuestion(input.question, {
     useLocalModel: input.useLocalModel,
     maxTokens: options.maxTokens,
-    useEmbedding: options.useEmbedding,
+    useEmbedding: options.useEmbedding ?? true,
+    walletApiConfig: options.walletApiConfig,
   });
   const citations = build211InfoCitations(graphRagAnswer.evidence.results);
   const evidenceBundle = evidenceBundleFromGraphEvidence(input.question, graphRagAnswer.evidence);
   const nextSteps = buildServiceNavigationNextSteps(graphRagAnswer.evidence.results);
+  const answer =
+    graphRagAnswer.evidence.results.length > 0 && isNoRelevant211RecordAnswer(graphRagAnswer.answer)
+      ? build211InfoFallbackSummary(graphRagAnswer.evidence)
+      : graphRagAnswer.answer;
   return {
     question: graphRagAnswer.question,
-    answer: appendNextSteps(graphRagAnswer.answer, nextSteps),
+    answer: appendNextSteps(answer, nextSteps),
     graphRagAnswer,
     evidenceBundle,
     citations,
     recordIds: graphRagAnswer.evidence.results.map((result) => result.docId),
     usedLocalModel: graphRagAnswer.usedLocalModel,
     nextSteps,
+    metadata: graphRagAnswer.metadata,
   };
+}
+
+function isNoRelevant211RecordAnswer(answer: string): boolean {
+  return /could not find (?:a )?relevant record in the local 211 corpus/i.test(answer);
 }
 
 export function evidenceBundleFromGraphEvidence(query: string, evidence: GraphRagEvidence): EvidenceBundle {
@@ -165,7 +181,7 @@ function buildSearchSummary(query: string, results: SearchResult[]): string {
     .map((result, index) => {
       const document = result.document;
       const label = document.provider_name || document.program_name || document.title || result.docId;
-      return `[${index + 1}] ${label}: ${cleanSnippet(result.snippet || document.text.slice(0, 320))}`;
+      return `[${index + 1}] ${label}: ${build211ServiceEvidenceExcerpt(result, 320)}`;
     })
     .join("\n\n");
 
@@ -189,7 +205,7 @@ function evidenceItemFromSearchResult(result: SearchResult): EvidenceItem {
     id: result.docId,
     title,
     source: document.source_url || document.host || "211 corpus",
-    snippet: cleanSnippet(result.snippet || document.text.slice(0, 500)),
+    snippet: build211ServiceEvidenceExcerpt(result, 500),
     score: result.score,
     citation: {
       label: title,
@@ -222,8 +238,4 @@ function hashString(value: string): string {
     hash = (hash * 33) ^ value.charCodeAt(index);
   }
   return (hash >>> 0).toString(36);
-}
-
-function cleanSnippet(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
 }

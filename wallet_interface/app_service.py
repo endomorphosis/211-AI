@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,6 +33,18 @@ from ipfs_datasets_py.wallet.ucan import (  # noqa: E402
     resource_for_wallet,
 )
 from .proof_backends import HttpLocationRegionProofBackend
+from .world_id import (
+    WorldIdConfig,
+    WorldIdRequestJson,
+    WorldIdVerificationError,
+    load_world_id_config,
+    normalize_world_id_idkit_response,
+    redact_world_id_payload,
+    sign_world_id_request_from_config,
+    verify_world_id_proof_from_config,
+)
+
+PROVIDER_STAFF_WORLD_ID_ACTION = "provider-staff-world-id-v1"
 
 
 def _utc_now() -> str:
@@ -407,6 +420,8 @@ class WalletInterfaceService:
         auto_persist: bool | None = None,
         auto_load_repository: bool | None = None,
         services: Sequence[ServiceRecord] | None = None,
+        world_id_config: WorldIdConfig | None = None,
+        world_id_request_json: WorldIdRequestJson | None = None,
     ) -> None:
         if wallet_service is None:
             storage = create_encrypted_blob_store(
@@ -445,6 +460,8 @@ class WalletInterfaceService:
             self.repository.load_all(self.wallet_service)
             self._load_portal_state(required=False)
         self.services = list(services or [])
+        self.world_id_config = world_id_config if world_id_config is not None else load_world_id_config()
+        self.world_id_request_json = world_id_request_json
 
     @classmethod
     def from_services_jsonl(
@@ -462,6 +479,8 @@ class WalletInterfaceService:
         repository_root: str | Path | None = None,
         auto_persist: bool | None = None,
         auto_load_repository: bool | None = None,
+        world_id_config: WorldIdConfig | None = None,
+        world_id_request_json: WorldIdRequestJson | None = None,
     ) -> "WalletInterfaceService":
         return cls(
             wallet_service=wallet_service,
@@ -475,6 +494,8 @@ class WalletInterfaceService:
             repository_root=repository_root,
             auto_persist=auto_persist,
             auto_load_repository=auto_load_repository,
+            world_id_config=world_id_config,
+            world_id_request_json=world_id_request_json,
             services=load_services_jsonl(path),
         )
 
@@ -2509,6 +2530,192 @@ class WalletInterfaceService:
             ],
             key=lambda item: item.created_at,
         )
+
+    def get_world_id_config(self) -> Dict[str, Any]:
+        """Return browser-safe World ID configuration."""
+
+        return dict(self.world_id_config.public_dict())
+
+    def get_world_id_status(self, wallet_id: str, *, actor_did: str | None = None) -> Dict[str, Any]:
+        """Return sanitized World ID binding status for a wallet."""
+
+        self.wallet_service._wallet(wallet_id)
+        if actor_did is not None:
+            self._require_portal_actor(wallet_id, actor_did)
+        bindings = [
+            binding.to_dict()
+            for binding in sorted(
+                self.wallet_service.list_world_id_bindings(wallet_id),
+                key=lambda item: item.created_at,
+            )
+        ]
+        active_bindings = [binding for binding in bindings if binding.get("status") == "active"]
+        return {
+            "enabled": self.world_id_config.enabled,
+            "wallet": {
+                "wallet_id": wallet_id,
+                "binding_count": len(bindings),
+                "active_binding_count": len(active_bindings),
+                "bindings": bindings,
+            },
+        }
+
+    def create_world_id_rp_signature(
+        self,
+        wallet_id: str,
+        *,
+        actor_did: str,
+        action: str | None = None,
+        random_bytes: bytes | None = None,
+        created_at: int | None = None,
+    ) -> Dict[str, Any]:
+        """Create a fresh relying-party signature for the World ID IDKit client."""
+
+        self._require_portal_actor(wallet_id, actor_did)
+        selected_action = str(action or self.world_id_config.default_action).strip()
+        if selected_action not in self.world_id_config.allowed_actions:
+            raise ValueError("World ID action is not allowed")
+        signature = sign_world_id_request_from_config(
+            self.world_id_config,
+            action=selected_action,
+            random_bytes=random_bytes,
+            created_at=created_at,
+        )
+        protocol_payload = signature.to_rp_context(self.world_id_config.rp_id)
+        return {
+            **protocol_payload,
+            "signature": signature.signature,
+            "action": selected_action,
+            "app_id": self.world_id_config.app_id,
+            "environment": self.world_id_config.environment,
+            "credential_policy": self.world_id_config.credential_policy,
+        }
+
+    def create_provider_staff_world_id_rp_signature(
+        self,
+        wallet_id: str,
+        *,
+        actor_did: str,
+        provider_id: str,
+        provider_staff_id: str,
+        random_bytes: bytes | None = None,
+        created_at: int | None = None,
+    ) -> Dict[str, Any]:
+        """Create a World ID RP signature scoped to provider staff verification."""
+
+        normalized_provider_id = str(provider_id or "").strip()
+        normalized_staff_id = str(provider_staff_id or "").strip()
+        if not normalized_provider_id:
+            raise ValueError("provider organization policy is required before staff World ID verification")
+        if not normalized_staff_id:
+            raise ValueError("provider staff ID is required before staff World ID verification")
+        payload = self.create_world_id_rp_signature(
+            wallet_id,
+            actor_did=actor_did,
+            action=PROVIDER_STAFF_WORLD_ID_ACTION,
+            random_bytes=random_bytes,
+            created_at=created_at,
+        )
+        return {
+            **payload,
+            "action": PROVIDER_STAFF_WORLD_ID_ACTION,
+            "provider_id": normalized_provider_id,
+            "provider_staff_id": normalized_staff_id,
+            "signal_context": "provider_staff_verification",
+        }
+
+    def register_world_id_verification(
+        self,
+        wallet_id: str,
+        *,
+        actor_did: str,
+        idkit_payload: Mapping[str, Any],
+        request_json: WorldIdRequestJson | None = None,
+    ) -> Dict[str, Any]:
+        """Verify an IDKit result and bind the resulting proof-of-human to a wallet."""
+
+        self._require_portal_actor(wallet_id, actor_did)
+        normalized = normalize_world_id_idkit_response(idkit_payload)
+        selected_action = normalized.action or self.world_id_config.default_action
+        if selected_action not in self.world_id_config.allowed_actions:
+            raise ValueError("World ID action is not allowed")
+        verifier = request_json or self.world_id_request_json
+        verification = verify_world_id_proof_from_config(
+            self.world_id_config,
+            idkit_payload,
+            request_json=verifier,
+        )
+        if not verification.success:
+            raise WorldIdVerificationError(verification.message or "World ID verification failed")
+        raw_nullifier = verification.nullifier or (normalized.nullifiers[0] if normalized.nullifiers else "")
+        if not raw_nullifier:
+            raise WorldIdVerificationError("World ID verification did not return a nullifier")
+        signal_hash_ref = ""
+        if normalized.signal_hashes:
+            signal_hash_ref = "worldid-signal-ref:v1:" + hashlib.sha256(
+                json.dumps(sorted(normalized.signal_hashes), sort_keys=True).encode("utf-8")
+            ).hexdigest()
+        binding = self.wallet_service.add_world_id_binding(
+            wallet_id,
+            actor_did=actor_did,
+            rp_id=self.world_id_config.rp_id,
+            app_id=self.world_id_config.app_id,
+            action=verification.action or selected_action,
+            protocol_version=normalized.protocol_version,
+            environment=verification.environment or normalized.environment or self.world_id_config.environment,
+            raw_nullifier=raw_nullifier,
+            credential_identifiers=list(normalized.credential_identifiers),
+            issuer_schema_ids=[
+                schema_id for schema_id in (response.issuer_schema_id for response in normalized.responses) if schema_id
+            ],
+            session_id=normalized.session_id or verification.session_id,
+            signal_hash_ref=signal_hash_ref,
+            verification_status="verified",
+            verified_at=verification.created_at or _utc_now(),
+            expires_at_min=min(normalized.expires_at_min_values) if normalized.expires_at_min_values else None,
+            metadata={
+                "credential_policy": self.world_id_config.credential_policy,
+                "idkit": normalized.public_dict(),
+                "verification": redact_world_id_payload(verification.public_dict()),
+            },
+        )
+        proof = self.wallet_service.proofs.get(binding.proof_receipt_id or "")
+        self._persist_wallet_if_configured(wallet_id)
+        return {
+            "binding": binding.to_dict(),
+            "proof": proof.to_dict() if proof is not None else None,
+            "verification": redact_world_id_payload(verification.public_dict()),
+        }
+
+    def revoke_world_id_binding(
+        self,
+        wallet_id: str,
+        binding_id: str,
+        *,
+        actor_did: str,
+        reason: str | None = None,
+    ):
+        """Mark a World ID wallet binding revoked and persist the wallet snapshot."""
+
+        self._require_portal_actor(wallet_id, actor_did)
+        binding = self.wallet_service.get_world_id_binding(binding_id)
+        if binding.wallet_id != wallet_id:
+            raise ValueError("World ID binding does not belong to this wallet")
+        if binding.status != "revoked":
+            binding.status = "revoked"
+            binding.updated_at = _utc_now()
+            binding.metadata = {**dict(binding.metadata), "revoked_reason": str(reason or "").strip()}
+            append_audit_event(
+                self.wallet_service.audit_events.setdefault(wallet_id, []),
+                wallet_id=wallet_id,
+                actor_did=actor_did,
+                action="wallet/world_id_revoke",
+                resource=f"wallet://{wallet_id}/world-id-bindings/{binding.binding_id}",
+                decision="allow",
+                details={"binding_id": binding.binding_id, "reason": str(reason or "").strip()},
+            )
+            self._persist_wallet_if_configured(wallet_id)
+        return binding
 
     def match_services_for_wallet(
         self,

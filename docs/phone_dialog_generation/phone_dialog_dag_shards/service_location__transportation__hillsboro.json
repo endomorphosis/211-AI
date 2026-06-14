@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-26T16:51:58.801413+00:00",
+  "id": "service_location__transportation__hillsboro",
+  "kind": "service_location",
+  "key": "transportation__hillsboro",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "phone_dialog_0000721#turn-5",
+      "scenarioId": "phone_dialog_0000721",
+      "turnIndex": 4,
+      "route": "live_agent",
+      "serviceTag": "transportation",
+      "locationTag": "hillsboro",
+      "promptTemplate": "live_agent",
+      "user": "I\u2019m not thinking straight and I keep losing track, please just tell me the next step before this phone dies.",
+      "normalizedQuery": "hillsboro tv highway have urgent care now miss this kind panicking sorry was bad signal say number slower one digit at time don money ride bus transfer too long there live person connect right thinking straight keep losing track please just tell next step before phone dies",
+      "voiceResponse": "You\u2019re doing the right thing. Next step now: call **2-1-1** \u2014 digits: **2 \u2026 1 \u2026 1**. When they answer, say: \u201cI\u2019m in Hillsboro near TV Highway, I need urgent care now, and I need emergency ride help.\u201d If you feel in immediate medical danger, call **9-1-1** right away.",
+      "evidenceDocIds": [
+        "page:bafkreidflwc4kvnjvqukknruym334clqwq7gi66bdwijbluz7d46nmnnvu",
+        "page:bafkreif7g2gcpqes477n7n5caqwsx72w4fl3pvtsvoynhgsftfulgukeci",
+        "page:bafkreidyfixwtff3erkb2pvjpd4sowjp7veuhdy4ztcl4v5znlagzwumzi",
+        "page:bafkreidhyvr6q7x7s6ni7idrr6x46yw2bulpvmtpwpmfytecseu7mddvgq",
+        "page:bafkreibh5nqf5im65kz4ewjcfcpca4y5nzfotdutvpieetkurewml6glue"
+      ],
+      "similarCases": [],
+      "assistantResponse": "You\u2019re doing the right thing. Next step now: call **2-1-1** \u2014 digits: **2 \u2026 1 \u2026 1**. When they answer, say: \u201cI\u2019m in Hillsboro near TV Highway, I need urgent care now, and I need emergency ride help.\u201d If you feel in immediate medical danger, call **9-1-1** right away.",
+      "voiceResponseAlternatives": [
+        "Yeah, of course. The number is **9-1-1**. I\u2019ll say it slow: **nine\u2026 one\u2026 one**. If you feel in danger, call that right away. If you want, I can repeat it one more time."
+      ],
+      "callerArchetypeId": "disorganized_distressed",
+      "channelConditionId": "borrowed_phone_low_battery",
+      "assistantStyleId": "compassionate_caseworker"
+    },
+    {
+      "id": "phone_dialog_0001544#turn-4",
+      "scenarioId": "phone_dialog_0001544",
+      "turnIndex": 3,
+      "route": "live_agent",
+      "serviceTag": "transportation",
+      "locationTag": "hillsboro",
+      "promptTemplate": "live_agent",
+      "user": "Can you say that number again? Sorry, I keep missing it, people are talking loud around me.",
+      "normalizedQuery": "hi um talk slower 17 ran from home hillsboro right now phone at like ve been couch surfing this guy place stayed keeps saying owe him wants go his friend tonight hurt don feel safe going back there have ride anywhere say number again sorry keep missing it people talking loud around",
+      "voiceResponse": "Yeah, of course. The number is **9-1-1**. I\u2019ll say it slow: **nine\u2026 one\u2026 one**. If you feel in danger, call that right away. If you want, I can repeat it one more time.",
+      "evidenceDocIds": [
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "page:bafkreif7g2gcpqes477n7n5caqwsx72w4fl3pvtsvoynhgsftfulgukeci",
+        "page:bafkreidyfixwtff3erkb2pvjpd4sowjp7veuhdy4ztcl4v5znlagzwumzi",
+        "page:bafkreih7xu6m4m3x2rrr7gjosijychnhqkpxarnwmogrdh3hmzf32fovu4",
+        "page:bafkreidflwc4kvnjvqukknruym334clqwq7gi66bdwijbluz7d46nmnnvu"
+      ],
+      "similarCases": [],
+      "assistantResponse": "Yeah, of course. The number is **9-1-1**. I\u2019ll say it slow: **nine\u2026 one\u2026 one**. If you feel in danger, call that right away. If you want, I can repeat it one more time.",
+      "voiceResponseAlternatives": [
+        "You\u2019re doing the right thing. Next step now: call **2-1-1** \u2014 digits: **2 \u2026 1 \u2026 1**. When they answer, say: \u201cI\u2019m in Hillsboro near TV Highway, I need urgent care now, and I need emergency ride help.\u201d If you feel in immediate medical danger, call **9-1-1** right away."
+      ],
+      "callerArchetypeId": "youth_in_crisis",
+      "channelConditionId": "emotionally_overloaded",
+      "assistantStyleId": "privacy_trust_builder"
+    }
+  ],
+  "edges": [
+    {
+      "from": "phone_dialog_0000721#turn-5",
+      "to": "phone_dialog_0000721#turn-6",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->provider_contact_support"
+    },
+    {
+      "from": "phone_dialog_0001544#turn-4",
+      "to": "phone_dialog_0001544#turn-5",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__health__eugene",
+  "kind": "service_location",
+  "key": "health__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_detox_eugene#turn-1",
+      "scenarioId": "matrix_detox_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Eugene?",
+      "normalizedQuery": "detox eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:5859932a69e4e47a",
+        "service:3e4063037c39ae4c",
+        "service:507a859ca3a7d126",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0375_detox_eugene_3#turn-1",
+          "score": 0.951428,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0375_detox_eugene_3",
+          "user": "Where should someone call for detox help in Eugene?"
+        },
+        {
+          "recordId": "stress_0167_detox_eugene_11#turn-2",
+          "score": 0.923788,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0167_detox_eugene_11",
+          "user": "I am in Eugene and need detox help."
+        },
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.898177,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0167_detox_eugene_11#turn-2",
+      "scenarioId": "stress_0167_detox_eugene_11",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Eugene and need detox help.",
+      "normalizedQuery": "eugene detox",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:5859932a69e4e47a",
+        "service:3e4063037c39ae4c",
+        "service:507a859ca3a7d126",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0011_detox_portland_11#turn-2",
+          "score": 0.93847,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0011_detox_portland_11",
+          "user": "I am in Portland and need detox help."
+        },
+        {
+          "recordId": "stress_0635_detox_portland_11#turn-2",
+          "score": 0.93847,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0635_detox_portland_11",
+          "user": "I am in Portland and need detox help."
+        },
+        {
+          "recordId": "stress_0375_detox_eugene_3#turn-1",
+          "score": 0.932699,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0375_detox_eugene_3",
+          "user": "Where should someone call for detox help in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0375_detox_eugene_3#turn-1",
+      "scenarioId": "stress_0375_detox_eugene_3",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Where should someone call for detox help in Eugene?",
+      "normalizedQuery": "should someone call detox eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:5859932a69e4e47a",
+        "service:3e4063037c39ae4c",
+        "service:507a859ca3a7d126",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_eugene#turn-1",
+          "score": 0.951428,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_eugene",
+          "user": "Can you find detox help in Eugene?"
+        },
+        {
+          "recordId": "stress_0167_detox_eugene_11#turn-2",
+          "score": 0.932699,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0167_detox_eugene_11",
+          "user": "I am in Eugene and need detox help."
+        },
+        {
+          "recordId": "stress_0219_detox_portland_3#turn-1",
+          "score": 0.914242,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0219_detox_portland_3",
+          "user": "Where should someone call for detox help in Portland?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_detox_eugene#turn-1",
+      "to": "stress_0375_detox_eugene_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.951428,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_eugene#turn-1",
+      "to": "stress_0167_detox_eugene_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.923788,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0167_detox_eugene_11#turn-2",
+      "to": "stress_0167_detox_eugene_11#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "stress_0167_detox_eugene_11#turn-2",
+      "to": "stress_0375_detox_eugene_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.932699,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0375_detox_eugene_3#turn-1",
+      "to": "matrix_detox_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.951428,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0375_detox_eugene_3#turn-1",
+      "to": "stress_0167_detox_eugene_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.932699,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

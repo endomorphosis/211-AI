@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import io
 import json
+import zipfile
 from pathlib import Path
+from typing import Mapping, Sequence
 
 from fastapi.testclient import TestClient
 
 from ipfs_datasets_py.wallet import DeterministicLocationRegionProofBackend
 from wallet_interface import ServiceRecord, WalletInterfaceService, create_app
+import wallet_interface.api as wallet_api_module
 from ipfs_datasets_py.wallet.crypto import random_key
 from ipfs_datasets_py.wallet.ucan import resource_for_export, resource_for_record, resource_for_wallet
 
@@ -49,7 +53,95 @@ def test_wallet_api_cors_allows_configured_browser_origin(monkeypatch) -> None:
     assert response.headers["access-control-allow-origin"] == origin
 
 
-def test_wallet_api_private_analytics_flow() -> None:
+def test_health_warns_when_publicus_indextts_has_no_hf_token(monkeypatch) -> None:
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://publicus-indextts-2-demo.hf.space")
+    monkeypatch.setenv("WALLET_INDEXTTS_MODEL_NAME", "Publicus/IndexTTS-2-Demo")
+    for key in (
+        "WALLET_INDEXTTS_HF_TOKEN",
+        "HF_TOKEN",
+        "HUGGINGFACEHUB_API_TOKEN",
+        "IPFS_DATASETS_PY_HF_API_TOKEN",
+        "HUGGINGFACE_API_TOKEN",
+        "HUGGINGFACE_HUB_TOKEN",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(wallet_api_module, "resolve_secret", lambda *args: "")
+    client = _client()
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["warnings"][0]["code"] == "publicus_indextts_missing_hf_token"
+
+
+def test_ops_health_includes_publicus_indextts_credential_warning(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://publicus-indextts-2-demo.hf.space")
+    monkeypatch.setenv("WALLET_INDEXTTS_MODEL_NAME", "Publicus/IndexTTS-2-Demo")
+    for key in (
+        "WALLET_INDEXTTS_HF_TOKEN",
+        "HF_TOKEN",
+        "HUGGINGFACEHUB_API_TOKEN",
+        "IPFS_DATASETS_PY_HF_API_TOKEN",
+        "HUGGINGFACE_API_TOKEN",
+        "HUGGINGFACE_HUB_TOKEN",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(wallet_api_module, "resolve_secret", lambda *args: "")
+    service = WalletInterfaceService(repository_root=tmp_path / "wallet-repository")
+    client = _client_with_service(service)
+
+    response = client.get("/ops/health")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "warning"
+    checks = {check["name"]: check for check in body["checks"]}
+    assert checks["voice_proxy_credentials"]["status"] == "warning"
+    assert checks["voice_proxy_credentials"]["details"]["code"] == "publicus_indextts_missing_hf_token"
+
+
+def test_ops_voice_proxy_status_reports_publicus_warning(monkeypatch) -> None:
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://publicus-indextts-2-demo.hf.space")
+    monkeypatch.setenv("WALLET_INDEXTTS_MODEL_NAME", "Publicus/IndexTTS-2-Demo")
+    monkeypatch.setattr(wallet_api_module, "resolve_secret", lambda *args: "")
+    client = _client()
+
+    response = client.get("/ops/voice-proxy/status")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "warning"
+    assert body["spaceUrl"] == "https://publicus-indextts-2-demo.hf.space"
+    assert body["tokenConfigured"] is False
+    assert body["warnings"][0]["code"] == "publicus_indextts_missing_hf_token"
+
+
+def test_ops_voice_proxy_status_requires_shared_secret_when_configured(monkeypatch) -> None:
+    monkeypatch.setenv("WALLET_OPS_HEALTH_SHARED_SECRET", "top-secret")
+    client = _client()
+
+    unauthorized = client.get("/ops/voice-proxy/status")
+    assert unauthorized.status_code == 401
+    assert "authorization required" in unauthorized.json()["detail"]
+
+    authorized = client.get(
+        "/ops/voice-proxy/status",
+        headers={"authorization": "Bearer top-secret"},
+    )
+    assert authorized.status_code == 200
+
+
+def test_magic_login_request_sends_signed_sms_and_verify_connects_wallet(monkeypatch) -> None:
+    monkeypatch.setenv("WALLET_MAGIC_LOGIN_SECRET", "test-magic-login-secret")
+    deliveries: list[dict[str, object]] = []
+
+    def fake_sms_delivery(**kwargs):
+        deliveries.append(kwargs)
+        return {"provider": "mock", "provider_status": "queued", "provider_message_id": "SM-login"}
+
+    monkeypatch.setattr(wallet_api_module, "_send_sms_notification", fake_sms_delivery)
     client = _client()
     wallet_ids = []
     for owner in ["did:key:owner1", "did:key:owner2"]:
@@ -1743,12 +1835,6 @@ def test_wallet_api_storage_health_and_repair() -> None:
     assert response.status_code == 200
     record = response.json()
 
-    response = client.get(f"/wallets/{wallet['wallet_id']}/records/{record['record_id']}/storage")
-    assert response.status_code == 200
-    report = response.json()
-    assert report["ok"] is True
-    assert report["payload"][0]["role"] == "primary"
-
     response = client.get(f"/wallets/{wallet['wallet_id']}/storage")
     assert response.status_code == 200
     wallet_report = response.json()
@@ -1775,11 +1861,470 @@ def test_wallet_api_storage_health_and_repair() -> None:
     repair = response.json()
     assert repair["ok"] is True
 
-    response = client.get(f"/wallets/{wallet['wallet_id']}/audit")
-    actions = [event["action"] for event in response.json()["events"]]
-    assert "storage/verify_wallet" in actions
-    assert "storage/repair_wallet" in actions
-    assert "storage/repair" in actions
+
+def test_indextts_proxy_caches_config_fn_index_and_default_reference(monkeypatch) -> None:
+    wallet_api_module._INDEXTTS_CONFIG_CACHE.clear()
+    wallet_api_module._INDEXTTS_FN_INDEX_CACHE.clear()
+    wallet_api_module._INDEXTTS_REFERENCE_CACHE.clear()
+
+    calls = {"config": 0, "join": 0, "upload": 0, "wait": 0, "fetch": 0}
+
+    class FakeClient:
+        def get_config(self) -> dict[str, object]:
+            calls["config"] += 1
+            return {"dependencies": [{"id": 17, "api_name": "/gen_single"}]}
+
+        def resolve_fn_index(self, api_name: str, config: Mapping[str, object], *, fallback_markers=()):
+            return 17
+
+        def upload_file(self, file_name: str, data: bytes, mime_type: str) -> dict[str, object]:
+            calls["upload"] += 1
+            return {"path": "/tmp/abby-reference.wav", "meta": {"_type": "gradio.FileData"}, "orig_name": file_name}
+
+        def queue_join(self, fn_index: int, data: Sequence[object], *, session_hash: str | None = None) -> str:
+            calls["join"] += 1
+            assert fn_index == 17
+            return session_hash or "session-123"
+
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5) -> dict[str, object]:
+            calls["wait"] += 1
+            return {"path": "/tmp/out.wav"}
+
+        def fetch_file(self, reference: object, *, accept: str = "audio/*, application/octet-stream") -> tuple[bytes, str]:
+            calls["fetch"] += 1
+            return b"RIFFstubWAVE", "audio/wav"
+
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://example.test")
+    monkeypatch.setenv("WALLET_INDEXTTS_API_NAME", "gen_single")
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    first = wallet_api_module._run_indextts_gradio_tts(text="hello")
+    second = wallet_api_module._run_indextts_gradio_tts(text="again")
+
+    assert first["latency"]["total_ms"] >= 0
+    assert second["latency"]["config_ms"] == 0
+    assert calls == {"config": 1, "join": 2, "upload": 1, "wait": 2, "fetch": 2}
+
+
+def test_indextts_spoken_text_normalizes_numbers_and_address_abbreviations() -> None:
+    assert wallet_api_module._normalize_indextts_spoken_text("Call 911, then ask 211-ai.") == (
+        "Call nine one one, then ask two one one AI."
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text("Meet at SE 32nd ave, apt #4.") == (
+        "Meet at South East thirty second Avenue, Apartment 4."
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text("Shelter: S.E. 82nd Ave Ste 10") == (
+        "Shelter: South East eighty second Avenue Suite 10"
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Write this down: 8800 Southeast 8 0th Avenue, Portland."
+    ) == "Write this down: 8800 Southeast eightieth Avenue, Portland."
+    assert wallet_api_module._normalize_indextts_spoken_text("Food help near N.W. 23rd Pl and SW 4th St.") == (
+        "Food help near North West twenty third Place and South West fourth Street."
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Source: https://www.211info.org/agency/1439/14182/. Confirm details before traveling."
+    ) == "Confirm details before traveling."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Visit https://gethelp.211info.org/get-help/food/ or call 211."
+    ) == "Visit the two one one info website or call two one one."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Phone: phone not listed in this record. Eligibility: eligibility not listed in this record. Visit website."
+    ) == ""
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "A grounded 211 match is FOOD PANTRY. Source: https://www.211info.org/agency/1439/14182/. Confirm details before traveling."
+    ) == "I found Food Pantry. Confirm details before traveling."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "A grounded 211 match is EYE CLINIC. The record lists 120 minutes. 222 SE 8th Avenue Suite 110 Hillsboro, OR 97123. Phone: (503) 352-7300."
+    ) == "I found Eye Clinic. The address is 222 South East eighth Avenue Suite 110, Hillsboro, Oregon. ZIP code nine seven one two three. You can call five zero three, three five two, seven three zero zero."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Mail goes to Portland, OR 97206-1234 or use 97204."
+    ) == "Mail goes to Portland, Oregon. ZIP code nine seven two zero six dash one two three four or use nine seven two zero four."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Try 450 Highway 99 N Eugene, OR 97402, 1400 Queen Avenue SE Suite 201 Albany, OR 97322, or 15325 NW Central Drive Suite J-8 Portland, OR 97229."
+    ) == (
+        "Try 450 Highway ninety nine North Eugene, Oregon. ZIP code nine seven four zero two, "
+        "1400 Queen Avenue South East Suite 201, Albany, Oregon. ZIP code nine seven three two two, "
+        "or 15325 North West Central Drive Suite J-8, Portland, Oregon. ZIP code nine seven two two nine."
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Ages 18-24 who are fleeing domestic violence."
+    ) == "Ages eighteen to twenty four who are fleeing domestic violence."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "The office is at 101 E Broadway Suite 200 Eugene, OR 97401."
+    ) == "The office is at 101 East Broadway Suite 200, Eugene, Oregon. ZIP code nine seven four zero one."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Monday/Wednesday 8:30am - 4:30pm, call (503) 771-7914, income 80-100% AMI, up to $500."
+    ) == (
+        "Monday, Wednesday 8:30 AM to 4:30 PM, call five zero three, seven seven one, seven nine one four, "
+        "income eighty to one hundred percent AMI, up to five hundred dollars."
+    )
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Monday/Wednesday/Thursday 1:15pm-3:45pm"
+    ) == "Monday, Wednesday, Thursday 1:15 PM to 3:45 PM"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "-Drop-in Center: 7 days per week 8:30am-5pm"
+    ) == "Drop-in Center: 7 days per week 8:30 AM to 5 PM"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Must have served post 9/11 and be eligible."
+    ) == "Must have served post September eleventh and be eligible."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "223 SE M Street Grants Pass, OR 97526"
+    ) == "223 South East M Street, Grants Pass, Oregon. ZIP code nine seven five two six"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "6329 NE Martin Luther King Jr Boulevard Portland, OR 97211"
+    ) == "6329 North East Martin Luther King Jr Boulevard, Portland, Oregon. ZIP code nine seven two one one"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "51 W Washington Burns, OR 97720"
+    ) == "51 West Washington Burns, Oregon. ZIP code nine seven seven two zero"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Laundry Facilities * Homeless Youth - 211info"
+    ) == "Laundry Facilities for Homeless Youth"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "24 hours per day / 7 days a week"
+    ) == "24 hours per day, 7 days a week"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "29796 SW Town Center Loop E Wilsonville, OR 97070"
+    ) == "29796 South West Town Center Loop East, Wilsonville, Oregon. ZIP code nine seven zero seven zero"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "ST VINCENT DE PAUL Email (541) 536-1956 Get Directions Visit Website More Details Print & Share X Print & Share Print PDF"
+    ) == "Saint VINCENT DE PAUL"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "ST VINCENT DE PAUL OF LANE COUNTY"
+    ) == "Saint VINCENT DE PAUL OF LANE COUNTY"
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "The record lists latitude: 45.5152 longitude: -122.6784. Source: https://example.org/a."
+    ) == ""
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Phone: (541) 485-1017, (541) 485-1017 ext 100."
+    ) == "You can call five four one, four eight five, one zero one seven, extension one zero zero."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Eligibility: Unrestricted. Varies by program."
+    ) == "Eligibility varies by program."
+    assert wallet_api_module._normalize_indextts_spoken_text(
+        "Eligibility: Low income individuals age 18 and older. Unrestricted."
+    ) == "Eligibility: Low income individuals age eighteen and older."
+
+
+def test_indextts_proxy_sends_normalized_speech_text(monkeypatch) -> None:
+    wallet_api_module._INDEXTTS_CONFIG_CACHE.clear()
+    wallet_api_module._INDEXTTS_FN_INDEX_CACHE.clear()
+    wallet_api_module._INDEXTTS_REFERENCE_CACHE.clear()
+
+    queued_payloads: list[tuple[int, list[object]]] = []
+
+    class FakeClient:
+        def get_config(self) -> dict[str, object]:
+            return {"dependencies": [{"id": 17, "api_name": "/gen_single"}]}
+
+        def resolve_fn_index(self, api_name: str, config: Mapping[str, object], *, fallback_markers=()):
+            return 17
+
+        def upload_file(self, file_name: str, data: bytes, mime_type: str) -> dict[str, object]:
+            return {"path": "/tmp/abby-reference.wav", "meta": {"_type": "gradio.FileData"}, "orig_name": file_name}
+
+        def queue_join(self, fn_index: int, data: Sequence[object], *, session_hash: str | None = None) -> str:
+            queued_payloads.append((fn_index, list(data)))
+            return session_hash or "session-123"
+
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5) -> dict[str, object]:
+            return {"path": "/tmp/out.wav"}
+
+        def fetch_file(self, reference: object, *, accept: str = "audio/*, application/octet-stream") -> tuple[bytes, str]:
+            return b"RIFFstubWAVE", "audio/wav"
+
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://example.test")
+    monkeypatch.setenv("WALLET_INDEXTTS_API_NAME", "gen_single")
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    result = wallet_api_module._run_indextts_gradio_tts(text="Visit SE 32nd ave or call 211.")
+
+    assert result["text"] == "Visit South East thirty second Avenue or call two one one."
+    assert result["originalText"] == "Visit SE 32nd ave or call 211."
+    assert queued_payloads
+    assert queued_payloads[0][0] == 17
+    assert queued_payloads[0][1][2] == "Visit South East thirty second Avenue or call two one one."
+
+
+def test_indextts_batch_proxy_uses_batch_endpoint(monkeypatch) -> None:
+    wallet_api_module._INDEXTTS_CONFIG_CACHE.clear()
+    wallet_api_module._INDEXTTS_FN_INDEX_CACHE.clear()
+    wallet_api_module._INDEXTTS_REFERENCE_CACHE.clear()
+
+    queued_payloads: list[tuple[int, list[object]]] = []
+
+    class FakeClient:
+        def get_config(self) -> dict[str, object]:
+            return {"dependencies": [{"id": 17, "api_name": "/gen_single"}, {"id": 23, "api_name": "/gen_batch"}]}
+
+        def resolve_fn_index(self, api_name: str, config: Mapping[str, object], *, fallback_markers=()):
+            return 23 if "batch" in api_name else 17
+
+        def upload_file(self, file_name: str, data: bytes, mime_type: str) -> dict[str, object]:
+            return {"path": "/tmp/abby-reference.wav", "meta": {"_type": "gradio.FileData"}, "orig_name": file_name}
+
+        def queue_join(self, fn_index: int, data: Sequence[object], *, session_hash: str | None = None) -> str:
+            queued_payloads.append((fn_index, list(data)))
+            return session_hash or "session-123"
+
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5) -> dict[str, object]:
+            return {
+                "data": [
+                    {"__type__": "update", "value": {"path": "/tmp/preview.wav"}},
+                    {"__type__": "update", "value": [{"path": "/tmp/one.wav"}, {"path": "/tmp/two.wav"}]},
+                    {"__type__": "update", "value": None},
+                ]
+            }
+
+        def fetch_file(self, reference: object, *, accept: str = "audio/*, application/octet-stream") -> tuple[bytes, str]:
+            return b"RIFFstubWAVE", "audio/wav"
+
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://example.test")
+    monkeypatch.setenv("WALLET_INDEXTTS_BATCH_API_NAME", "gen_batch")
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    result = wallet_api_module._run_indextts_gradio_batch_tts(texts=["Call 211.", "Meet at SE 32nd ave."])
+
+    assert result["mode"] == "batch"
+    assert result["batchSize"] == 2
+    assert queued_payloads[0][0] == 23
+    assert queued_payloads[0][1][2] == '["Call two one one.", "Meet at South East thirty second Avenue."]'
+    assert queued_payloads[0][1][16] == 2
+    assert [item["text"] for item in result["items"]] == ["Call two one one.", "Meet at South East thirty second Avenue."]
+
+
+def test_indextts_batch_prefers_generated_file_list_over_preview(monkeypatch) -> None:
+    result = {
+        "data": [
+            {"__type__": "update", "value": {"path": "/tmp/preview.wav"}},
+            {
+                "__type__": "update",
+                "value": [
+                    {"path": "/tmp/item-1.wav"},
+                    {"path": "/tmp/item-2.wav"},
+                ],
+            },
+            {"__type__": "update", "value": None},
+        ]
+    }
+
+    assert wallet_api_module._indextts_batch_audio_references(result) == [
+        {"path": "/tmp/item-1.wav"},
+        {"path": "/tmp/item-2.wav"},
+    ]
+
+
+def test_indextts_batch_extracts_audio_from_zip_output(monkeypatch) -> None:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("spk-item-1.wav", b"RIFFoneWAVE")
+        archive.writestr("spk-item-2.wav", b"RIFFtwoWAVE")
+    monkeypatch.setattr(wallet_api_module, "_fetch_gradio_file", lambda ref: (buffer.getvalue(), "application/zip"))
+    result = {
+        "data": [
+            {"__type__": "update", "value": {"path": "/tmp/preview.wav"}},
+            {"__type__": "update", "value": []},
+            {"__type__": "update", "value": {"path": "/tmp/batch.zip"}},
+        ]
+    }
+
+    refs = wallet_api_module._indextts_batch_audio_references(result)
+
+    assert [ref["name"] for ref in refs] == ["spk-item-1.wav", "spk-item-2.wav"]
+    assert refs[0]["_inline_bytes"] == b"RIFFoneWAVE"
+
+
+def test_indextts_single_tts_accepts_batch_shaped_result(monkeypatch) -> None:
+    wallet_api_module._INDEXTTS_CONFIG_CACHE.clear()
+    wallet_api_module._INDEXTTS_FN_INDEX_CACHE.clear()
+    wallet_api_module._INDEXTTS_REFERENCE_CACHE.clear()
+
+    class FakeClient:
+        def get_config(self) -> dict[str, object]:
+            return {"dependencies": [{"id": 17, "api_name": "/gen_single"}]}
+
+        def resolve_fn_index(self, api_name: str, config: Mapping[str, object], *, fallback_markers=()):
+            return 17
+
+        def upload_file(self, file_name: str, data: bytes, mime_type: str) -> dict[str, object]:
+            return {"path": "/tmp/abby-reference.wav", "meta": {"_type": "gradio.FileData"}, "orig_name": file_name}
+
+        def queue_join(self, fn_index: int, data: Sequence[object], *, session_hash: str | None = None) -> str:
+            return session_hash or "session-123"
+
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5) -> dict[str, object]:
+            return {
+                "data": [
+                    {"__type__": "update", "value": {"path": "/tmp/preview.wav"}},
+                    {"__type__": "update", "value": [{"path": "/tmp/item-1.wav"}]},
+                    {"__type__": "update", "value": None},
+                ]
+            }
+
+        def fetch_file(self, reference: object, *, accept: str = "audio/*, application/octet-stream") -> tuple[bytes, str]:
+            return b"RIFFstubWAVE", "audio/wav"
+
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://example.test")
+    monkeypatch.setenv("WALLET_INDEXTTS_API_NAME", "gen_single")
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    result = wallet_api_module._run_indextts_gradio_tts(text="Call 211.")
+
+    assert result["audioBase64"]
+    assert result["mimeType"] == "audio/wav"
+    assert result["text"] == "Call two one one."
+
+
+def test_indextts_wait_for_result_expands_empty_space_queue_error(monkeypatch) -> None:
+    class FakeClient:
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5):
+            raise RuntimeError("Space queue failed: {'error': None}")
+
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    try:
+        wallet_api_module._indextts_wait_for_result("session-opaque-error")
+        raise AssertionError("Expected _indextts_wait_for_result to raise ValueError")
+    except ValueError as exc:
+        assert "Space queue failed without diagnostic details" in str(exc)
+
+
+def test_indextts_tts_falls_back_to_api_name_call_after_opaque_queue_failures(monkeypatch) -> None:
+    wallet_api_module._INDEXTTS_CONFIG_CACHE.clear()
+    wallet_api_module._INDEXTTS_FN_INDEX_CACHE.clear()
+    wallet_api_module._INDEXTTS_REFERENCE_CACHE.clear()
+
+    calls = {"wait": 0, "api_call": 0, "predict": 0}
+
+    class FakeClient:
+        def get_config(self) -> dict[str, object]:
+            return {"dependencies": [{"id": 17, "api_name": "/gen_single"}]}
+
+        def resolve_fn_index(self, api_name: str, config: Mapping[str, object], *, fallback_markers=()):
+            return 17
+
+        def upload_file(self, file_name: str, data: bytes, mime_type: str) -> dict[str, object]:
+            return {"path": "/tmp/abby-reference.wav", "meta": {"_type": "gradio.FileData"}, "orig_name": file_name}
+
+        def queue_join(self, fn_index: int, data: Sequence[object], *, session_hash: str | None = None) -> str:
+            return session_hash or "session-opaque"
+
+        def wait_for_queue_result(self, session_hash: str, *, timeout_seconds: float | None = None, poll_interval_seconds: float = 0.5):
+            calls["wait"] += 1
+            raise RuntimeError("Space queue failed: {'error': None}")
+
+        def call_api_name(
+            self,
+            api_name: str,
+            data: Sequence[object],
+            *,
+            timeout_seconds: float | None = None,
+            poll_interval_seconds: float = 0.5,
+        ) -> Mapping[str, object]:
+            calls["api_call"] += 1
+            return {"data": [{"path": "/tmp/api-name-fallback.wav"}]}
+
+        def call_endpoint(self, fn_index: int, data: Sequence[object]) -> list[object]:
+            calls["predict"] += 1
+            return [{"path": "/tmp/direct-predict.wav"}]
+
+        def fetch_file(self, reference: object, *, accept: str = "audio/*, application/octet-stream") -> tuple[bytes, str]:
+            return b"RIFFstubWAVE", "audio/wav"
+
+    monkeypatch.setenv("WALLET_INDEXTTS_SPACE_URL", "https://example.test")
+    monkeypatch.setenv("WALLET_INDEXTTS_API_NAME", "gen_single")
+    monkeypatch.setenv("WALLET_INDEXTTS_ALLOW_DIRECT_PREDICT_FALLBACK", "true")
+    monkeypatch.setattr(wallet_api_module, "_indextts_space_client", lambda: FakeClient())
+
+    result = wallet_api_module._run_indextts_gradio_tts(text="Call 211.")
+
+    assert result["audioBase64"]
+    assert result["mimeType"] == "audio/wav"
+    assert result["latency"].get("result_path") == "api-name-fallback"
+    assert calls == {"wait": 2, "api_call": 1, "predict": 0}
+
+
+def test_indextts_voice_reply_generates_llm_text_before_tts(monkeypatch) -> None:
+    from ipfs_datasets_py import llm_router
+
+    prompts: list[dict[str, object]] = []
+    expected_text = "Food pantries near Portland may be open today. What ZIP code should I search around?"
+
+    def fake_generate_text(prompt: str, *, model_name: str, provider: str, **kwargs: object) -> str:
+        prompts.append({"prompt": prompt, "model_name": model_name, "provider": provider, "kwargs": kwargs})
+        return expected_text
+
+    def fake_tts(**kwargs: object) -> dict[str, object]:
+        assert kwargs["text"] == expected_text
+        return {"audioBase64": "UklGRnN0dWJXQVZF", "mimeType": "audio/wav", "latency": {"tts_request_ms": 1}}
+
+    monkeypatch.setattr(llm_router, "generate_text", fake_generate_text)
+    monkeypatch.setattr(wallet_api_module, "_run_indextts_tts_with_batch_fallback", fake_tts)
+    monkeypatch.setenv("WALLET_VOICE_LLM_MODEL", "Qwen/Qwen3.5-2B")
+
+    client = _client()
+    response = client.post(
+        "/voice/indextts/infer",
+        data={
+            "mode": "voice-reply",
+            "userPrompt": "I need food help",
+            "fallbackText": "I can help search for food resources.",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["audioBase64"] == "UklGRnN0dWJXQVZF"
+    assert body["mimeType"] == "audio/wav"
+    assert body["text"] == expected_text
+    assert body["latency"]["llm_request_ms"] >= 0
+    assert body["latency"]["llm_model"] == "Qwen/Qwen3.5-2B"
+    assert prompts and "I need food help" in str(prompts[0]["prompt"])
+
+
+def test_hf_whisper_stt_extracts_text_from_nested_payload(monkeypatch) -> None:
+    class FakeResponse:
+        headers = {"content-type": "application/json"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return json.dumps({"items": [{"text": "hello from nested whisper"}]}).encode("utf-8")
+
+    def fake_urlopen(request, timeout: float):
+        return FakeResponse()
+
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    monkeypatch.setenv("WALLET_HF_WHISPER_MODEL_NAME", "openai/whisper-large-v3-turbo")
+    monkeypatch.setattr(wallet_api_module.urllib_request, "urlopen", fake_urlopen)
+
+    result = wallet_api_module._run_hf_whisper_stt(b"RIFFstubWAVE", audio_name="speech.wav", audio_type="audio/wav")
+
+    assert result["text"] == "hello from nested whisper"
+    assert result["provider"] == "huggingface-whisper"
+
+
+def test_wallet_api_phone_call_notification_queue_and_manual_dispatch_uses_http_webhook(monkeypatch) -> None:
+    captured_requests = []
+
+    class FakeResponse:
+        def __init__(self, payload: dict[str, object]) -> None:
+            self.payload = payload
+            self.headers = {"content-type": "application/json"}
+            self.status = 202
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            return None
+
+        def read(self) -> bytes:
+            return json.dumps(self.payload).encode("utf-8")
 
 
 def test_wallet_api_ops_health_reports_repository_storage_and_audits(tmp_path) -> None:

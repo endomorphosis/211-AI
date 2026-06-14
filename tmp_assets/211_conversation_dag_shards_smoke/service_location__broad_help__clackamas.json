@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__broad_help__clackamas",
+  "kind": "service_location",
+  "key": "broad_help__clackamas",
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "id": "realistic_broad_to_service_004#turn-1",
+      "scenarioId": "realistic_broad_to_service_004",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "broad_help",
+      "locationTag": "clackamas",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I'm on hold with everybody. Can you help me figure out what to try first in Clackamas County?",
+      "normalizedQuery": "i'm on hold everybody try first clackamas county",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:3af525274aceaedb",
+        "service:2d63f632b46d0d29",
+        "service:c1be66b3f546e230",
+        "service:77801dbfae971c49",
+        "service:03f0d7f3a93aaddb"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_076_laundry_clackamas#turn-1",
+          "score": 0.723366,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_076_laundry_clackamas",
+          "user": "I work days and can't wait on hold forever. I need wash clothes in Clackamas County."
+        },
+        {
+          "recordId": "broad_then_medical#turn-1",
+          "score": 0.684831,
+          "route": "clarifying_prompt",
+          "scenarioId": "broad_then_medical",
+          "user": "Help me figure out what to do."
+        },
+        {
+          "recordId": "matrix_mail_service_clackamas#turn-1",
+          "score": 0.65735,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_clackamas",
+          "user": "Can you find mail service in Clackamas County?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_broad_to_service_004#turn-1",
+      "to": "realistic_broad_to_service_004#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "clarifying_prompt->grounded_211_answer"
+    }
+  ]
+}

@@ -26,7 +26,13 @@ from ipfs_datasets_py.optimizers.todo_daemon.implementation_daemon import (
     write_text_atomic,
 )
 from scraper.utils import setup_logging
-from scripts.agent_chat_implementation_daemon import AGENT_STATE_PREFIX, AGENT_TASK_PREFIX, DEFAULT_STATE_DIR, DEFAULT_TODO_PATH
+from scripts.agent_chat_implementation_daemon import (
+    AGENT_STATE_PREFIX,
+    AGENT_TASK_PREFIX,
+    DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS,
+    DEFAULT_STATE_DIR,
+    DEFAULT_TODO_PATH,
+)
 
 logger = logging.getLogger("scraper.agent_chat.implementation.supervisor")
 
@@ -142,7 +148,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="",
         help="Command used for implementation. Defaults to codex exec with local Copilot CLI fallback when available.",
     )
-    parser.add_argument("--implementation-timeout", type=float, default=1800.0)
+    parser.add_argument("--implementation-timeout", type=float, default=DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS)
     parser.add_argument(
         "--no-ephemeral-worktree",
         action="store_true",

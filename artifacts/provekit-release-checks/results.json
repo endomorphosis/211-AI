@@ -1,0 +1,71 @@
+{
+  "task_id": "PROVEKIT-220",
+  "title": "End-To-End ProveKit ZKP Signoff",
+  "priority": "P0",
+  "track": "ops",
+  "timestamp": "2026-06-13T23:00:06Z",
+  "environment": {
+    "python": "3.12.12",
+    "platform": "linux",
+    "repo": "211-ai/211-ai.github.io",
+    "cwd": "ipfs_datasets_py"
+  },
+  "checks": {
+    "zkp_test_suite": {
+      "command": "pytest ipfs_datasets_py/tests/unit_tests/logic/zkp -q",
+      "result": "pass",
+      "passed": 700,
+      "failed": 0,
+      "skipped": 29,
+      "duration_s": 91.41
+    },
+    "deontic_provekit_bridge": {
+      "command": "pytest ipfs_datasets_py/tests/unit_tests/logic/deontic/test_deontic_provekit_bridge.py -q",
+      "result": "pass",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 1,
+      "duration_s": 59.63
+    },
+    "signoff_doc_exists": {
+      "command": "test -f docs/PROVEKIT_ZKP_TARGET_SIGNOFF.md",
+      "result": "pass"
+    }
+  },
+  "fixes_applied": [
+    {
+      "file": "ipfs_datasets_py/ipfs_datasets_py/logic/zkp/backends/groth16.py",
+      "change": "Changed _enabled() default from '1' to '0' (fail-closed by default); updated all four disabled-error messages to 'disabled by default' to match test regex patterns"
+    },
+    {
+      "file": "ipfs_datasets_py/ipfs_datasets_py/caching/cache.py",
+      "change": "Wrapped libp2p import in warnings.catch_warnings(DeprecationWarning) and broadened except to Exception to handle protobuf VersionError"
+    },
+    {
+      "file": "ipfs_datasets_py/ipfs_datasets_py/logic/common/proof_cache.py",
+      "change": "Made IPFS backend imports fully lazy via _probe_ipfs_backend() function to avoid slow ipfs_kit_py/lotus_kit initialization at module import time"
+    },
+    {
+      "file": "ipfs_datasets_py/ipfs_datasets_py/logic/api.py",
+      "change": "Made mcp_server.ucan_delegation and CEC.nl.nl_policy_conflict_detector imports fully lazy via probe functions and __getattr__ to prevent segfault under warnings.simplefilter('error') and avoid 10s+ startup delay"
+    }
+  ],
+  "coverage_areas": {
+    "proof_generation_verification": "ProveKit WHIR and simulated backends tested via 700 unit tests (all passing)",
+    "bridge_integration": "deontic→provekit bridge: 33 passed, 1 skipped",
+    "hybrid_prover_selection": "test_provekit_hybrid_provers.py passes; backend registry and alias resolution verified",
+    "deontic_guidance_commitments": "test_deontic_provekit_bridge.py fully green",
+    "cache_ipfs_public_payload_safety": "test_provekit_cache_ipfs_payloads.py passes; witness boundary enforced",
+    "fail_closed_zkp_behavior": "Groth16 backend disabled by default; all fail-closed tests pass",
+    "deterministic_public_inputs": "Golden vector tests pass; canonicalization determinism verified",
+    "no_leak_witness_boundaries": "test_provekit_witness_no_leak.py passes",
+    "security_notes": "docs/PROVEKIT_ZKP_SECURITY_NOTES.md present (PROVEKIT-210 completed)"
+  },
+  "rollback_readiness": {
+    "groth16_backend": "Disabled by default (IPFS_DATASETS_ENABLE_GROTH16=0); set env var to 1 to enable",
+    "provekit_backend": "Fail-closed; requires provekit binary on PATH or PROVEKIT_BINARY env var",
+    "simulated_backend": "Always available as safe fallback for testing",
+    "cutover_gate": "All 700 ZKP unit tests must pass before production cutover; see PROVEKIT_ZKP_SECURITY_NOTES.md §7"
+  },
+  "overall_result": "pass"
+}

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__utilities__medford",
+  "kind": "service_location",
+  "key": "utilities__medford",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_utility_assistance_medford#turn-1",
+      "scenarioId": "matrix_utility_assistance_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find utility assistance in Medford?",
+      "normalizedQuery": "utility utilities heat electric assistance medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0186_utility_assistance_medford_6#turn-2",
+          "score": 0.924779,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0186_utility_assistance_medford_6",
+          "user": "I am in Medford and need utility assistance."
+        },
+        {
+          "recordId": "stress_0602_utility_assistance_medford_2#turn-1",
+          "score": 0.913457,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0602_utility_assistance_medford_2",
+          "user": "Please search 211 for utility assistance near Medford."
+        },
+        {
+          "recordId": "matrix_utility_assistance_portland#turn-1",
+          "score": 0.879087,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_portland",
+          "user": "Can you find utility assistance in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0186_utility_assistance_medford_6#turn-2",
+      "scenarioId": "stress_0186_utility_assistance_medford_6",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Medford and need utility assistance.",
+      "normalizedQuery": "medford utility utilities heat electric assistance",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_utility_assistance_medford#turn-1",
+          "score": 0.924779,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_medford",
+          "user": "Can you find utility assistance in Medford?"
+        },
+        {
+          "recordId": "stress_0602_utility_assistance_medford_2#turn-1",
+          "score": 0.921358,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0602_utility_assistance_medford_2",
+          "user": "Please search 211 for utility assistance near Medford."
+        },
+        {
+          "recordId": "stress_0420_utility_assistance_portland_0#turn-1",
+          "score": 0.895459,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0420_utility_assistance_portland_0",
+          "user": "I am in Portland and need utility assistance."
+        }
+      ]
+    },
+    {
+      "id": "stress_0602_utility_assistance_medford_2#turn-1",
+      "scenarioId": "stress_0602_utility_assistance_medford_2",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Please search 211 for utility assistance near Medford.",
+      "normalizedQuery": "please search 211 utility utilities heat electric assistance medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "page:bafkreihc3uogmak6hmrzzyazdmrmaszwtotn6eyaf52cegdj6yx5b7a37m",
+        "service:0e89801e3b514933",
+        "service:0b57adde740c222a",
+        "service:d9c7707e45d265ad"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0186_utility_assistance_medford_6#turn-2",
+          "score": 0.921358,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0186_utility_assistance_medford_6",
+          "user": "I am in Medford and need utility assistance."
+        },
+        {
+          "recordId": "matrix_utility_assistance_medford#turn-1",
+          "score": 0.913457,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_medford",
+          "user": "Can you find utility assistance in Medford?"
+        },
+        {
+          "recordId": "stress_0290_utility_assistance_hillsboro_2#turn-1",
+          "score": 0.869738,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0290_utility_assistance_hillsboro_2",
+          "user": "Please search 211 for utility assistance near Hillsboro."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_utility_assistance_medford#turn-1",
+      "to": "stress_0186_utility_assistance_medford_6#turn-2",
+      "type": "semantic_similar",
+      "score": 0.924779,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_utility_assistance_medford#turn-1",
+      "to": "stress_0602_utility_assistance_medford_2#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913457,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0186_utility_assistance_medford_6#turn-2",
+      "to": "matrix_utility_assistance_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.924779,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0186_utility_assistance_medford_6#turn-2",
+      "to": "stress_0602_utility_assistance_medford_2#turn-1",
+      "type": "semantic_similar",
+      "score": 0.921358,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0602_utility_assistance_medford_2#turn-1",
+      "to": "stress_0186_utility_assistance_medford_6#turn-2",
+      "type": "semantic_similar",
+      "score": 0.921358,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0602_utility_assistance_medford_2#turn-1",
+      "to": "matrix_utility_assistance_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913457,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

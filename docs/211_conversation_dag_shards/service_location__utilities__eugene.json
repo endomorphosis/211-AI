@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__utilities__eugene",
+  "kind": "service_location",
+  "key": "utilities__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_utility_assistance_eugene#turn-1",
+      "scenarioId": "matrix_utility_assistance_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find utility assistance in Eugene?",
+      "normalizedQuery": "utility utilities heat electric assistance eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:076561fd7941361f",
+        "service:79b69b74b5da1479",
+        "service:b145395232162ffd",
+        "service:f39f67447bad69ba",
+        "service:9c4a0ab059aed565"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0576_utility_assistance_eugene_0#turn-1",
+          "score": 0.92792,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0576_utility_assistance_eugene_0",
+          "user": "I am in Eugene and need utility assistance."
+        },
+        {
+          "recordId": "stress_0160_utility_assistance_eugene_4#turn-1",
+          "score": 0.927016,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0160_utility_assistance_eugene_4",
+          "user": "Find local utility assistance options around Eugene."
+        },
+        {
+          "recordId": "matrix_utility_assistance_portland#turn-1",
+          "score": 0.872806,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_portland",
+          "user": "Can you find utility assistance in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0160_utility_assistance_eugene_4#turn-1",
+      "scenarioId": "stress_0160_utility_assistance_eugene_4",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Find local utility assistance options around Eugene.",
+      "normalizedQuery": "local utility utilities heat electric assistance options around eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:076561fd7941361f",
+        "service:79b69b74b5da1479",
+        "service:b145395232162ffd",
+        "service:f39f67447bad69ba",
+        "service:9c4a0ab059aed565"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0576_utility_assistance_eugene_0#turn-1",
+          "score": 0.961605,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0576_utility_assistance_eugene_0",
+          "user": "I am in Eugene and need utility assistance."
+        },
+        {
+          "recordId": "matrix_utility_assistance_eugene#turn-1",
+          "score": 0.927016,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_eugene",
+          "user": "Can you find utility assistance in Eugene?"
+        },
+        {
+          "recordId": "stress_0004_utility_assistance_portland_4#turn-1",
+          "score": 0.882005,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0004_utility_assistance_portland_4",
+          "user": "Find local utility assistance options around Portland."
+        }
+      ]
+    },
+    {
+      "id": "stress_0576_utility_assistance_eugene_0#turn-1",
+      "scenarioId": "stress_0576_utility_assistance_eugene_0",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Eugene and need utility assistance.",
+      "normalizedQuery": "eugene utility utilities heat electric assistance",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:076561fd7941361f",
+        "service:79b69b74b5da1479",
+        "service:b145395232162ffd",
+        "service:f39f67447bad69ba",
+        "service:9c4a0ab059aed565"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0160_utility_assistance_eugene_4#turn-1",
+          "score": 0.961605,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0160_utility_assistance_eugene_4",
+          "user": "Find local utility assistance options around Eugene."
+        },
+        {
+          "recordId": "matrix_utility_assistance_eugene#turn-1",
+          "score": 0.92792,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_eugene",
+          "user": "Can you find utility assistance in Eugene?"
+        },
+        {
+          "recordId": "stress_0420_utility_assistance_portland_0#turn-1",
+          "score": 0.885694,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0420_utility_assistance_portland_0",
+          "user": "I am in Portland and need utility assistance."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_utility_assistance_eugene#turn-1",
+      "to": "stress_0576_utility_assistance_eugene_0#turn-1",
+      "type": "semantic_similar",
+      "score": 0.92792,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_utility_assistance_eugene#turn-1",
+      "to": "stress_0160_utility_assistance_eugene_4#turn-1",
+      "type": "semantic_similar",
+      "score": 0.927016,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0160_utility_assistance_eugene_4#turn-1",
+      "to": "stress_0576_utility_assistance_eugene_0#turn-1",
+      "type": "semantic_similar",
+      "score": 0.961605,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0160_utility_assistance_eugene_4#turn-1",
+      "to": "matrix_utility_assistance_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.927016,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0576_utility_assistance_eugene_0#turn-1",
+      "to": "stress_0160_utility_assistance_eugene_4#turn-1",
+      "type": "semantic_similar",
+      "score": 0.961605,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0576_utility_assistance_eugene_0#turn-1",
+      "to": "matrix_utility_assistance_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.92792,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-26T16:51:58.801413+00:00",
+  "id": "service_location__broad_help__gresham",
+  "kind": "service_location",
+  "key": "broad_help__gresham",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "phone_dialog_0001209#turn-1",
+      "scenarioId": "phone_dialog_0001209",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "broad_help",
+      "locationTag": "gresham",
+      "promptTemplate": "clarifying_prompt",
+      "user": "Hi, I\u2019m in Gresham, my phone\u2019s dying, can you help me fast?",
+      "normalizedQuery": "hi gresham phone dying fast",
+      "voiceResponse": "I hear you, and we can do this fast. I can get you the quickest next step right now. Are you looking for a place to sleep tonight, or do you need emergency safety help right now?",
+      "evidenceDocIds": [
+        "service:d968ced621aea83d",
+        "service:d7abe58ca7495460",
+        "service:bb282e5eaf2a18e5",
+        "service:9800cfa31b9bccb1",
+        "service:9d59c2284716e036"
+      ],
+      "similarCases": [],
+      "assistantResponse": "I hear you, and we can do this fast. I can get you the quickest next step right now. Are you looking for a place to sleep tonight, or do you need emergency safety help right now?",
+      "voiceResponseAlternatives": [],
+      "callerArchetypeId": "homeless_exhausted",
+      "channelConditionId": "bad_reception",
+      "assistantStyleId": "compassionate_caseworker"
+    },
+    {
+      "id": "phone_dialog_0002257#turn-2",
+      "scenarioId": "phone_dialog_0002257",
+      "turnIndex": 1,
+      "route": "speech_unclear_clarification",
+      "serviceTag": "broad_help",
+      "locationTag": "gresham",
+      "promptTemplate": "speech_unclear_clarification",
+      "user": "I\u2019m in Gresham, by the bus line, and all our clothes are dirty and my kids have school tomorrow, I just... I can\u2019t fix this.",
+      "normalizedQuery": "hi sorry really breathe right now don know start gresham by bus line all our clothes dirty kids have school tomorrow just fix this",
+      "voiceResponse": "I hear how overwhelmed you are, and I\u2019m with you. The audio was unclear on my end. Could you repeat just one part: do you need laundry help tonight, school clothes for your kids, or both?",
+      "evidenceDocIds": [
+        "page:bafkreidhyvr6q7x7s6ni7idrr6x46yw2bulpvmtpwpmfytecseu7mddvgq",
+        "page:bafkreie347yxdopflenkpm5mhxspimi6s27aiwf4xmzvpoktxicfkt6t34",
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:567e5b7c27ae7419",
+        "service:9c7b6b28cfc2b7b2"
+      ],
+      "similarCases": [],
+      "assistantResponse": "I hear how overwhelmed you are, and I\u2019m with you. The audio was unclear on my end. Could you repeat just one part: do you need laundry help tonight, school clothes for your kids, or both?",
+      "voiceResponseAlternatives": [],
+      "callerArchetypeId": "disorganized_distressed",
+      "channelConditionId": "emotionally_overloaded",
+      "assistantStyleId": "compassionate_caseworker"
+    },
+    {
+      "id": "phone_dialog_0002257#turn-3",
+      "scenarioId": "phone_dialog_0002257",
+      "turnIndex": 2,
+      "route": "repeat_or_restate",
+      "serviceTag": "broad_help",
+      "locationTag": "gresham",
+      "promptTemplate": "repeat_or_restate",
+      "user": "Can you say that again slower? I missed it, there\u2019s a lot of noise in here.",
+      "normalizedQuery": "hi sorry really breathe right now don know start gresham by bus line all our clothes dirty kids have school tomorrow just fix this say again slower missed it there lot noise here",
+      "voiceResponse": "I hear you, and you\u2019re doing your best in a loud moment. I\u2019ll say it slower. Please tell me one choice: laundry help tonight, school clothes for your kids, or both.",
+      "evidenceDocIds": [
+        "page:bafkreif7g2gcpqes477n7n5caqwsx72w4fl3pvtsvoynhgsftfulgukeci",
+        "page:bafkreidhyvr6q7x7s6ni7idrr6x46yw2bulpvmtpwpmfytecseu7mddvgq",
+        "page:bafkreidflwc4kvnjvqukknruym334clqwq7gi66bdwijbluz7d46nmnnvu",
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "page:bafkreie347yxdopflenkpm5mhxspimi6s27aiwf4xmzvpoktxicfkt6t34"
+      ],
+      "similarCases": [],
+      "assistantResponse": "I hear you, and you\u2019re doing your best in a loud moment. I\u2019ll say it slower. Please tell me one choice: laundry help tonight, school clothes for your kids, or both.",
+      "voiceResponseAlternatives": [],
+      "callerArchetypeId": "disorganized_distressed",
+      "channelConditionId": "emotionally_overloaded",
+      "assistantStyleId": "compassionate_caseworker"
+    }
+  ],
+  "edges": [
+    {
+      "from": "phone_dialog_0001209#turn-1",
+      "to": "phone_dialog_0001209#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "clarifying_prompt->grounded_211_answer"
+    },
+    {
+      "from": "phone_dialog_0002257#turn-2",
+      "to": "phone_dialog_0002257#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "speech_unclear_clarification->repeat_or_restate"
+    },
+    {
+      "from": "phone_dialog_0002257#turn-3",
+      "to": "phone_dialog_0002257#turn-4",
+      "type": "scenario_next_turn",
+      "routeTransition": "repeat_or_restate->live_agent"
+    }
+  ]
+}

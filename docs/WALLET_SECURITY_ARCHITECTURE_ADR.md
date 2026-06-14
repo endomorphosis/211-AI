@@ -54,6 +54,12 @@ workflows around that core.
    `python -m wallet_interface.ops --validate-production-readiness`. Target
    launch also requires a validated JSON signoff packet from
    `docs/WALLET_TARGET_PRODUCTION_SIGNOFF_PACKET.template.json`.
+8. World ID proof-of-human is an optional wallet proof receipt and anti-duplication
+   signal. It must not be used as a wallet encryption key, sole recovery factor,
+   controller-add bypass, threshold-governance replacement, or substitute for
+   user presence. Login or recovery assistance must use a separate action,
+   remain wallet-private, and require existing controller, device, recovery
+   contact, threshold, or approved support-review proof before authority changes.
 
 ## Threat Model
 
@@ -69,6 +75,8 @@ workflows around that core.
 | Operators lose state across restarts | `LocalWalletRepository` persists wallet snapshots and the analytics ledger. Production env requires repository and encrypted storage configuration. |
 | Ops endpoints leak operational state | `/ops/health` supports shared-secret auth, and edge/deployment references forward only health routes through controlled paths. |
 | User misunderstands revocation | UI and runbook language distinguish future access denial from plaintext that may already have been downloaded. |
+| World ID becomes an account-takeover bypass | World ID is not an authority key. Recovery or login assistance must use a separate action and must still satisfy controller/device/recovery-contact thresholds, user presence, and audit requirements. |
+| Expanded World ID credentials overclaim identity or eligibility | Passport/NFC, selfie, and identity-check credentials require claim-specific privacy/legal/security review, UI wording approval, provider eligibility policy, and manual fallback before launch. |
 
 ## Privacy Review Process
 
@@ -103,9 +111,13 @@ The readiness report must be `status=ok`. It fails when durable
 repository/storage env vars, proof mode, verifier credentials, ops-health auth,
 alert routing, secret-manager references, ops health, or the external region
 and distance verifier contracts are missing, unhealthy, simulated, or still set
-to placeholders. The signoff packet must validate security, privacy,
-legal/policy, accessibility/usability, operations/on-call, product-owner,
-analytics privacy, retention, and launch-decision evidence.
+to placeholders. For World ID-enabled targets, readiness and signoff must also
+cover app/RP ids, secret-manager references, RP signing vector evidence,
+Developer Portal reachability, proof sanitization, staging simulator evidence,
+login/recovery non-key guardrails, and credential-policy expansion limits. The
+signoff packet must validate security, privacy, legal/policy,
+accessibility/usability, operations/on-call, product-owner, analytics privacy,
+retention, and launch-decision evidence.
 
 ## Consequences
 

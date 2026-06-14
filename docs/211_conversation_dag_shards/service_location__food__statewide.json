@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__food__statewide",
+  "kind": "service_location",
+  "key": "food__statewide",
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "id": "voice_mishearing_then_clarification#turn-1",
+      "scenarioId": "voice_mishearing_then_clarification",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need help with meals but I am not sure where.",
+      "normalizedQuery": "meals sure",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:d8559ced93d0f936",
+        "service:b8c762144d937988",
+        "service:0420159846f1dd26",
+        "service:312a08c27734b645",
+        "service:ae4a0e9f42786e10"
+      ],
+      "similarCases": [
+        {
+          "recordId": "voice_mishearing_then_clarification#turn-2",
+          "score": 0.872403,
+          "route": "grounded_211_answer",
+          "scenarioId": "voice_mishearing_then_clarification",
+          "user": "Portland Oregon, food pantry please."
+        },
+        {
+          "recordId": "stress_0599_community_meals_medford_11#turn-2",
+          "score": 0.747698,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0599_community_meals_medford_11",
+          "user": "I am in Medford and need community meals."
+        },
+        {
+          "recordId": "matrix_community_meals_eugene#turn-1",
+          "score": 0.743449,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_community_meals_eugene",
+          "user": "Can you find community meals in Eugene?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "voice_mishearing_then_clarification#turn-1",
+      "to": "voice_mishearing_then_clarification#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

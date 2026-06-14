@@ -99,17 +99,17 @@ export const agentToolPermissionPolicies: Record<AgentCommandName, AgentToolPerm
   repair_upload_storage: writeWalletPolicy("agent.upload.storage.repair"),
   toggle_upload_shared: shareOrDisclosePolicy("agent.upload.shared.toggle"),
   set_disclosure_scopes: shareOrDisclosePolicy("agent.disclosure_scopes.set"),
-  record_controller_approval: shareOrDisclosePolicy("agent.access_request.controller_approval"),
-  approve_access_request: shareOrDisclosePolicy("agent.access_request.approve"),
-  reject_access_request: shareOrDisclosePolicy("agent.access_request.reject"),
-  revoke_access_request: shareOrDisclosePolicy("agent.access_request.revoke"),
+  record_controller_approval: writeWalletPolicy("agent.access_request.controller_approval"),
+  approve_access_request: writeWalletPolicy("agent.access_request.approve"),
+  reject_access_request: writeWalletPolicy("agent.access_request.reject"),
+  revoke_access_request: writeWalletPolicy("agent.access_request.revoke"),
   analyze_granted_record: shareOrDisclosePolicy("agent.grant_record.analyze"),
   view_granted_record: shareOrDisclosePolicy("agent.grant_record.view"),
   delegate_grant: shareOrDisclosePolicy("agent.grant.delegate"),
-  create_proof: shareOrDisclosePolicy("agent.proof.create", {
+  create_proof: writeWalletPolicy("agent.proof.create", {
     requiresPrivateContextOptIn: true
   }),
-  create_location_region_proof: shareOrDisclosePolicy("agent.proof.location_region.create", {
+  create_location_region_proof: writeWalletPolicy("agent.proof.location_region.create", {
     requiresPrivateContextOptIn: true
   }),
   explain_proof_receipt: {

@@ -26,7 +26,7 @@ const disclosureScopeLabels: Record<DisclosureDataScope, string> = {
   photo: "Photo or ID file",
   profile: "Profile",
   shelter_history: "Shelter history",
-  uploaded_documents: "Uploads"
+  uploaded_documents: "Wallet files"
 };
 
 export async function previewSharingCapabilitiesAction(

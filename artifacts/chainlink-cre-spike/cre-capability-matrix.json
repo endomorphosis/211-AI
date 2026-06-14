@@ -1,0 +1,176 @@
+{
+  "schema_version": "chainlink-cre-capability-matrix-v1",
+  "generated_at": "2026-06-13",
+  "task_id": "CLZKML-020",
+  "sources": [
+    {
+      "id": "cre_overview",
+      "url": "https://docs.chain.link/cre",
+      "notes": "CRE workflows use Go or TypeScript SDKs, compile with CRE CLI, and run across a DON."
+    },
+    {
+      "id": "deploy_access",
+      "url": "https://docs.chain.link/cre/account/deploy-access",
+      "notes": "Deploying workflows to a Chainlink DON requires Early Access approval."
+    },
+    {
+      "id": "deploying_workflows",
+      "url": "https://docs.chain.link/cre/guides/operations/deploying-workflows",
+      "notes": "CRE supports private and onchain ethereum-mainnet workflow registries."
+    },
+    {
+      "id": "capabilities",
+      "url": "https://docs.chain.link/cre/capabilities",
+      "notes": "Execution capabilities including HTTP, Confidential HTTP, and EVM use built-in consensus."
+    },
+    {
+      "id": "consensus_computing",
+      "url": "https://docs.chain.link/cre/concepts/consensus-computing",
+      "notes": "Capability DON nodes execute independently and aggregate through BFT consensus."
+    },
+    {
+      "id": "http_client",
+      "url": "https://docs.chain.link/cre/reference/sdk/http-client-ts",
+      "notes": "HTTP client requests are node-level actions wrapped in consensus aggregation."
+    },
+    {
+      "id": "confidential_http",
+      "url": "https://docs.chain.link/cre/guides/workflow/using-confidential-http-client",
+      "notes": "Confidential HTTP requests execute inside a secure enclave with secret templates and optional encrypted responses."
+    },
+    {
+      "id": "http_trigger",
+      "url": "https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-ts",
+      "notes": "Deployed HTTP-triggered workflows require cryptographically signed requests from authorized EVM addresses."
+    },
+    {
+      "id": "service_quotas",
+      "url": "https://docs.chain.link/cre/service-quotas",
+      "notes": "CRE quotas are subject to change and include organization and workflow registry limits."
+    },
+    {
+      "id": "functions_billing",
+      "url": "https://docs.chain.link/chainlink-functions/resources/billing",
+      "notes": "Functions sunset dates and migration guidance; use CRE rather than Functions for new work."
+    }
+  ],
+  "access": {
+    "deploy_access_required": true,
+    "access_check_command": "cre account access",
+    "whoami_command": "cre whoami",
+    "request_access_url": "https://app.chain.link/cre/request-access",
+    "local_simulation_allowed_while_waiting": true
+  },
+  "registries": [
+    {
+      "id": "private",
+      "type": "offchain",
+      "authorization": "CRE login session",
+      "ethereum_mainnet_rpc_required": false,
+      "eth_for_registry_gas_required": false,
+      "linked_web3_key_required": false,
+      "creates_onchain_registry_record": false,
+      "recommended_use": "testing and team-managed workflows"
+    },
+    {
+      "id": "onchain:ethereum-mainnet",
+      "type": "onchain",
+      "authorization": "linked web3 wallet key",
+      "ethereum_mainnet_rpc_required": true,
+      "eth_for_registry_gas_required": true,
+      "linked_web3_key_required": true,
+      "creates_onchain_registry_record": true,
+      "recommended_use": "production and multisig ownership"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "HTTP Client",
+      "available_for_router_consensus": true,
+      "consensus_behavior": "Built-in consensus aggregation across capability DON nodes.",
+      "router_use": "Call deterministic or idempotent inference endpoints and aggregate structured outputs.",
+      "constraints": [
+        "Inference endpoint should be deterministic by request hash and generation parameters.",
+        "POST endpoints must avoid duplicate side effects or use the documented single-execution/cache pattern.",
+        "Responses should be structured JSON for stable aggregation."
+      ]
+    },
+    {
+      "name": "Confidential HTTP Client",
+      "available_for_router_consensus": true,
+      "consensus_behavior": "Confidential request execution with CRE capability consensus around the workflow result.",
+      "router_use": "Send sensitive prompts or credentials through enclave-backed confidential requests.",
+      "constraints": [
+        "Use vault-style secret templates for sensitive headers or body fields.",
+        "Treat evidence as confidential-compute/TEE evidence, not a ZKML proof by itself.",
+        "Plan encrypted response handling before sending sensitive prompt material."
+      ]
+    },
+    {
+      "name": "EVM Client",
+      "available_for_router_consensus": true,
+      "consensus_behavior": "CRE EVM capability operations participate in built-in consensus.",
+      "router_use": "Anchor verifier events or write receipt hashes to an app verifier contract.",
+      "constraints": [
+        "Requires target chain configuration and consumer/verifier contract design.",
+        "Onchain writes introduce gas costs and irreversible public metadata.",
+        "Do not place raw prompts, PII, or secrets onchain."
+      ]
+    },
+    {
+      "name": "HTTP Trigger",
+      "available_for_router_consensus": true,
+      "consensus_behavior": "Starts deployed workflows after CRE validates signed trigger requests.",
+      "router_use": "Let the Python bridge submit canonical consensus requests on demand.",
+      "constraints": [
+        "Production triggers require authorized EVM signing keys.",
+        "Requests need replay-safe IDs, nonces, and deadlines.",
+        "Live trigger tests must be opt-in."
+      ]
+    }
+  ],
+  "quotas": {
+    "subject_to_change": true,
+    "documented_defaults": {
+      "max_users_per_organization": 40,
+      "private_registry_workflows_per_organization": 3,
+      "onchain_linked_keys_per_organization": 1,
+      "onchain_workflows_per_linked_key": 3
+    },
+    "router_design_implication": "Prefer one configurable workflow with model/proof policy IDs instead of one workflow per model."
+  },
+  "billing": {
+    "cre_public_billing_details_found": false,
+    "legacy_functions_subscriptions_usable_for_new_feature": false,
+    "required_before_production": [
+      "Confirm CRE pricing with Chainlink.",
+      "Confirm billing account or subscription mechanism.",
+      "Confirm paid usage limits and alerting.",
+      "Keep live CRE tests opt-in."
+    ]
+  },
+  "recommended_first_path": {
+    "registry": "private",
+    "trigger": "HTTP Trigger",
+    "capability": "HTTP Client for non-sensitive deterministic endpoints; Confidential HTTP if prompts or credentials are sensitive",
+    "workflow_language": "TypeScript or Go after team preference is confirmed",
+    "onchain_verifier_contract": "defer unless production audit or smart-contract consumption requires it"
+  },
+  "verifier_contract": {
+    "required_for_first_local_consensus": false,
+    "required_for_first_cre_simulation": false,
+    "recommended_for_production_high_impact_routes": true,
+    "minimum_fields": [
+      "workflowId",
+      "registry",
+      "chainId",
+      "requestHash",
+      "modelCommitment",
+      "outputHash",
+      "proofPolicy",
+      "proofHash",
+      "receiptCid",
+      "timestamp"
+    ]
+  }
+}

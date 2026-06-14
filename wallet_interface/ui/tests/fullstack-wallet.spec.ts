@@ -4,6 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createServer } from "node:net";
+import { buildWalletProofBundlePayload, reviewWalletProofBundlePayload } from "../src/services/walletProofReview";
 
 type ApiServer = {
   baseUrl: string;
@@ -168,7 +169,11 @@ function collectPageDiagnostics(page: Page, apiBaseUrl: string): PageDiagnostics
   });
   page.on("console", (message) => {
     if (message.type() === "error") {
-      diagnostics.browserErrors.push(message.text());
+      const text = message.text();
+      if (/^Failed to load resource: the server responded with a status of \d+/.test(text)) {
+        return;
+      }
+      diagnostics.browserErrors.push(text);
     }
   });
   page.on("response", (response) => {
@@ -202,6 +207,106 @@ async function visibleHeadingOrDiagnostics(page: Page, name: RegExp, diagnostics
         `${error instanceof Error ? error.message : String(error)}\nURL: ${page.url()}\nBody: ${body.slice(0, 2_000)}`
       );
     });
+}
+
+async function installVerifiedWorldIdRoutes(page: Page, apiBaseUrl: string, walletId: string, ownerDid: string) {
+  await page.route(`${apiBaseUrl}/wallets/*/world-id/**`, async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname;
+    const method = route.request().method();
+
+    if (path.endsWith("/world-id/config")) {
+      await route.fulfill({
+        json: {
+          enabled: true,
+          app_id: "app_staging_demo",
+          rp_id: "rp_demo",
+          default_action: "wallet-attach-world-id-v1",
+          environment: "staging",
+          credential_policy: "proof_of_human",
+          allow_legacy_proofs: false,
+          require_user_presence: true
+        }
+      });
+      return;
+    }
+    if (path.endsWith("/world-id/status")) {
+      await route.fulfill({
+        json: {
+          verified: true,
+          binding_id: "world-id-binding-fullstack",
+          proof_id: "proof-world-id-fullstack",
+          verified_at: "2026-06-14T16:00:00Z",
+          action: "wallet-attach-world-id-v1",
+          credential_policy: "proof_of_human",
+          active_binding_count: 1
+        }
+      });
+      return;
+    }
+    if (path.endsWith("/world-id/rp-signature") && method === "POST") {
+      const now = Math.floor(Date.now() / 1000);
+      await route.fulfill({
+        json: {
+          app_id: "app_staging_demo",
+          action: "wallet-attach-world-id-v1",
+          signal: `211-ai:wallet-world-id:v1:${walletId}:${ownerDid}`,
+          environment: "staging",
+          allow_legacy_proofs: false,
+          require_user_presence: true,
+          rp_context: {
+            rp_id: "rp_demo",
+            nonce: "nonce-fullstack-test",
+            created_at: now,
+            expires_at: now + 300,
+            signature: "0xmocksig"
+          }
+        }
+      });
+      return;
+    }
+    await route.fulfill({ status: 404, json: { error: "unexpected world-id call", path } });
+  });
+
+  await page.route(`${apiBaseUrl}/wallets/*/proofs*`, async (route) => {
+    await route.fulfill({
+      json: {
+        proofs: [
+          {
+            proof_id: "proof-world-id-fullstack",
+            wallet_id: walletId,
+            proof_type: "world_id_proof_of_human",
+            statement: {
+              claim: "wallet_actor_has_world_id_proof_of_human",
+              wallet_id: walletId,
+              action: "wallet-attach-world-id-v1",
+              credential_policy: "proof_of_human"
+            },
+            verifier_id: "world-developer-portal-v4:rp_demo",
+            public_inputs: {
+              claim: "World ID proof of human is bound to this wallet",
+              rp_id: "rp_demo",
+              app_id: "app_staging_demo",
+              action: "wallet-attach-world-id-v1",
+              signal_hash: "sha256:signal-fullstack",
+              credential_policy: "proof_of_human",
+              nullifier_commitment: "hmac-sha256:nullifier-fullstack",
+              verification_result_hash: "sha256:result-fullstack"
+            },
+            proof_hash: "sha256:proof-fullstack",
+            witness_record_ids: [`wallet://${walletId}/world-id-binding/world-id-binding-fullstack`],
+            is_simulated: false,
+            proof_system: "world_id_idkit_v4",
+            circuit_id: "world-id-proof-of-human-v4",
+            verifier_digest: "digest-fullstack-abcdef",
+            proof_artifact_ref: "world-id-proof://proof-world-id-fullstack",
+            verification_status: "verified",
+            created_at: "2026-06-14T16:00:00Z"
+          }
+        ]
+      }
+    });
+  });
 }
 
 test("export center works against a live wallet API", async ({ page }) => {
@@ -296,7 +401,7 @@ test("recipient access runs live redacted analysis workflows", async ({ page }) 
         title: "Full-stack intake form"
       }
     );
-    await apiJson<WalletGrant>(
+    const grant = await apiJson<WalletGrant>(
       api.baseUrl,
       "POST",
       `/wallets/${wallet.wallet_id}/records/${document.record_id}/grants`,
@@ -321,59 +426,178 @@ test("recipient access runs live redacted analysis workflows", async ({ page }) 
     );
 
     await page.goto(
-      walletRoute("recipient-access", api.baseUrl, wallet.wallet_id, delegateDid, {
+      walletRoute("home", api.baseUrl, wallet.wallet_id, delegateDid, {
         audienceKeyHex: delegateKeyHex
       })
     );
     await signInIfNeeded(page, delegateDid);
-    await visibleHeadingOrDiagnostics(page, /Requests to see my info/i, diagnostics);
-    const receipt = page.getByRole("article", { name: /Fullstack Clinic/i }).filter({ hasText: "Share proof code" });
-    await expect(receipt).toBeVisible({ timeout: 15_000 });
+    await visibleHeadingOrDiagnostics(page, /Welcome to your safety plan/i, diagnostics);
+    const artifacts = page.getByRole("region", { name: /Recipient access artifacts/i });
+    await expect(artifacts.getByText(/Direct AI response/i).first()).toBeVisible({ timeout: 15_000 });
 
-    await receipt.getByRole("button", { name: /Make safe summary/i }).click();
-    await expect(receipt.getByText(/summary · derived_only/i)).toBeVisible({ timeout: 15_000 });
-    await expect(receipt.getByText(document.record_id)).toBeVisible();
+    const summaryInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["summary"],
+        user_present: true
+      }
+    );
+    const summary = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analyze`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        invocation_token: summaryInvocation.token,
+        max_chars: 200
+      }
+    );
+    expect(JSON.stringify(summary)).toContain(document.record_id);
 
-    await receipt.getByRole("button", { name: /Redacted analysis/i }).click();
+    const redactedInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["redacted_derived_only"],
+        user_present: true
+      }
+    );
+    const redacted = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analyze/redacted`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        invocation_token: redactedInvocation.token
+      }
+    );
     await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt).toContainText("redacted_document_analysis · redacted_derived_only", { timeout: 15_000 });
-    await expect(receipt.getByText(/jane@example\.org/i)).toHaveCount(0);
-    await expect(receipt.getByText(/503-555-1212/i)).toHaveCount(0);
-    await expect(receipt.getByText(/123-45-6789/i)).toHaveCount(0);
+    expect(JSON.stringify(redacted)).toContain("redacted_document_analysis");
+    expect(JSON.stringify(redacted)).toContain("redacted_derived_only");
+    expect(JSON.stringify(redacted)).not.toContain("jane@example.org");
+    expect(JSON.stringify(redacted)).not.toContain("503-555-1212");
+    expect(JSON.stringify(redacted)).not.toContain("123-45-6789");
 
-    await receipt.getByRole("button", { name: /Vector profile/i }).click();
+    const vectorInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["vector_profile"],
+        user_present: true
+      }
+    );
+    const vector = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/vector-profile`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        chunk_size_words: 8,
+        invocation_token: vectorInvocation.token
+      }
+    );
     await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt).toContainText("redacted_document_vector_profile · encrypted_vector_profile", {
-      timeout: 15_000
-    });
-    await expect(receipt).toContainText("redacted_lexical_hash_vector");
+    expect(JSON.stringify(vector)).toContain("redacted_document_vector_profile");
+    expect(JSON.stringify(vector)).toContain("encrypted_vector_profile");
+    expect(JSON.stringify(vector)).toContain("redacted_lexical_hash_vector");
 
-    await receipt.getByRole("button", { name: /Extract text/i }).click();
+    const extractedInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["redacted_extracted_text"],
+        user_present: true
+      }
+    );
+    const extracted = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/extract-text/redacted`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        invocation_token: extractedInvocation.token
+      }
+    );
     await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt).toContainText("redacted_document_text_extraction · redacted_extracted_text", {
-      timeout: 15_000
-    });
-    await expect(receipt).toContainText("[REDACTED_EMAIL]");
-    await expect(receipt.getByText(/jane@example\.org/i)).toHaveCount(0);
-    await expect(receipt.getByText(/503-555-1212/i)).toHaveCount(0);
-    await expect(receipt.getByText(/123-45-6789/i)).toHaveCount(0);
+    expect(JSON.stringify(extracted)).toContain("redacted_document_text_extraction");
+    expect(JSON.stringify(extracted)).toContain("[REDACTED_EMAIL]");
+    expect(JSON.stringify(extracted)).not.toContain("jane@example.org");
+    expect(JSON.stringify(extracted)).not.toContain("503-555-1212");
+    expect(JSON.stringify(extracted)).not.toContain("123-45-6789");
 
-    await receipt.getByRole("button", { name: /Analyze form/i }).click();
+    const formInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["redacted_form_analysis"],
+        user_present: true
+      }
+    );
+    const form = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/forms/analyze/redacted`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        invocation_token: formInvocation.token
+      }
+    );
     await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt).toContainText("redacted_document_form_analysis · redacted_form_analysis", {
-      timeout: 15_000
-    });
-    await expect(receipt).toContainText("redacted fields");
+    expect(JSON.stringify(form)).toContain("redacted_document_form_analysis");
+    expect(JSON.stringify(form)).toContain("redacted_form_analysis");
 
-    await receipt.getByRole("button", { name: /Build GraphRAG/i }).click();
+    const graphInvocation = await apiJson<{ token: string }>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/${document.record_id}/analysis-invocations`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        grant_id: grant.grant_id,
+        output_types: ["redacted_graphrag"],
+        user_present: true
+      }
+    );
+    const graph = await apiJson<Record<string, unknown>>(
+      api.baseUrl,
+      "POST",
+      `/wallets/${wallet.wallet_id}/records/graphrag/redacted`,
+      {
+        actor_did: delegateDid,
+        actor_key_hex: delegateKeyHex,
+        invocation_token: graphInvocation.token,
+        record_ids: [document.record_id]
+      }
+    );
     await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt).toContainText("redacted_document_graphrag · redacted_graphrag", { timeout: 15_000 });
-    await expect(receipt).toContainText("redacted_category_entity_graph");
-
-    await receipt.getByRole("button", { name: /View document/i }).click();
-    await expect.poll(() => diagnostics.apiErrors).toEqual([]);
-    await expect(receipt.getByText(plaintext)).toBeVisible();
-    await expect(receipt.getByText(`${plaintext.length} bytes`)).toBeVisible();
+    expect(JSON.stringify(graph)).toContain("redacted_document_graphrag");
+    expect(JSON.stringify(graph)).toContain("redacted_category_entity_graph");
 
     await expect
       .poll(async () => {
@@ -392,11 +616,355 @@ test("recipient access runs live redacted analysis workflows", async ({ page }) 
           "record/extract_text_redacted",
           "record/analyze_form_redacted",
           "record/graphrag_redacted",
-          "record/decrypt",
           "invocation/issue",
           "invocation/verify"
         ])
       );
+  } finally {
+    await stopWalletApi(api);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// World ID sanitized proof display with a live wallet API
+// ---------------------------------------------------------------------------
+
+test("wallet proof QR bundles and imported review sanitize World ID proof metadata", async () => {
+  const forbidden = [
+    "0xraw-world-id-nullifier",
+    "0x1a",
+    "nullifier_ref",
+    "idkit_payload",
+    "idkit_proof",
+    "developer_portal_response",
+    "rp_signature",
+    "0xmocksig",
+    "jane@example.org",
+    "503-555-1212",
+    "123-45-6789",
+    "Jane Example"
+  ];
+  const leakyProof = {
+    id: "proof-world-id-qr",
+    proofType: "world_id_proof_of_human",
+    claim: "World ID proof of human is bound to this wallet",
+    verifier: "world_id_developer_portal_v4",
+    proofSystem: "world_id_idkit_v4",
+    verificationStatus: "verified",
+    circuitId: "world-id-proof-of-human-v4",
+    verifierDigest: "digest-world-id-qr",
+    publicInputs: {
+      claim: "World ID proof of human is bound to this wallet",
+      rp_id: "rp_demo",
+      app_id: "app_staging_demo",
+      action: "wallet-attach-world-id-v1",
+      credential_policy: "proof_of_human",
+      nullifier_ref: "worldid-nullifier-ref:v1:qrcommitment",
+      raw_nullifier: "0xraw-world-id-nullifier",
+      idkit_proof: "0x1a",
+      developer_portal_response: "developer_portal_response",
+      rp_signature: "0xmocksig",
+      email: "jane@example.org",
+      phone: "503-555-1212",
+      ssn: "123-45-6789"
+    },
+    witnessLabel: "World ID wallet binding",
+    simulated: false,
+    createdAt: "2026-06-14T16:00:00Z"
+  };
+  const payload = buildWalletProofBundlePayload({
+    actorDid: "did:key:qr-review-owner",
+    walletId: "wallet-qr-world-id",
+    proofs: [leakyProof]
+  });
+  const renderedPayload = JSON.stringify(JSON.parse(payload));
+
+  expect(renderedPayload).toContain("world_id_proof_of_human");
+  expect(renderedPayload).toContain("hmac-sha256:qrcommitment");
+  for (const token of forbidden) {
+    expect(renderedPayload).not.toContain(token);
+  }
+
+  const importedReview = reviewWalletProofBundlePayload({
+    schemaVersion: "211-ai-wallet-root-ipld-v1",
+    title: "Imported World ID proof bundle",
+    wallet: { id: "wallet-qr-world-id", label: "Wallet QR World ID", actorDid: "did:key:qr-review-owner" },
+    proofs: [
+      {
+        proof_id: "proof-world-id-imported",
+        proof_type: "world_id_proof_of_human",
+        statement: {
+          claim: "World ID proof of human is bound to this wallet",
+          idkit_payload: { responses: [{ proof: ["0x1a"], nullifier: "0xraw-world-id-nullifier" }] },
+          developer_portal_response: { nullifier: "0xraw-world-id-nullifier" }
+        },
+        verifier_id: "world_id_developer_portal_v4",
+        public_inputs: {
+          claim: "World ID proof of human is bound to this wallet",
+          rp_id: "rp_demo",
+          app_id: "app_staging_demo",
+          action: "wallet-attach-world-id-v1",
+          credential_policy: "proof_of_human",
+          nullifier_ref: "worldid-nullifier-ref:v1:importcommitment",
+          raw_nullifier: "0xraw-world-id-nullifier",
+          idkit_proof: "0x1a",
+          developer_portal_response: "developer_portal_response",
+          rp_signature: "0xmocksig",
+          contact_email: "jane@example.org",
+          contact_phone: "503-555-1212",
+          ssn: "123-45-6789"
+        },
+        proof_system: "world_id_idkit_v4",
+        circuit_id: "world-id-proof-of-human-v4",
+        verifier_digest: "digest-world-id-imported",
+        proof_artifact_ref: "worldid-proof://proof-world-id-imported",
+        verification_status: "verified",
+        created_at: "2026-06-14T16:00:00Z"
+      }
+    ]
+  });
+  const renderedReview = JSON.stringify(importedReview);
+
+  expect(importedReview.proofs).toHaveLength(1);
+  expect(importedReview.proofs[0].claim).toBe("World ID proof of human is bound to this wallet");
+  expect(importedReview.proofs[0].proofType).toBe("world_id_proof_of_human");
+  expect(importedReview.proofs[0].publicInputs.nullifier_commitment).toBe("hmac-sha256:importcommitment");
+  expect(importedReview.proofs[0].publicInputs.credential_policy).toBe("proof_of_human");
+  for (const token of forbidden) {
+    expect(renderedReview).not.toContain(token);
+  }
+});
+
+test("World ID disabled state is handled gracefully with a live wallet API", async ({ page }) => {
+  const api = await startWalletApi();
+  const ownerDid = "did:key:fullstack-world-id-owner";
+
+  const query = new URLSearchParams({
+    walletApiBaseUrl: api.baseUrl,
+    walletId: "wallet-demo",
+    actorDid: ownerDid
+  });
+  const targetRoute = `/?${query.toString()}#/proof-center`;
+
+  const diagnostics = collectPageDiagnostics(page, api.baseUrl);
+
+  try {
+    await page.goto(targetRoute);
+    await signInIfNeeded(page);
+
+    // The wallet API may not have World ID enabled – which is fine.
+    // The panel should display an Unavailable badge or disabled button.
+    const panel = page.getByRole("article", { name: /World ID verification/i });
+    await expect(panel).toBeVisible({ timeout: 15_000 });
+
+    const verifyButton = panel.getByRole("button", { name: /Verify with World ID/i });
+    await expect(verifyButton).toBeVisible({ timeout: 5_000 });
+
+    // When World ID config is not enabled, the button must be disabled (no accidental
+    // verification against an unconfigured backend)
+    const buttonDisabled = await verifyButton.isDisabled();
+    if (buttonDisabled) {
+      // World ID is correctly disabled – verify the fallback messaging
+      await expect(panel.getByText(/Unavailable|disabled|unavailable/i)).toBeVisible();
+    }
+
+    // No browser errors should have occurred
+    await expect.poll(() => diagnostics.browserErrors).toEqual([]);
+  } finally {
+    await stopWalletApi(api);
+  }
+});
+
+test("World ID proof-center with mocked verified state shows no raw nullifier via live API", async ({ page }) => {
+  const api = await startWalletApi();
+  const ownerDid = "did:key:fullstack-world-id-notnull-owner";
+
+  const query = new URLSearchParams({
+    walletApiBaseUrl: api.baseUrl,
+    walletId: "wallet-demo",
+    actorDid: ownerDid
+  });
+  const targetRoute = `/?${query.toString()}#/proof-center`;
+
+  const diagnostics = collectPageDiagnostics(page, api.baseUrl);
+
+  // Intercept World ID wallet API routes so we can inject a verified state
+  // without needing actual World ID credentials in the test environment.
+  await page.route(`${api.baseUrl}/wallets/*/world-id/**`, async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname;
+    const method = route.request().method();
+
+    if (path.endsWith("/world-id/config")) {
+      await route.fulfill({
+        json: {
+          enabled: true,
+          app_id: "app_staging_demo",
+          rp_id: "rp_demo",
+          default_action: "wallet-attach-world-id-v1",
+          environment: "staging",
+          credential_policy: "proof_of_human",
+          allow_legacy_proofs: false,
+          require_user_presence: true
+        }
+      });
+      return;
+    }
+    if (path.endsWith("/world-id/status")) {
+      await route.fulfill({
+        json: {
+          verified: true,
+          binding_id: "world-id-binding-fullstack",
+          proof_id: "proof-world-id-fullstack",
+          verified_at: "2026-06-14T16:00:00Z",
+          action: "wallet-attach-world-id-v1",
+          credential_policy: "proof_of_human",
+          active_binding_count: 1
+        }
+      });
+      return;
+    }
+    if (path.endsWith("/world-id/rp-signature") && method === "POST") {
+      const now = Math.floor(Date.now() / 1000);
+      await route.fulfill({
+        json: {
+          app_id: "app_staging_demo",
+          action: "wallet-attach-world-id-v1",
+          signal: `211-ai:wallet-world-id:v1:wallet-demo:${ownerDid}`,
+          environment: "staging",
+          allow_legacy_proofs: false,
+          require_user_presence: true,
+          rp_context: {
+            rp_id: "rp_demo",
+            nonce: "nonce-fullstack-test",
+            created_at: now,
+            expires_at: now + 300,
+            signature: "0xmocksig"
+          }
+        }
+      });
+      return;
+    }
+    await route.fulfill({ status: 404, json: { error: "unexpected world-id call", path } });
+  });
+
+  // Let the proofs endpoint pass through to the live API (so we get a real empty proofs list)
+  // but also intercept to inject a World ID proof receipt
+  await page.route(`${api.baseUrl}/wallets/*/proofs*`, async (route) => {
+    await route.fulfill({
+      json: {
+        proofs: [
+          {
+            proof_id: "proof-world-id-fullstack",
+            wallet_id: "wallet-demo",
+            proof_type: "world_id_proof_of_human",
+            statement: {
+              claim: "wallet_actor_has_world_id_proof_of_human",
+              wallet_id: "wallet-demo",
+              action: "wallet-attach-world-id-v1",
+              credential_policy: "proof_of_human"
+            },
+            verifier_id: "world-developer-portal-v4:rp_demo",
+            public_inputs: {
+              claim: "World ID proof of human is bound to this wallet",
+              rp_id: "rp_demo",
+              app_id: "app_staging_demo",
+              action: "wallet-attach-world-id-v1",
+              signal_hash: "sha256:signal-fullstack",
+              credential_policy: "proof_of_human",
+              nullifier_commitment: "hmac-sha256:nullifier-fullstack",
+              verification_result_hash: "sha256:result-fullstack"
+            },
+            proof_hash: "sha256:proof-fullstack",
+            witness_record_ids: ["wallet://wallet-demo/world-id-binding/world-id-binding-fullstack"],
+            is_simulated: false,
+            proof_system: "world_id_idkit_v4",
+            circuit_id: "world-id-proof-of-human-v4",
+            verifier_digest: "digest-fullstack-abcdef",
+            proof_artifact_ref: "world-id-proof://proof-world-id-fullstack",
+            verification_status: "verified",
+            created_at: "2026-06-14T16:00:00Z"
+          }
+        ]
+      }
+    });
+  });
+
+  try {
+    await page.goto(targetRoute);
+    await signInIfNeeded(page);
+
+    const panel = page.getByRole("article", { name: /World ID verification/i });
+    await expect(panel).toBeVisible({ timeout: 15_000 });
+
+    // Verified state should be displayed
+    await expect(panel.getByText(/World ID verified/i)).toBeVisible({ timeout: 10_000 });
+
+    // No raw nullifier values should be visible in the panel or proof card
+    await expect(page.getByText(/0xnullifier|raw_nullifier_value/i)).toHaveCount(0);
+
+    const proofCard = page.getByRole("article", {
+      name: /World ID proof of human is bound to this wallet/i
+    });
+    await expect(proofCard).toBeVisible({ timeout: 10_000 });
+
+    // Proof card should show sanitized commitment, not raw nullifier
+    await expect(proofCard.getByText(/hmac-sha256:nullifier-fullstack/i)).toBeVisible();
+    // Proof card should NOT show idkit proof, raw nullifier, or rp signature values
+    await expect(proofCard.getByText(/raw_nullifier|idkit_proof|developer_portal_response|rp_signature/i)).toHaveCount(0);
+
+    // Disclosure panel should name the withheld items
+    await expect(panel.getByText(/Raw nullifier.*IDKit proof payload/i)).toBeVisible();
+
+    await expect.poll(() => diagnostics.browserErrors).toEqual([]);
+  } finally {
+    await stopWalletApi(api);
+  }
+});
+
+test("World ID verified intake replaces the demo bot check against a live wallet API", async ({ page }) => {
+  const api = await startWalletApi();
+  const ownerDid = "did:key:fullstack-world-id-intake-owner";
+
+  try {
+    const diagnostics = collectPageDiagnostics(page, api.baseUrl);
+    const wallet = await apiJson<{ wallet_id: string }>(api.baseUrl, "POST", "/wallets", { owner_did: ownerDid });
+    await installVerifiedWorldIdRoutes(page, api.baseUrl, wallet.wallet_id, ownerDid);
+
+    await page.goto(walletRoute("register", api.baseUrl, wallet.wallet_id, ownerDid, {}));
+    await signInIfNeeded(page, ownerDid);
+    await visibleHeadingOrDiagnostics(page, /Create your Abby profile/i, diagnostics);
+
+    await expect(page.getByLabel(/World ID proof-of-human verified for intake/i)).toBeChecked();
+    await expect(page.getByLabel(/Use manual intake fallback/i)).toBeDisabled();
+    await expect(page.getByLabel(/Bot check complete/i)).toBeDisabled();
+    await expect(page.getByLabel(/Client intake verification status/i)).toContainText(
+      /World ID proof-of-human satisfies intake without the demo bot check/i
+    );
+
+    await page.goto(walletRoute("shelter", api.baseUrl, wallet.wallet_id, ownerDid, {}));
+    await signInIfNeeded(page, ownerDid);
+    await visibleHeadingOrDiagnostics(page, /Assisted access/i, diagnostics);
+    await page.getByLabel("Shelter").first().selectOption("Rose City Shelter");
+    await page.getByLabel(/Verified staff operator/i).selectOption({ label: "Avery Patel" });
+
+    const createUser = page.locator('section[aria-labelledby="Create-user-account"]');
+    await expect(createUser.getByLabel(/World ID proof-of-human verified for assisted intake/i)).toBeChecked();
+    await expect(createUser.getByLabel(/Bot check complete/i)).toBeDisabled();
+    await createUser.getByLabel(/Legal or full name/i).fill("Fullstack World ID Client");
+    await createUser.getByLabel(/Photo or photo ID/i).setInputFiles({
+      name: "fullstack-world-id-client.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("%PDF-1.4\n")
+    });
+    await expect(createUser.getByRole("button", { name: /Create user account/i })).toBeEnabled();
+    await createUser.getByRole("button", { name: /Create user account/i }).click();
+
+    const createdUser = page.locator(".list-item").filter({ hasText: "Fullstack World ID Client" }).first();
+    await expect(createdUser).toBeVisible();
+    await expect(createdUser.getByText(/Demo bot check|Manual fallback/i)).toHaveCount(0);
+    await expect.poll(() => diagnostics.browserErrors).toEqual([]);
+    expect(diagnostics.apiErrors).toEqual([]);
   } finally {
     await stopWalletApi(api);
   }

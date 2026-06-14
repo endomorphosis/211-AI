@@ -7,6 +7,7 @@ export interface AgentCitationLinkProps {
   title?: string;
   source?: string;
   score?: number;
+  summary?: string;
   compact?: boolean;
   onOpenServiceDetail?: (docId: string) => void;
 }
@@ -16,24 +17,29 @@ export function AgentCitationLink({
   title,
   source,
   score,
+  summary,
   compact = false,
   onOpenServiceDetail
 }: AgentCitationLinkProps) {
   const sourceLabel = source || citation.url || "211 corpus";
   const sourceUrl = citation.url;
   const hasServiceRoute = Boolean(citation.docId && onOpenServiceDetail);
+  const resolvedTitle = title?.trim() || citation.label.trim() || sourceLabel;
+  const duplicatePrimaryText = normalizeCitationText(resolvedTitle) === normalizeCitationText(citation.label);
+  const summaryText = compact ? buildCitationSummaryText(summary, sourceLabel) : summary?.trim();
 
   return (
     <div className={`agent-citation-link ${compact ? "agent-citation-link-compact" : ""}`}>
       <div className="agent-citation-primary">
         <span className="agent-citation-label">{citation.label}</span>
-        <span className="agent-citation-title">{title || citation.label}</span>
+        {!duplicatePrimaryText ? <span className="agent-citation-title">{resolvedTitle}</span> : null}
+        {summaryText ? <span className="agent-citation-summary">{summaryText}</span> : null}
       </div>
 
-      <div className="agent-citation-actions" aria-label={`Evidence actions for ${title || citation.label}`}>
+      <div className="agent-citation-actions" aria-label={`Evidence actions for ${resolvedTitle}`}>
         {hasServiceRoute ? (
           <Button
-            ariaLabel={`Open service detail for ${title || citation.docId}`}
+            ariaLabel={`Open service detail for ${resolvedTitle || citation.docId}`}
             className="agent-citation-button"
             onClick={() => onOpenServiceDetail?.(citation.docId ?? "")}
             variant="secondary"
@@ -98,9 +104,22 @@ export function AgentCitationLink({
   );
 }
 
+export function buildCitationSummaryText(summary?: string, source?: string): string | undefined {
+  const summaryText = summary?.trim();
+  const sourceText = source?.trim();
+  if (summaryText && sourceText && normalizeCitationText(summaryText) !== normalizeCitationText(sourceText)) {
+    return `${summaryText} · ${truncateMiddle(sourceText, 40)}`;
+  }
+  return summaryText || sourceText || undefined;
+}
+
 function formatScore(score: number): string {
   if (!Number.isFinite(score)) return "n/a";
   return score >= 1 ? score.toFixed(2) : `${Math.round(score * 100)}%`;
+}
+
+function normalizeCitationText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function truncateMiddle(value: string, maxLength: number): string {

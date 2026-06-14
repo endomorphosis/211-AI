@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-21T07:13:47.257231+00:00",
+  "id": "service_location__food__eugene",
+  "kind": "service_location",
+  "key": "food__eugene",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "phone_dialog_0000002#turn-4",
+      "scenarioId": "phone_dialog_0000002",
+      "turnIndex": 3,
+      "route": "live_agent",
+      "serviceTag": "food",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent",
+      "user": "I keep mixing things up, I haven't slept in two days, but I can get to wherever if there's a spot.",
+      "normalizedQuery": "hi um place tonight can't stay just shelter shelters homeless overnight warming bed sorry city did ask eugene oregon downtown by bus station no food pantry meal meals groceries right now like somewhere sleep lock door i'm really okay keep mixing things up haven't slept two days wherever if there's spot",
+      "voiceResponse": "Next step: stay on the line with me right now while I connect you to a live 211 specialist to find an open shelter bed tonight in Eugene near downtown. You do not need to sort it out alone, and I\u2019ll keep this simple while we connect. If you feel in immediate danger where you are, call 9-1-1 right now.",
+      "evidenceDocIds": [
+        "service:32f8d8103ea16592",
+        "service:06316d26dda9c85b",
+        "service:b5d06c266ca98fec",
+        "service:d3db844d9700f43d",
+        "page:bafkreidwnti4lcaifewaecedk7fvr3ry3yce5yjsx4rwzl7jtrwwpmnvmi"
+      ],
+      "similarCases": [],
+      "assistantResponse": "Next step: stay on the line with me right now while I connect you to a live 211 specialist to find an open shelter bed tonight in Eugene near downtown. You do not need to sort it out alone, and I\u2019ll keep this simple while we connect. If you feel in immediate danger where you are, call 9-1-1 right now.",
+      "voiceResponseAlternatives": [
+        "Next step: stay on the line while I connect you. The street I have is **501 3rd Street, La Grande**. I\u2019ll say it slowly: **five-zero-one\u2026 third street\u2026 La Grande**. I do **not** have River Road in this listing. If you feel in immediate danger right now, call **9-1-1**."
+      ],
+      "callerArchetypeId": "disorganized_distressed",
+      "channelConditionId": "clear_line",
+      "assistantStyleId": "grounded_operator"
+    },
+    {
+      "id": "phone_dialog_0000002#turn-5",
+      "scenarioId": "phone_dialog_0000002",
+      "turnIndex": 4,
+      "route": "live_agent",
+      "serviceTag": "food",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent",
+      "user": "Can you say that street again slower? I wrote River Road but I think I heard you wrong.",
+      "normalizedQuery": "sorry city did ask eugene oregon downtown by bus station no food pantry meal meals groceries right now shelter shelters homeless overnight warming like somewhere sleep lock door i'm really okay keep mixing things up haven't slept two days wherever if there's spot say street again slower wrote river road think heard wrong",
+      "voiceResponse": "Next step: stay on the line while I connect you. The street I have is **501 3rd Street, La Grande**. I\u2019ll say it slowly: **five-zero-one\u2026 third street\u2026 La Grande**. I do **not** have River Road in this listing. If you feel in immediate danger right now, call **9-1-1**.",
+      "evidenceDocIds": [
+        "service:32f8d8103ea16592",
+        "service:06316d26dda9c85b",
+        "service:b5d06c266ca98fec",
+        "service:d3db844d9700f43d",
+        "service:bd5c5bd198f76c8b"
+      ],
+      "similarCases": [],
+      "assistantResponse": "Next step: stay on the line while I connect you. The street I have is **501 3rd Street, La Grande**. I\u2019ll say it slowly: **five-zero-one\u2026 third street\u2026 La Grande**. I do **not** have River Road in this listing. If you feel in immediate danger right now, call **9-1-1**.",
+      "voiceResponseAlternatives": [
+        "Next step: stay on the line with me right now while I connect you to a live 211 specialist to find an open shelter bed tonight in Eugene near downtown. You do not need to sort it out alone, and I\u2019ll keep this simple while we connect. If you feel in immediate danger where you are, call 9-1-1 right now."
+      ],
+      "callerArchetypeId": "disorganized_distressed",
+      "channelConditionId": "clear_line",
+      "assistantStyleId": "grounded_operator"
+    }
+  ],
+  "edges": [
+    {
+      "from": "phone_dialog_0000002#turn-4",
+      "to": "phone_dialog_0000002#turn-5",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "phone_dialog_0000002#turn-5",
+      "to": "phone_dialog_0000002#turn-6",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    }
+  ]
+}

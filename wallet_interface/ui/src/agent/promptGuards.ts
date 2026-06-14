@@ -94,6 +94,7 @@ const privateRouteSummaryRoutes = new Set<SurfaceContext["route"]>([
   "contacts",
   "sharing-rules",
   "uploads",
+  "settings",
   "recipient-access",
   "analytics",
   "proof-center",

@@ -1,0 +1,1434 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-09T13:56:29Z",
+  "provider": "IndexTeam/IndexTTS-2-Demo",
+  "spaceUrl": "https://publicus-indextts-2-demo.hf.space",
+  "referenceAudio": "/home/barberb/211-ai.github.io/tmp_assets/abby-reference.wav",
+  "voiceDescription": "Same as the voice reference",
+  "responseCount": 32,
+  "sources": {
+    "dag": "",
+    "results": "",
+    "responseManifest": "/home/barberb/211-ai.github.io/docs/pregenerated_text_audio_residual_response_manifest.json",
+    "slottedResponseIndex": "/home/barberb/211-ai.github.io/wallet_interface/ui/public/assets/rag/slotted-response-index.json",
+    "includeAssistantResponses": true,
+    "includeVoiceResponses": true,
+    "idScheme": "abby-tts-{sha256(spoken_normalized_text)[:20]}"
+  },
+  "normalization": {
+    "emergencyNumbers": {
+      "211": "two one one",
+      "911": "nine one one"
+    },
+    "addresses": {
+      "directions": {
+        "n": "North",
+        "s": "South",
+        "e": "East",
+        "w": "West",
+        "ne": "North East",
+        "nw": "North West",
+        "se": "South East",
+        "sw": "South West"
+      },
+      "streetSuffixes": {
+        "aly": "Alley",
+        "allee": "Alley",
+        "aly.": "Alley",
+        "ave": "Avenue",
+        "ave.": "Avenue",
+        "aven": "Avenue",
+        "avenu": "Avenue",
+        "avenue": "Avenue",
+        "blvd": "Boulevard",
+        "blvd.": "Boulevard",
+        "boul": "Boulevard",
+        "boulevard": "Boulevard",
+        "cir": "Circle",
+        "cir.": "Circle",
+        "circle": "Circle",
+        "ct": "Court",
+        "ct.": "Court",
+        "court": "Court",
+        "dr": "Drive",
+        "dr.": "Drive",
+        "drive": "Drive",
+        "hwy": "Highway",
+        "hwy.": "Highway",
+        "highway": "Highway",
+        "ln": "Lane",
+        "ln.": "Lane",
+        "lane": "Lane",
+        "loop": "Loop",
+        "pkwy": "Parkway",
+        "pkwy.": "Parkway",
+        "parkway": "Parkway",
+        "pl": "Place",
+        "pl.": "Place",
+        "place": "Place",
+        "rd": "Road",
+        "rd.": "Road",
+        "road": "Road",
+        "st": "Street",
+        "st.": "Street",
+        "street": "Street",
+        "ter": "Terrace",
+        "ter.": "Terrace",
+        "terrace": "Terrace",
+        "trl": "Trail",
+        "trl.": "Trail",
+        "trail": "Trail",
+        "way": "Way"
+      },
+      "unitLabels": {
+        "apt": "Apartment",
+        "apt.": "Apartment",
+        "bldg": "Building",
+        "bldg.": "Building",
+        "fl": "Floor",
+        "fl.": "Floor",
+        "ste": "Suite",
+        "ste.": "Suite",
+        "suite": "Suite",
+        "unit": "Unit"
+      },
+      "numberedStreetOrdinals": true
+    }
+  },
+  "mp3": {
+    "enabled": true,
+    "bitrate": "64k",
+    "preferred": true,
+    "wavDeprecated": true
+  },
+  "batchInference": {
+    "remoteBatchSize": 8,
+    "parallelWorkers": 1,
+    "batchApiName": "/gen_batch",
+    "enabled": true,
+    "requiresBatch": false,
+    "contract": {
+      "singleApiName": "/gen_single",
+      "singleFnIndex": 6,
+      "singleInputCount": 25,
+      "singleContract": "segments-bucket-25-field",
+      "batchApiName": "/gen_batch",
+      "batchRegistered": true,
+      "batchFnIndex": 7,
+      "batchInputCount": 25,
+      "batchContract": "segments-bucket-25-field",
+      "registeredApiNames": [
+        "clear_batch_artifact_outputs",
+        "gen_batch",
+        "gen_batch_with_upload",
+        "gen_single",
+        "load_example",
+        "maybe_auto_upload_generated_results",
+        "maybe_auto_upload_single_result",
+        "on_experimental_change",
+        "on_input_text_change",
+        "on_input_text_change_1",
+        "on_method_select",
+        "update_prompt_audio",
+        "upload_generated_results"
+      ],
+      "recommendedMode": "gen_batch"
+    }
+  },
+  "responses": [
+    {
+      "id": "abby-tts-33443c2b98a79164efee",
+      "textHash": "33443c2b98a79164efee",
+      "text": "I hear how urgent this is, and you\u2019re doing the right thing. I don\u2019t have a verified cooling-center name or phone number in front of me right now, so the fastest safe step is the live two one one specialist to check what\u2019s open tonight near downtown Gresham and on a bus line. Please stay on the line for that handoff now. If she becomes confused, faints, or has trouble breathing, call nine one one immediately.",
+      "originalTexts": [
+        "I hear how urgent this is, and you\u2019re doing the right thing. I don\u2019t have a verified cooling-center name or phone number in front of me right now, so the fastest safe step is the live 211 specialist to check what\u2019s open tonight near downtown Gresham and on a bus line. Please stay on the line for that handoff now. If she becomes confused, faints, or has trouble breathing, call 911 immediately."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000783#turn-5"
+      ],
+      "slottedIntentIds": [
+        "intent-a31ea261ffa22ec0abb1"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "If there\u2019s a place open tonight, can you give me the name and number so I can call her and set it up?"
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-88466a616a4b224e7a1e"
+      ],
+      "slottedResponseSignatures": [
+        "I hear how urgent this is, and you\u2019re doing the right thing. | I don\u2019t have a verified cooling-center name or phone number in front of me right now, so the fastest safe step is the live {number_1} specialist to check what\u2019s open tonight near downtown {location_1} and on a bus line. | Please stay on the line for that handoff now. | If she becomes confused, faints, or has trouble breathing, call {number_1} immediately."
+      ],
+      "slottedEdgeIds": [
+        "edge-c5ceee1313867d53a540"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33443c2b98a79164efee.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 272344,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33443c2b98a79164efee.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33491a24ffdcad84823e",
+      "textHash": "33491a24ffdcad84823e",
+      "text": "I\u2019m really glad you told me. This is serious, and you need emergency help now. Call nine one one right now. Say: \u201cAdult, possible overdose, pills and alcohol, hard to wake, drifting in and out.\u201d Put your phone on speaker, stay with him, and roll him onto his side. If he stops breathing or turns blue, tell nine one one immediately and start CPR if they guide you.",
+      "originalTexts": [
+        "I\u2019m really glad you told me. This is serious, and you need emergency help now. Call 911 right now. Say: \u201cAdult, possible overdose, pills and alcohol, hard to wake, drifting in and out.\u201d Put your phone on speaker, stay with him, and roll him onto his side. If he stops breathing or turns blue, tell 911 immediately and start CPR if they guide you."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "clackamas"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002324#turn-2"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33491a24ffdcad84823e.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 250192,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33491a24ffdcad84823e.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33582c94297fbb1ac08c",
+      "textHash": "33582c94297fbb1ac08c",
+      "text": "One step right now: write this phone number down for Individual Grief Counseling Sessions. It\u2019South 5-4-1 \u2026 2-2-3 \u2026 9-9-5-5. Again: 5-4-1 \u2026 2-2-3 \u2026 9-9-5-5. I don\u2019t have confirmed Medicaid details in front of me yet. If you want, after you write the number, I can help you ask them: \u201cDo you take Medicaid?\u201d",
+      "originalTexts": [
+        "One step right now: write this phone number down for **Individual Grief Counseling Sessions**. It\u2019s **5-4-1** \u2026 **2-2-3** \u2026 **9-9-5-5**. Again: **5-4-1** \u2026 **2-2-3** \u2026 **9-9-5-5**. I don\u2019t have confirmed Medicaid details in front of me yet. If you want, after you write the number, I can help you ask them: \u201cDo you take Medicaid?\u201d"
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "medford"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000956#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33582c94297fbb1ac08c.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 335874,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33582c94297fbb1ac08c.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-3360d17569565a66b82a",
+      "textHash": "3360d17569565a66b82a",
+      "text": "Okay, you\u2019re in Eugene, and he can only walk a short distance. I\u2019ll hand this to a live agent now to find the nearest open food spot he can reach on foot. Use the Oregon Food Bank pantry and meal locator as the source. If he gets weak, confused, or unsafe where he is, call nine one one right away.",
+      "originalTexts": [
+        "Okay, you\u2019re in Eugene, and he can only walk a short distance. I\u2019ll hand this to a live agent now to find the nearest open food spot he can reach on foot. Use the **Oregon Food Bank pantry and meal locator** as the source. If he gets weak, confused, or unsafe where he is, call **911** right away."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "food"
+      ],
+      "locationTags": [
+        "eugene"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000324#turn-4"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-3360d17569565a66b82a.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 151763,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-3360d17569565a66b82a.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-3363dec15b6767dd8b72",
+      "textHash": "3363dec15b6767dd8b72",
+      "text": "Yes. Text him this now: \u201cCall 2\u20261\u20261 and say, \u2018I\u2019m a veteran sleeping in my truck and need shelter help tonight.\u2019\u201d I don\u2019t have a separate veterans housing line in my records right now. If either of you is in immediate danger, call 9\u20261\u20261. If you need text-based crisis support, I have 4\u20264\u20263, 7\u20268\u20267, 6\u20267\u20267\u20268.",
+      "originalTexts": [
+        "Yes. Text him this now: \u201cCall **2\u20261\u20261** and say, \u2018I\u2019m a veteran sleeping in my truck and need shelter help tonight.\u2019\u201d I don\u2019t have a separate veterans housing line in my records right now. If either of you is in immediate danger, call **9\u20261\u20261**. If you need text-based crisis support, I have **4\u20264\u20263, 7\u20268\u20267, 6\u20267\u20267\u20268**."
+      ],
+      "routes": [
+        "provider_contact_support"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000505#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-3363dec15b6767dd8b72.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 254999,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-3363dec15b6767dd8b72.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-336b001f6ee49467e064",
+      "textHash": "336b001f6ee49467e064",
+      "text": "Yes. I can help with both. First, quick safety check: if she seems worse right now, call nine one one now. That is 9. 1. 1. For clinic rides this week, call Cascades West Ride Line: five four one, nine two four, eight seven three eight. Again: five four one, nine two four, eight seven three eight. Backup: eight six six, seven two four, two nine seven five. Address: 1400 Queen Avenue South E, Suite 201, Albany, Oregon, nine seven three two two. I can also connect you to a live specialist for same-day senior meal delivery. Do you want me to connect you now?",
+      "originalTexts": [
+        "Yes. I can help with both. First, quick safety check: if she seems worse right now, call **9-1-1** now. That is **9... 1... 1**. For clinic rides this week, call **Cascades West Ride Line**: **(541) 924-8738**. Again: **(541) 924-8738**. Backup: **(866) 724-2975**. Address: **1400 Queen Avenue S E, Suite 201, Albany, Oregon, 97322**. I can also connect you to a live specialist for same-day senior meal delivery. Do you want me to connect you now?"
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "food"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001565#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-336b001f6ee49467e064.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 307661,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-336b001f6ee49467e064.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-3371a08170eaf11a13d2",
+      "textHash": "3371a08170eaf11a13d2",
+      "text": "Absolutely. We can do that in that order: first, a domestic violence advocate, then we\u2019ll look for a safe shelter bed. We can keep details minimal and move at your pace. If danger feels immediate at any point, call nine one one: nine\u2026 one\u2026 one. If you\u2019re ready, I\u2019ll connect you to a live advocate now, and then we\u2019ll check current domestic violence shelter openings together.",
+      "originalTexts": [
+        "Absolutely. We can do that in that order: first, a domestic violence advocate, then we\u2019ll look for a safe shelter bed. We can keep details minimal and move at your pace. If danger feels immediate at any point, call **9-1-1**: **nine\u2026 one\u2026 one**. If you\u2019re ready, I\u2019ll connect you to a live advocate now, and then we\u2019ll check current domestic violence shelter openings together."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001174#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-3371a08170eaf11a13d2.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 250819,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-3371a08170eaf11a13d2.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-3373ebbb167d2c6f21d8",
+      "textHash": "3373ebbb167d2c6f21d8",
+      "text": "For Burnside Shelter, you can still go tonight even without your wallet. They told us no documents are required. If another program asks for ID, I can connect you to a live two one one specialist who can check exactly what alternatives they\u2019ll accept before you share personal details.",
+      "originalTexts": [
+        "For Burnside Shelter, you can still go tonight even without your wallet. They told us no documents are required. If another program asks for ID, I can connect you to a live 211 specialist who can check exactly what alternatives they\u2019ll accept before you share personal details."
+      ],
+      "routes": [
+        "wallet_document_support"
+      ],
+      "serviceTags": [
+        "documents"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000299#turn-6"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 168024,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 168024,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-3373ebbb167d2c6f21d8.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 134835,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-3373ebbb167d2c6f21d8.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33890446fc245bc1d389",
+      "textHash": "33890446fc245bc1d389",
+      "text": "Your next step is call nine one one now for chest tightness and vomiting. That can be life-threatening, and you need emergency medical care first. If you can still speak after calling nine one one, detox line is 5-4-1, 7-6-2, 4-5-7-5 (Buckley Center). If this phone dies, ask anyone nearby right now to call nine one one for you.",
+      "originalTexts": [
+        "Your next step is **call 9-1-1 now** for chest tightness and vomiting. That can be life-threatening, and you need emergency medical care first. If you can still speak after calling 911, detox line is **5-4-1, 7-6-2, 4-5-7-5** (Buckley Center). If this phone dies, ask anyone nearby right now to call **9-1-1** for you."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "health"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000892#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33890446fc245bc1d389.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 183737,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33890446fc245bc1d389.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33961df14c8eb0d3ec0a",
+      "textHash": "33961df14c8eb0d3ec0a",
+      "text": "The phone number is nine one one \u2014 slowly: nine\u2026 one\u2026 one. I don\u2019t have a cooling center address to give you right now. Tell nine one one your exact location in Bend first.",
+      "originalTexts": [
+        "The phone number is **9-1-1** \u2014 slowly: **nine\u2026 one\u2026 one**. I don\u2019t have a cooling center address to give you right now. Tell **9-1-1** your exact location in Bend first."
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "bend"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000085#turn-3"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33961df14c8eb0d3ec0a.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 94502,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33961df14c8eb0d3ec0a.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-339b9c3db8c8f444e86a",
+      "textHash": "339b9c3db8c8f444e86a",
+      "text": "I can hear you, but your audio cut out. If you\u2019re in immediate danger right now, call nine one one. Please say one word: \u201cclinic\u201d or \u201csafe Place.\u201d",
+      "originalTexts": [
+        "I can hear you, but your audio cut out. If you\u2019re in immediate danger right now, call 911. Please say one word: \u201cclinic\u201d or \u201csafe place.\u201d"
+      ],
+      "routes": [
+        "speech_unclear_clarification"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "gresham"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001166#turn-1"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-339b9c3db8c8f444e86a.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 76112,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-339b9c3db8c8f444e86a.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-339e11ff47f4212a6690",
+      "textHash": "339e11ff47f4212a6690",
+      "text": "You\u2019re not rambling, and I\u2019m really glad you called. It sounds scary to feel watched while you\u2019re trying to get help. Let\u2019s keep this simple: I can help you get to Mental Health Crisis Lines through two one one info for Medford right now, and we can stay focused on immediate support first. If talking feels hard, we can do this one step at a time together.",
+      "originalTexts": [
+        "You\u2019re not rambling, and I\u2019m really glad you called. It sounds scary to feel watched while you\u2019re trying to get help. Let\u2019s keep this simple: I can help you get to **Mental Health Crisis Lines through 211info** for Medford right now, and we can stay focused on immediate support first. If talking feels hard, we can do this one step at a time together."
+      ],
+      "routes": [
+        "grounded_211_answer"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "medford"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001610#turn-1"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-339e11ff47f4212a6690.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 141941,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-339e11ff47f4212a6690.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33a2d35635b9368c17b0",
+      "textHash": "33a2d35635b9368c17b0",
+      "text": "I hear you, and I\u2019m with you. First, if you feel too weak or unsafe right now, call nine one one now. For diapers, call DIAPERS at 541\u2026221\u20260824. I\u2019ll repeat: 541\u2026221\u20260824. Say: \u201cI\u2019m in Beaverton, mostly bedbound, and need adult diapers urgently. Can you help or connect me to the closest provider?\u201d If they can\u2019t, call me back and I\u2019ll keep working the next number with you.",
+      "originalTexts": [
+        "I hear you, and I\u2019m with you. First, if you feel too weak or unsafe right now, call **911** now. For diapers, call **DIAPERS** at **541\u2026221\u20260824**. I\u2019ll repeat: **541\u2026221\u20260824**. Say: \u201cI\u2019m in Beaverton, mostly bedbound, and need adult diapers urgently. Can you help or connect me to the closest provider?\u201d If they can\u2019t, call me back and I\u2019ll keep working the next number with you."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "family"
+      ],
+      "locationTags": [
+        "beaverton"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000421#turn-2"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33a2d35635b9368c17b0.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 266493,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33a2d35635b9368c17b0.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33a6f9028da2291ebadd",
+      "textHash": "33a6f9028da2291ebadd",
+      "text": "I hear you. Your safety comes first. If you feel in immediate danger right now, call nine one one. For a bed option in Gresham, call Gresham Women\u2019s Shelter now: 9-7-1, 3-3-3, 1-2-2-3. If that line drops, try 9-7-1, 3-3-9, 2-9-8-7. Keep this call short to save battery and make that call now.",
+      "originalTexts": [
+        "I hear you. Your safety comes first. If you feel in immediate danger right now, call 911. For a bed option in Gresham, call Gresham Women\u2019s Shelter now: **9-7-1, 3-3-3, 1-2-2-3**. If that line drops, try **9-7-1, 3-3-9, 2-9-8-7**. Keep this call short to save battery and make that call now."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "gresham"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001624#turn-1"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33a6f9028da2291ebadd.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 183319,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33a6f9028da2291ebadd.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ac79d9f8559da7ad3a",
+      "textHash": "33ac79d9f8559da7ad3a",
+      "text": "Hi, yes, I hear you, but the audio is breaking up. You said Portland, Multnomah County. Portland, Multnomah County. Are you looking for family shelter help right now?",
+      "originalTexts": [],
+      "routes": [
+        "speech_unclear_clarification"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "portland"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000801#turn-1"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ac79d9f8559da7ad3a.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 81337,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ac79d9f8559da7ad3a.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33b255a93c92a936318f",
+      "textHash": "33b255a93c92a936318f",
+      "text": "You did the right thing calling. If you might hurt yourself or are not safe right now, call nine one one now. For urgent crisis counseling by phone, call 541, 687, 4000. I\u2019ll repeat: 541, 687, 4000. Stay on the line for the live agent if you can.",
+      "originalTexts": [
+        "You did the right thing calling. If you might hurt yourself or are not safe right now, call 911 now. For urgent crisis counseling by phone, call 541, 687, 4000. I\u2019ll repeat: 541, 687, 4000. Stay on the line for the live agent if you can."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002349#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 134313,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 134313,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33b255a93c92a936318f.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 123968,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33b255a93c92a936318f.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33b5cce448e01cf2e8ba",
+      "textHash": "33b5cce448e01cf2e8ba",
+      "text": "I want to be clear: I only have two warming options in this list, and they are not in Portland. One is 2-7-5 N-East second Street, Bend. One is 5-0-thirteenth Street, La Grande. To check what is open now, call 5-0-3, 6-5-0, 5-6-2-2. Again: 5-0-3, 6-5-0, 5-6-2-2. Do you want me to stay with you while you call?",
+      "originalTexts": [
+        "I want to be clear: I only have two warming options in this list, and they are not in Portland. One is **2-7-5 N-E 2nd Street, Bend**. One is **5-0-1 3rd Street, La Grande**. To check what is open now, call **5-0-3, 6-5-0, 5-6-2-2**. Again: **5-0-3, 6-5-0, 5-6-2-2**. Do you want me to stay with you while you call?"
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "portland"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000273#turn-3"
+      ],
+      "slottedIntentIds": [
+        "intent-d6763a18ae5e26696ef4"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "Can you find one that\u2019s open now, close to downtown if possible?"
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-179fd8759543dc3ea136"
+      ],
+      "slottedResponseSignatures": [
+        "I want to be clear: I only have two warming options in this list, and they are not in {location_1}. | One is **2-7-5 {entity_1} 2nd Street, {location_1}**. | One is **5-0-1 3rd Street, {entity_1}**. | Call {phone_1}."
+      ],
+      "slottedEdgeIds": [
+        "edge-358b11990c8eec0aebd0"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33b5cce448e01cf2e8ba.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 392925,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33b5cce448e01cf2e8ba.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33b8f788dc7f17315c8e",
+      "textHash": "33b8f788dc7f17315c8e",
+      "text": "I\u2019m here, I won\u2019t hang up. You\u2019re doing the right thing. I\u2019m connecting you to a live agent now to find the closest shelter with the least walking tonight. If your breathing gets worse, you feel faint, or chest pain starts, call nine one one right away: nine\u2026 one\u2026 one. Stay with me while I connect you.",
+      "originalTexts": [
+        "I\u2019m here, I won\u2019t hang up. You\u2019re doing the right thing. I\u2019m connecting you to a live agent now to find the closest shelter with the least walking tonight. If your breathing gets worse, you feel faint, or chest pain starts, call **9-1-1** right away: **nine\u2026 one\u2026 one**. Stay with me while I connect you."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001123#turn-6"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33b8f788dc7f17315c8e.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 130656,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33b8f788dc7f17315c8e.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ca8a03e32922a1bbd7",
+      "textHash": "33ca8a03e32922a1bbd7",
+      "text": "Of course. You\u2019re doing great. The main number is: 4 5 8 \u2026 2 2 1 \u2026 0 7 1 8. I\u2019ll say it once more: 4 5 8 \u2026 2 2 1 \u2026 0 7 1 8.",
+      "originalTexts": [
+        "Of course. You\u2019re doing great. The main number is: **4 5 8** \u2026 **2 2 1** \u2026 **0 7 1 8**. I\u2019ll say it once more: **4 5 8** \u2026 **2 2 1** \u2026 **0 7 1 8**."
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "multnomah"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000316#turn-4"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ca8a03e32922a1bbd7.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 116236,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ca8a03e32922a1bbd7.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ceb2b5648d9e540e3f",
+      "textHash": "33ceb2b5648d9e540e3f",
+      "text": "I hear you. What you described is not your fault, and you deserve help. If you might be in immediate danger, call nine one one now. If it\u2019s safer, we can keep this quiet and move by text-style steps only. I can connect you to a live person who handles trafficking and can help with a safe exit, ID recovery, and transport without forcing you to report right now. If you want, just say: \u201cconnect me now.\u201d",
+      "originalTexts": [
+        "I hear you. What you described is not your fault, and you deserve help. If you might be in immediate danger, call 911 now. If it\u2019s safer, we can keep this quiet and move by text-style steps only. I can connect you to a live person who handles trafficking and can help with a safe exit, ID recovery, and transport without forcing you to report right now. If you want, just say: \u201cconnect me now.\u201d"
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "work"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002328#turn-2"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ceb2b5648d9e540e3f.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 203172,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ceb2b5648d9e540e3f.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33d9de06f52a9d7cf421",
+      "textHash": "33d9de06f52a9d7cf421",
+      "text": "Yes. The address again is: 1 1 7 5 \u2026 Mt Hood Avenue \u2026 Woodburn. I\u2019ll repeat: 1 1 7 5 \u2026 Mt Hood Avenue \u2026 Woodburn.",
+      "originalTexts": [
+        "Yes. The address again is: **1 1 7 5** \u2026 **Mt Hood Avenue** \u2026 **Woodburn**. I\u2019ll repeat: **1 1 7 5** \u2026 **Mt Hood Avenue** \u2026 **Woodburn**."
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "hillsboro"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002045#turn-6"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33d9de06f52a9d7cf421.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 106205,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33d9de06f52a9d7cf421.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ddcca01da289811fbc",
+      "textHash": "33ddcca01da289811fbc",
+      "text": "First step: if you feel you might do something to hurt yourself, call nine one one immediately. Say, \u201cI\u2019m not safe alone and need help now.\u201d If it\u2019s not immediate but getting worse, call 2\u20261\u20261 and ask for a live crisis counselor and help staying with someone tonight. You did the right thing calling.",
+      "originalTexts": [
+        "First step: if you feel you might do something to hurt yourself, call **9-1-1** immediately. Say, \u201cI\u2019m not safe alone and need help now.\u201d If it\u2019s not immediate but getting worse, call **2\u20261\u20261** and ask for a **live crisis counselor** and help staying with someone tonight. You did the right thing calling."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "gresham"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002128#turn-5"
+      ],
+      "slottedIntentIds": [
+        "intent-2fdfc607202cb4eb13f4"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "If this cuts out, what do I do first when it gets really bad, like if I feel I might do something?"
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-296f0ac85cdfce3473f5"
+      ],
+      "slottedResponseSignatures": [
+        "First step: if you feel you might do something to hurt yourself, call **9-1-1** immediately. | Say, \u201cI\u2019m not safe alone and need help now.\u201d If it\u2019s not immediate but getting worse, call **2\u20261\u20261** and ask for a **live crisis counselor** and help staying with someone tonight. | You did the right thing calling."
+      ],
+      "slottedEdgeIds": [
+        "edge-7e3129088cafaf800711"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ddcca01da289811fbc.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 141314,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ddcca01da289811fbc.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33de76e2d999e4c28315",
+      "textHash": "33de76e2d999e4c28315",
+      "text": "I heard enough, and this sounds like an overdose emergency. Call nine one one now. If you can, lay your friend on his side and stay with him. Your audio is breaking up, so please repeat one word only: \u201ccalled\u201d when nine one one is on the line.",
+      "originalTexts": [
+        "I heard enough, and this sounds like an overdose emergency. Call 911 now. If you can, lay your friend on his side and stay with him. Your audio is breaking up, so please repeat one word only: \u201ccalled\u201d when 911 is on the line."
+      ],
+      "routes": [
+        "speech_unclear_clarification"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "oregon_city"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0002162#turn-2"
+      ],
+      "slottedIntentIds": [
+        "intent-5da14fdbf4a102f60de9"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "It's not just me, my friend took pills and drank, and now he's like... barely waking up."
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-003ae7683bb10aa059ab"
+      ],
+      "slottedResponseSignatures": [
+        "I heard enough, and this sounds like an overdose emergency. | Call {number_1} now. | If you can, lay your friend on his side and stay with him. | Your audio is breaking up, so please repeat one word only: \u201ccalled\u201d when {number_1} is on the line."
+      ],
+      "slottedEdgeIds": [
+        "edge-a417e33f33dcb8dd4a94"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33de76e2d999e4c28315.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 127521,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33de76e2d999e4c28315.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33df68ccf5605d2468d0",
+      "textHash": "33df68ccf5605d2468d0",
+      "text": "Yes. I\u2019ll go slow. The number is five four one, four four zero, one zero zero zero. That is: 5 4 1, 4 4 0, 1 0 0 0. The address is 913 Northwest Garden Valley Boulevard. I\u2019ll repeat it: 913 Northwest Garden Valley Boulevard.",
+      "originalTexts": [
+        "Yes. I\u2019ll go slow. The number is **541-440-1000**. That is: **5 4 1**, **4 4 0**, **1 0 0 0**. The address is **913 Northwest Garden Valley Boulevard**. I\u2019ll repeat it: **913 Northwest Garden Valley Boulevard**."
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "eugene"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0000613#turn-2"
+      ],
+      "slottedIntentIds": [
+        "intent-bbeeff01a7a42c7576bf"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "Can you slow down a little? I\u2019m having trouble catching everything you\u2019re saying."
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-5aceb72a1dd2e712d58d"
+      ],
+      "slottedResponseSignatures": [
+        "Yes. | I\u2019ll go slow. | The number is {number_1}, {number_2}, {number_3}. | That is: **5 4 1**, **4 4 0**, **1 0 0 0**."
+      ],
+      "slottedEdgeIds": [
+        "edge-cbf8b1fe67fc17831858"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 145220,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 145220,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33df68ccf5605d2468d0.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 145284,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33df68ccf5605d2468d0.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33e0cd3c026c276ffac6",
+      "textHash": "33e0cd3c026c276ffac6",
+      "text": "Thank you for telling me. I hear you. Since tonight doesn\u2019t feel safe, let\u2019s get you to a live two one one specialist right now for youth-safe options, not adult shelter. You can stay anonymous and share only what you want. If anything shifts to immediate danger, call nine one one right away. If you want, I can connect you now and stay with you through the handoff.",
+      "originalTexts": [
+        "Thank you for telling me. I hear you. Since tonight doesn\u2019t feel safe, let\u2019s get you to a live 211 specialist right now for youth-safe options, not adult shelter. You can stay anonymous and share only what you want. If anything shifts to immediate danger, call 911 right away. If you want, I can connect you now and stay with you through the handoff."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001638#turn-4"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33e0cd3c026c276ffac6.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 163048,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33e0cd3c026c276ffac6.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33e0f7a3e0ef689ac3e5",
+      "textHash": "33e0f7a3e0ef689ac3e5",
+      "text": "I hear you. You\u2019re not alone, and I can hear you. While I connect you to a live person now, please ask shelter staff to make this call with you for same-day diapers: 5 4 1, 8 6 4, 0 7 7 6. If your baby is in immediate danger, call 9 1 1 right now.",
+      "originalTexts": [
+        "I hear you. You\u2019re not alone, and I can hear you. While I connect you to a live person now, please ask shelter staff to make this call with you for same-day diapers: **5 4 1, 8 6 4, 0 7 7 6**. If your baby is in immediate danger, call **9 1 1** right now."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "family"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001020#turn-2"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33e0f7a3e0ef689ac3e5.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 134208,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33e0f7a3e0ef689ac3e5.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33e21156f1bbcf8c5827",
+      "textHash": "33e21156f1bbcf8c5827",
+      "text": "Thank you. I will speak slowly. He is awake and breathing, but weak and confused. Awake and breathing, but weak and confused. If he gets worse, or is not safe right now, call nine one one. Call nine one one. One question: Are you with him right now?",
+      "originalTexts": [
+        "Thank you. I will speak slowly. He is awake and breathing, but weak and confused. Awake and breathing, but weak and confused. If he gets worse, or is not safe right now, call 9-1-1. Call 9-1-1. One question: Are you with him right now?"
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "general"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001795#turn-2"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33e21156f1bbcf8c5827.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 162421,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33e21156f1bbcf8c5827.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ec001ae6dd414f9108",
+      "textHash": "33ec001ae6dd414f9108",
+      "text": "You\u2019re doing the right thing, and we can keep it simple: shelter first. Right now, call two one one info at 866\u2026 299\u2026 3562 and say, \u201cI need a bed tonight near Hillsboro, Washington County.\u201d If your phone is at three percent, plug in while it rings or ask someone nearby for an outlet. If you start to feel unsafe or might act on the voices, call nine one one right away.",
+      "originalTexts": [
+        "You\u2019re doing the right thing, and we can keep it simple: shelter first. Right now, call 211info at **866\u2026 299\u2026 3562** and say, \u201cI need a bed tonight near Hillsboro, Washington County.\u201d If your phone is at 3%, plug in while it rings or ask someone nearby for an outlet. If you start to feel unsafe or might act on the voices, call **911** right away."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001265#turn-4"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ec001ae6dd414f9108.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 294287,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ec001ae6dd414f9108.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33ed2e8c1945d2406d6c",
+      "textHash": "33ed2e8c1945d2406d6c",
+      "text": "I\u2019m glad you told me. This sounds urgent. If you might faint, call 9 1 1 now. Again, call 9 1 1 now. If you can still make one call for warm shelter: 5 4 1, 6 1 7, 7 0 5 0. Again: 5 4 1, 6 1 7, 7 0 5 0. One quick check: are you alone right now?",
+      "originalTexts": [
+        "I\u2019m glad you told me. This sounds urgent. If you might faint, call **9 1 1** now. Again, call **9 1 1** now. If you can still make one call for warm shelter: **5 4 1, 6 1 7, 7 0 5 0**. Again: **5 4 1, 6 1 7, 7 0 5 0**. One quick check: are you alone right now?"
+      ],
+      "routes": [
+        "safety_guardrail_support"
+      ],
+      "serviceTags": [
+        "shelter"
+      ],
+      "locationTags": [
+        "bend"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001878#turn-2"
+      ],
+      "slottedIntentIds": [
+        "intent-be2ca099a200214ed695"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "I\u2019ve been outside since last night and I\u2019m shaking, really dizzy, and my legs feel weak."
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-6434ef97cccbc5d38c46"
+      ],
+      "slottedResponseSignatures": [
+        "I\u2019m glad you told me. | This sounds urgent. | If you might faint, call **9 1 1** now. | Again, call **9 1 1** now."
+      ],
+      "slottedEdgeIds": [
+        "edge-f0e7263f4982e0856b40"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33ed2e8c1945d2406d6c.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 147792,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33ed2e8c1945d2406d6c.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33f014560c4d91cdb56f",
+      "textHash": "33f014560c4d91cdb56f",
+      "text": "Of course. The number is 5 0 3 \u2026 6 5 0 \u2026 5 6 2 2. I\u2019ll say it once more: 5 0 3, 6 5 0, 5 6 2 2.",
+      "originalTexts": [
+        "Of course. The number is **5 0 3** \u2026 **6 5 0** \u2026 **5 6 2 2**. I\u2019ll say it once more: **5 0 3, 6 5 0, 5 6 2 2**."
+      ],
+      "routes": [
+        "repeat_or_restate"
+      ],
+      "serviceTags": [
+        "documents"
+      ],
+      "locationTags": [
+        "bend"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001250#turn-6"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33f014560c4d91cdb56f.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 81964,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33f014560c4d91cdb56f.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-33f04b7b8a9bedc2d156",
+      "textHash": "33f04b7b8a9bedc2d156",
+      "text": "I hear you, and you do not need to share your full name. I\u2019m not sending police. I need to check safety first: are you in immediate danger, or thinking about hurting yourself or anyone else right now? If yes, call nine one one now. If no, I\u2019ll stay with you and we can get you to that Gresham clinic step by step.",
+      "originalTexts": [
+        "I hear you, and you do not need to share your full name. I\u2019m not sending police. I need to check safety first: are you in immediate danger, or thinking about hurting yourself or anyone else right now? If yes, call 911 now. If no, I\u2019ll stay with you and we can get you to that Gresham clinic step by step."
+      ],
+      "routes": [
+        "grounded_211_answer"
+      ],
+      "serviceTags": [
+        "benefits"
+      ],
+      "locationTags": [
+        "multnomah"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001435#turn-2"
+      ],
+      "slottedIntentIds": [
+        "intent-fe3d1b49079681e29cb1"
+      ],
+      "slottedCanonicalQueryTemplates": [
+        "No, wait, don\u2019t send police, okay? The voices are saying the phones are tagged, and if I say my full name they\u2019ll find me first."
+      ],
+      "slottedResponseFrameIds": [
+        "response-frame-fc4be719c17b3b1917a9"
+      ],
+      "slottedResponseSignatures": [
+        "I hear you, and you do not need to share your full name. | I\u2019m not sending police. | I need to check safety first: are you in immediate danger, or thinking about hurting yourself or anyone else right now? | If yes, call {number_1} now."
+      ],
+      "slottedEdgeIds": [
+        "edge-ef8cd09f826205d46e65"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-33f04b7b8a9bedc2d156.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 146956,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-33f04b7b8a9bedc2d156.mp3",
+      "preferredMimeType": "audio/mpeg"
+    },
+    {
+      "id": "abby-tts-3403a3f371c8bf2dd939",
+      "textHash": "3403a3f371c8bf2dd939",
+      "text": "Yes. Try Safe Place for Youth (ages 12 to 20). They can help with shelter, transportation, and basic needs. Call five zero three, five four two, two seven one seven. I\u2019ll repeat: 5-0-3, 5-4-2, 2-7-1-7. Backup number: five zero three, five four two, two three eight nine. You can ask, \u201cI\u2019m 16 and need a safe Place tonight. Can I get help without contacting my parents right away?\u201d If someone is pressuring you now or blocking you from leaving, call nine one one immediately.",
+      "originalTexts": [
+        "Yes. Try **Safe Place for Youth** (ages 12 to 20). They can help with shelter, transportation, and basic needs. Call **503-542-2717**. I\u2019ll repeat: **5-0-3, 5-4-2, 2-7-1-7**. Backup number: **503-542-2389**. You can ask, \u201cI\u2019m 16 and need a safe place tonight. Can I get help without contacting my parents right away?\u201d If someone is pressuring you now or blocking you from leaving, call **911** immediately."
+      ],
+      "routes": [
+        "live_agent"
+      ],
+      "serviceTags": [
+        "food"
+      ],
+      "locationTags": [
+        "statewide"
+      ],
+      "sourceTypes": [
+        "dag.voiceResponse",
+        "simulation.assistant"
+      ],
+      "sourceIds": [
+        "phone_dialog_0001941#turn-5"
+      ],
+      "status": "generated_mp3",
+      "audioPath": "",
+      "mimeType": "",
+      "audioBytes": 0,
+      "latencyMs": 159293,
+      "batchMode": "batch",
+      "wavDeprecated": true,
+      "batchLatencyMs": 159293,
+      "mp3Path": "tmp_assets/abby-tts/residual-responses/abby-tts-3403a3f371c8bf2dd939.mp3",
+      "mp3MimeType": "audio/mpeg",
+      "mp3Bytes": 363250,
+      "preferredAudioPath": "tmp_assets/abby-tts/residual-responses/abby-tts-3403a3f371c8bf2dd939.mp3",
+      "preferredMimeType": "audio/mpeg"
+    }
+  ],
+  "bucketUpload": {
+    "bucketUri": "hf://buckets/Publicus/abby-voice/runs/abby-full-preprocess-20260605T063738Z/phase4-residual",
+    "audioUri": "hf://buckets/Publicus/abby-voice/runs/abby-full-preprocess-20260605T063738Z/phase4-residual/audio",
+    "metadataUri": "hf://buckets/Publicus/abby-voice/runs/abby-full-preprocess-20260605T063738Z/phase4-residual/metadata",
+    "enabled": true,
+    "tool": "hf sync"
+  }
+}

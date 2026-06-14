@@ -1,0 +1,3725 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service__benefits",
+  "kind": "service",
+  "key": "benefits",
+  "nodeCount": 64,
+  "nodes": [
+    {
+      "id": "documents_for_benefits#turn-1",
+      "scenarioId": "documents_for_benefits",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for benefits in Oregon?",
+      "normalizedQuery": "documents apply benefits snap assistance oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.952788,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.950708,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.904748,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "repeated_under_evidenced_documents#turn-1",
+      "scenarioId": "repeated_under_evidenced_documents",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for benefits in Oregon?",
+      "normalizedQuery": "documents apply benefits snap assistance oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.952788,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.905823,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.880773,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "repeated_under_evidenced_documents#turn-2",
+      "scenarioId": "repeated_under_evidenced_documents",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I still cannot figure out what paperwork to bring for benefits.",
+      "normalizedQuery": "still paperwork bring benefits snap assistance",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:9f02d53fbb3e9c6a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.663293,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "snap_help_portland#turn-1",
+          "score": 0.646508,
+          "route": "grounded_211_answer",
+          "scenarioId": "snap_help_portland",
+          "user": "I need help with SNAP benefits in Portland."
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-4",
+          "score": 0.628151,
+          "route": "live_agent",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "I still cannot figure out what documents I need."
+        }
+      ]
+    },
+    {
+      "id": "snap_help_portland#turn-1",
+      "scenarioId": "snap_help_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need help with SNAP benefits in Portland.",
+      "normalizedQuery": "snap benefits assistance portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "service:d58a8e52f7c74e3f",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.830453,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.830453,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_medford#turn-1",
+          "score": 0.830453,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_medford",
+          "user": "Can you find disability benefits help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "oregon_health_plan_salem#turn-1",
+      "scenarioId": "oregon_health_plan_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find Oregon Health Plan application help near Salem?",
+      "normalizedQuery": "oregon health plan application salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:7ea0969a6672cb62",
+        "service:930e99ef3ddba895",
+        "service:1ee7d308cca82397",
+        "service:d5b5854601af8a3b",
+        "page:bafkreihrcghpdocdigp64uwv6ifu3cogmhpjgzokmuj755y4r5djsbunqy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_warming_center_portland#turn-1",
+          "score": 0.740152,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_portland",
+          "user": "Can you find warming center in Portland?"
+        },
+        {
+          "recordId": "matrix_senior_meals_portland#turn-1",
+          "score": 0.735614,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_senior_meals_portland",
+          "user": "Can you find senior meals in Portland?"
+        },
+        {
+          "recordId": "emergency_heat_assistance#turn-1",
+          "score": 0.728612,
+          "route": "grounded_211_answer",
+          "scenarioId": "emergency_heat_assistance",
+          "user": "I need emergency heat assistance in Oregon."
+        }
+      ]
+    },
+    {
+      "id": "immigration_legal_help#turn-1",
+      "scenarioId": "immigration_legal_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need immigration legal help in Oregon.",
+      "normalizedQuery": "immigration legal aid attorney advocacy oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8db66f70f2f5ec90",
+        "service:0963e94e6b3dc85a",
+        "page:bafkreih6misfhdwx4z2wqmfbd2tavnam7irrs7q3ekzsprs3aras3p5rpu",
+        "page:bafkreigawl5nzrtvorkwvbvyrdp66mc2cfj535zrg4kqx7hlt7lgx5joha",
+        "service:7f96e069e2322ed5"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_legal_aid_portland#turn-1",
+          "score": 0.889001,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_portland",
+          "user": "Can you find legal aid in Portland?"
+        },
+        {
+          "recordId": "matrix_legal_aid_clackamas#turn-1",
+          "score": 0.835191,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_clackamas",
+          "user": "Can you find legal aid in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_legal_aid_salem#turn-1",
+          "score": 0.825501,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_salem",
+          "user": "Can you find legal aid in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "birth_certificate_help#turn-1",
+      "scenarioId": "birth_certificate_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find help getting a birth certificate in Oregon?",
+      "normalizedQuery": "getting birth certificate oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:b4c63c7647754bb5",
+        "page:bafkreiemvimtczhcn3mohrl6plj6ad2xf6gz5h44iu7vmwspgqjujrxd54",
+        "page:bafkreibqsqu6eecgrxj572cxeem2e52dpwgkyidomtveqovayklc6ql2y4",
+        "service:83d45b4739eb013a",
+        "service:1165013475864614"
+      ],
+      "similarCases": [
+        {
+          "recordId": "internet_discount#turn-1",
+          "score": 0.758097,
+          "route": "grounded_211_answer",
+          "scenarioId": "internet_discount",
+          "user": "Can you find internet discount help in Oregon?"
+        },
+        {
+          "recordId": "domestic_violence_advocacy#turn-1",
+          "score": 0.742781,
+          "route": "grounded_211_answer",
+          "scenarioId": "domestic_violence_advocacy",
+          "user": "Can you find domestic violence survivor advocacy in Oregon?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_clackamas#turn-1",
+          "score": 0.728356,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_clackamas",
+          "user": "Can you find domestic violence survivor advocacy in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "transportation_to_clinic#turn-1",
+      "scenarioId": "transportation_to_clinic",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need a ride or transportation to a medical clinic in Portland.",
+      "normalizedQuery": "ride transportation transport bus medical clinic health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:156176ac73be0658",
+        "service:9b872ce46b837ac3",
+        "service:80bb5c1077a6fe59",
+        "service:031bfb20ce232bc2",
+        "page:bafkreicifdycolhdowclruqsr2hbdf6h6nneakgnbttfickhkas2ngdzte"
+      ],
+      "similarCases": [
+        {
+          "recordId": "broad_then_transport#turn-2",
+          "score": 0.96177,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_transport",
+          "user": "I need transportation to a clinic in Portland."
+        },
+        {
+          "recordId": "medical_clinic_portland#turn-1",
+          "score": 0.837121,
+          "route": "grounded_211_answer",
+          "scenarioId": "medical_clinic_portland",
+          "user": "Find a low cost clinic in Portland."
+        },
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.802261,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "medical_clinic_portland#turn-1",
+      "scenarioId": "medical_clinic_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Find a low cost clinic in Portland.",
+      "normalizedQuery": "low cost clinic medical health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a939d0834914cd25",
+        "service:bfee28bc06885629",
+        "service:9b872ce46b837ac3",
+        "service:61d567ff81be92d6",
+        "service:31a22008e2b10cbf"
+      ],
+      "similarCases": [
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.837121,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        },
+        {
+          "recordId": "broad_then_transport#turn-2",
+          "score": 0.805117,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_transport",
+          "user": "I need transportation to a clinic in Portland."
+        },
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.776525,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "dental_clinic_portland#turn-1",
+      "scenarioId": "dental_clinic_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need a low cost dental clinic in Portland.",
+      "normalizedQuery": "low cost dental dentist clinic medical health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.944402,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.887165,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.887165,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "mental_health_crisis_nonurgent#turn-1",
+      "scenarioId": "mental_health_crisis_nonurgent",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Portland?",
+      "normalizedQuery": "mental health services portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:34af8c2108871a0a",
+        "service:8c50169455946afc",
+        "service:51a09fdf5366e4b7",
+        "service:84cb1838907e1450",
+        "service:99734059c7675a26"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_mental_health_portland#turn-1",
+          "score": 0.999999,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_portland",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_broad_then_mental_health_portland#turn-2",
+          "score": 0.951033,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_mental_health_portland",
+          "user": "I am in Portland and need mental health services."
+        },
+        {
+          "recordId": "matrix_mental_health_salem#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_salem",
+          "user": "Can you find mental health services in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "domestic_violence_advocacy#turn-1",
+      "scenarioId": "domestic_violence_advocacy",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find domestic violence survivor advocacy in Oregon?",
+      "normalizedQuery": "domestic violence survivor advocacy oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5365a85b387044f7",
+        "page:bafkreic6nu6qu24tvolxmf5wtd3ad5jm6a63vimixhqccz6fvswg6asxfa",
+        "page:bafkreienlugsyfq2ximthab6ol46hzz7eampw5b6add5nsf2fckf7bk5ze",
+        "service:a704a02c64a5a445",
+        "page:bafkreifobj7dii4ftnmjbulmimj5gtanaahukkpu5rodpv7rdv6npvya34"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_domestic_violence_advocacy_hillsboro#turn-1",
+          "score": 0.96225,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_hillsboro",
+          "user": "Can you find domestic violence survivor advocacy in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_portland#turn-1",
+          "score": 0.96,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_portland",
+          "user": "Can you find domestic violence survivor advocacy in Portland?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_gresham#turn-1",
+          "score": 0.96,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_gresham",
+          "user": "Can you find domestic violence survivor advocacy in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "disability_benefits_help#turn-1",
+      "scenarioId": "disability_benefits_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Oregon?",
+      "normalizedQuery": "disability benefits snap assistance oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:8ba0530778ce4030"
+      ],
+      "similarCases": [
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-2",
+          "score": 0.94673,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "I need benefits help in Oregon."
+        },
+        {
+          "recordId": "matrix_id_replacement_salem#turn-1",
+          "score": 0.90796,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_salem",
+          "user": "Can you find ID replacement help in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.872098,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "tax_help_low_income#turn-1",
+      "scenarioId": "tax_help_low_income",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find free tax help for low income people in Oregon?",
+      "normalizedQuery": "free tax low income people oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreigpdz7gkgx2mye6fznkrjudjznsysth4oynsm5sy5sx3lnlquzige",
+        "page:bafkreicyhaqjidp3zdegweootwo2veoh3hasyf3gepfdjhlnes5qwxq6xu",
+        "page:bafkreigecvz7zurvbyqbc374ty2wgbymmjfpajkse2h33bizpy3rgtxt2q",
+        "service:1f2dcf4580114cf1",
+        "service:40f7711cf75fcb99"
+      ],
+      "similarCases": [
+        {
+          "recordId": "internet_discount#turn-1",
+          "score": 0.695378,
+          "route": "grounded_211_answer",
+          "scenarioId": "internet_discount",
+          "user": "Can you find internet discount help in Oregon?"
+        },
+        {
+          "recordId": "matrix_child_care_beaverton#turn-1",
+          "score": 0.681329,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_beaverton",
+          "user": "Can you find child care help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_child_care_medford#turn-1",
+          "score": 0.674451,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_medford",
+          "user": "Can you find child care help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "internet_discount#turn-1",
+      "scenarioId": "internet_discount",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find internet discount help in Oregon?",
+      "normalizedQuery": "internet discount oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreicdczc2b2zirtf5txrgtr2x55fhaq3d5i44pnlttrxczbtmlgzhky",
+        "page:bafkreicqqcsqjcodbcc2hz5xu57bxa35rep6pwawx4c6zacq25u5twsmmy",
+        "page:bafkreigipvqsfqtnljoancnowioqjegf54rutlmvszxpbi437dezf6jfxu",
+        "service:8c0123ab7654635e",
+        "page:bafkreihuzkdvhnqwg5msa4gy2z5g6433jnfjp5lvsbipdpntflueqvxypy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_child_care_eugene#turn-1",
+          "score": 0.760608,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_eugene",
+          "user": "Can you find child care help in Eugene?"
+        },
+        {
+          "recordId": "birth_certificate_help#turn-1",
+          "score": 0.758097,
+          "route": "grounded_211_answer",
+          "scenarioId": "birth_certificate_help",
+          "user": "Can you find help getting a birth certificate in Oregon?"
+        },
+        {
+          "recordId": "matrix_laundry_portland#turn-1",
+          "score": 0.749999,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_portland",
+          "user": "Can you find laundry services in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "new_to_oregon_help#turn-1",
+      "scenarioId": "new_to_oregon_help",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I am new to Oregon and need help.",
+      "normalizedQuery": "new oregon",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:5127a05e8be9124b",
+        "service:1efb2c3319525645",
+        "service:0fe71816f1005b6b",
+        "service:3ae1afd8cc467e09",
+        "service:588a6cf25a10415a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "sms_need_help#turn-1",
+          "score": 0.80322,
+          "route": "clarifying_prompt",
+          "scenarioId": "sms_need_help",
+          "user": "Need help"
+        },
+        {
+          "recordId": "broad_then_medical#turn-1",
+          "score": 0.769897,
+          "route": "clarifying_prompt",
+          "scenarioId": "broad_then_medical",
+          "user": "Help me figure out what to do."
+        },
+        {
+          "recordId": "voice_short_help#turn-1",
+          "score": 0.76584,
+          "route": "clarifying_prompt",
+          "scenarioId": "voice_short_help",
+          "user": "Help me."
+        }
+      ]
+    },
+    {
+      "id": "documents_for_snap#turn-1",
+      "scenarioId": "documents_for_snap",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for SNAP in Oregon?",
+      "normalizedQuery": "documents apply snap oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:f1f0337793c6aa3b",
+        "service:57b678175066bf52",
+        "page:bafkreifxuxv2yejobx6nnecqy7nartv36ivezehcvuu6xbqy73a2phnidq",
+        "service:8ba0530778ce4030"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.950708,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.905823,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.860151,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "apply_for_oregon_health_plan#turn-1",
+      "scenarioId": "apply_for_oregon_health_plan",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for Oregon Health Plan?",
+      "normalizedQuery": "documents apply oregon health plan",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "service:1ee7d308cca82397",
+        "service:d5b5854601af8a3b",
+        "service:7ea0969a6672cb62",
+        "service:0964a8d5435f63c7",
+        "page:bafkreic5powj2jap5qsfqrppnuikh2vujyjuipdwghjwmkc65hg4pbxhra"
+      ],
+      "similarCases": [
+        {
+          "recordId": "oregon_health_plan_salem#turn-1",
+          "score": 0.71293,
+          "route": "grounded_211_answer",
+          "scenarioId": "oregon_health_plan_salem",
+          "user": "Can you find Oregon Health Plan application help near Salem?"
+        },
+        {
+          "recordId": "paperwork_for_rent_assistance#turn-1",
+          "score": 0.705978,
+          "route": "template_guided_fallback",
+          "scenarioId": "paperwork_for_rent_assistance",
+          "user": "What paperwork should I bring for a rental assistance application?"
+        },
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.686209,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        }
+      ]
+    },
+    {
+      "id": "broad_then_medical#turn-2",
+      "scenarioId": "broad_then_medical",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Portland and need a medical clinic.",
+      "normalizedQuery": "portland medical clinic health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9b872ce46b837ac3",
+        "service:61d567ff81be92d6",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:bfee28bc06885629"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.966844,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        },
+        {
+          "recordId": "realistic_grounded_024_medical_clinic_portland#turn-1",
+          "score": 0.917462,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_024_medical_clinic_portland",
+          "user": "I'm with my kid and we are near Portland. We need a clinic."
+        },
+        {
+          "recordId": "broad_then_transport#turn-2",
+          "score": 0.815943,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_transport",
+          "user": "I need transportation to a clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "broad_then_transport#turn-2",
+      "scenarioId": "broad_then_transport",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need transportation to a clinic in Portland.",
+      "normalizedQuery": "transportation transport ride bus clinic medical health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:156176ac73be0658",
+        "service:9b872ce46b837ac3",
+        "service:80bb5c1077a6fe59",
+        "service:031bfb20ce232bc2",
+        "page:bafkreicifdycolhdowclruqsr2hbdf6h6nneakgnbttfickhkas2ngdzte"
+      ],
+      "similarCases": [
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.96177,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        },
+        {
+          "recordId": "broad_then_medical#turn-2",
+          "score": 0.815943,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_medical",
+          "user": "I am in Portland and need a medical clinic."
+        },
+        {
+          "recordId": "medical_clinic_portland#turn-1",
+          "score": 0.805117,
+          "route": "grounded_211_answer",
+          "scenarioId": "medical_clinic_portland",
+          "user": "Find a low cost clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "broad_then_benefits_documents_then_repeat#turn-2",
+      "scenarioId": "broad_then_benefits_documents_then_repeat",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need benefits help in Oregon.",
+      "normalizedQuery": "benefits snap assistance oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "service:8ba0530778ce4030",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "disability_benefits_help#turn-1",
+          "score": 0.94673,
+          "route": "grounded_211_answer",
+          "scenarioId": "disability_benefits_help",
+          "user": "Can you find disability benefits help in Oregon?"
+        },
+        {
+          "recordId": "matrix_id_replacement_salem#turn-1",
+          "score": 0.87913,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_salem",
+          "user": "Can you find ID replacement help in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.844408,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "broad_then_benefits_documents_then_repeat#turn-3",
+      "scenarioId": "broad_then_benefits_documents_then_repeat",
+      "turnIndex": 2,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What paperwork do I need to bring?",
+      "normalizedQuery": "know start benefits snap assistance oregon paperwork bring",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "service:8ba0530778ce4030",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.904748,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.880773,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.860151,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+      "scenarioId": "realistic_grounded_006_medical_clinic_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm on a borrowed phone in Eugene. Please find a clinic.",
+      "normalizedQuery": "i'm on borrowed phone eugene please clinic medical health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3d103f65a69856d0",
+        "service:91035f1235ed3213",
+        "service:88767b264b39295e",
+        "service:0c7de236aa1c69c8",
+        "service:f271a5c8d14f9de1"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_eugene#turn-1",
+          "score": 0.867444,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_eugene",
+          "user": "Can you find medical clinic in Eugene?"
+        },
+        {
+          "recordId": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+          "score": 0.733673,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_042_medical_clinic_beaverton",
+          "user": "I'm sleeping in my car around Beaverton. I need a clinic, preferably somewhere that answers the phone."
+        },
+        {
+          "recordId": "matrix_youth_day_center_eugene#turn-1",
+          "score": 0.729869,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_eugene",
+          "user": "Can you find youth day center in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "scenarioId": "realistic_grounded_024_medical_clinic_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm with my kid and we are near Portland. We need a clinic.",
+      "normalizedQuery": "i'm kid we portland clinic medical health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9b872ce46b837ac3",
+        "service:61d567ff81be92d6",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:bfee28bc06885629"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.948929,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        },
+        {
+          "recordId": "broad_then_medical#turn-2",
+          "score": 0.917462,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_medical",
+          "user": "I am in Portland and need a medical clinic."
+        },
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.767234,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "scenarioId": "realistic_grounded_042_medical_clinic_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm sleeping in my car around Beaverton. I need a clinic, preferably somewhere that answers the phone.",
+      "normalizedQuery": "i'm sleeping car around beaverton clinic medical health preferably somewhere answers phone",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ad8146a84abd0b66",
+        "service:391554d70c7586af",
+        "service:4565f55d52214819",
+        "service:f271a5c8d14f9de1",
+        "service:31a22008e2b10cbf"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+          "score": 0.795132,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_060_medical_clinic_clackamas",
+          "user": "I'm calling from my phone. I'm staying outside near Clackamas County and need a clinic."
+        },
+        {
+          "recordId": "realistic_broad_to_service_005#turn-2",
+          "score": 0.773401,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_broad_to_service_005",
+          "user": "I'm sleeping in my car around Salem. I need an address for mail, preferably somewhere that answers the phone."
+        },
+        {
+          "recordId": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+          "score": 0.733673,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_006_medical_clinic_eugene",
+          "user": "I'm on a borrowed phone in Eugene. Please find a clinic."
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+      "scenarioId": "realistic_grounded_060_medical_clinic_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm calling from my phone. I'm staying outside near Clackamas County and need a clinic.",
+      "normalizedQuery": "i'm calling from phone staying outside clackamas county clinic medical health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8ce3cb945b6fc55c",
+        "service:c909216f9b778826",
+        "service:65875f4882427e4f",
+        "service:f271a5c8d14f9de1",
+        "service:03f0d7f3a93aaddb"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+          "score": 0.795132,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_042_medical_clinic_beaverton",
+          "user": "I'm sleeping in my car around Beaverton. I need a clinic, preferably somewhere that answers the phone."
+        },
+        {
+          "recordId": "matrix_medical_clinic_clackamas#turn-1",
+          "score": 0.743152,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_clackamas",
+          "user": "Can you find medical clinic in Clackamas County?"
+        },
+        {
+          "recordId": "realistic_grounded_000_shelter_portland#turn-1",
+          "score": 0.715628,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_000_shelter_portland",
+          "user": "I'm calling from my phone. I'm staying outside near Portland and need shelter."
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_078_medical_clinic_eugene#turn-1",
+      "scenarioId": "realistic_grounded_078_medical_clinic_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am calling for my mom. She is in Eugene and needs a clinic.",
+      "normalizedQuery": "calling mom she eugene needs clinic medical health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:88767b264b39295e",
+        "service:1090306857226ac3",
+        "service:0f596be47f03a4d4",
+        "service:d23fef546e9f6d50",
+        "service:3d103f65a69856d0"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_eugene#turn-1",
+          "score": 0.775865,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_eugene",
+          "user": "Can you find medical clinic in Eugene?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_eugene#turn-1",
+          "score": 0.737048,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_eugene",
+          "user": "Can you find youth day center in Eugene?"
+        },
+        {
+          "recordId": "realistic_grounded_038_community_meals_eugene#turn-1",
+          "score": 0.724883,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_038_community_meals_eugene",
+          "user": "I am calling for my mom. She is in Eugene and needs somewhere to eat."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_007#turn-2",
+      "scenarioId": "realistic_broad_to_service_007",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm with my kid and we are near Medford. We need mental health help.",
+      "normalizedQuery": "i'm kid we medford mental health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5a04af88f4853a11",
+        "service:91726752b7b56c46",
+        "service:c2084da2f559db16",
+        "service:7912f9a5f2ad796d",
+        "service:dd8e0269cf575bae"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_mental_health_medford#turn-1",
+          "score": 0.817151,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_medford",
+          "user": "Can you find mental health services in Medford?"
+        },
+        {
+          "recordId": "matrix_mental_health_eugene#turn-1",
+          "score": 0.700001,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_eugene",
+          "user": "Can you find mental health services in Eugene?"
+        },
+        {
+          "recordId": "realistic_grounded_003_showers_hillsboro#turn-1",
+          "score": 0.688487,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_003_showers_hillsboro",
+          "user": "My stuff got taken and I'm around Hillsboro. Can you help me find a shower?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_007#turn-3",
+      "scenarioId": "realistic_broad_to_service_007",
+      "turnIndex": 2,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Do they help people with pets?",
+      "normalizedQuery": "i'm outside tired medford don't know start kid we mental health they people pets",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:e8399a8259fb5c21",
+        "page:bafkreidyfixwtff3erkb2pvjpd4sowjp7veuhdy4ztcl4v5znlagzwumzi",
+        "service:3309400a4da9a7e6",
+        "service:900148af08bd3d1d",
+        "service:cb11afeba28b9ec0"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_007#turn-1",
+          "score": 0.738238,
+          "route": "clarifying_prompt",
+          "scenarioId": "realistic_broad_to_service_007",
+          "user": "I'm outside and tired. I need help in Medford, but I don't know where to start."
+        },
+        {
+          "recordId": "family_needs_help#turn-1",
+          "score": 0.68162,
+          "route": "clarifying_prompt",
+          "scenarioId": "family_needs_help",
+          "user": "My family needs help but I do not know where to start."
+        },
+        {
+          "recordId": "realistic_broad_to_service_007#turn-2",
+          "score": 0.678416,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_broad_to_service_007",
+          "user": "I'm with my kid and we are near Medford. We need mental health help."
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_portland#turn-1",
+      "scenarioId": "matrix_medical_clinic_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Portland?",
+      "normalizedQuery": "medical clinic health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9b872ce46b837ac3",
+        "service:61d567ff81be92d6",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:bfee28bc06885629"
+      ],
+      "similarCases": [
+        {
+          "recordId": "broad_then_medical#turn-2",
+          "score": 0.966844,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_medical",
+          "user": "I am in Portland and need a medical clinic."
+        },
+        {
+          "recordId": "realistic_grounded_024_medical_clinic_portland#turn-1",
+          "score": 0.948929,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_024_medical_clinic_portland",
+          "user": "I'm with my kid and we are near Portland. We need a clinic."
+        },
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.802261,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_gresham#turn-1",
+      "scenarioId": "matrix_medical_clinic_gresham",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Gresham?",
+      "normalizedQuery": "medical clinic health gresham",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:f271a5c8d14f9de1",
+        "service:3fc4bcaa38f90f7b",
+        "service:854bcc082ee90a4f"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_salem#turn-1",
+          "score": 0.970592,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_salem",
+          "user": "Can you find medical clinic in Salem?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_medford#turn-1",
+          "score": 0.811682,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_medford",
+          "user": "Can you find medical clinic in Medford?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.784602,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_beaverton#turn-1",
+      "scenarioId": "matrix_medical_clinic_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Beaverton?",
+      "normalizedQuery": "medical clinic health beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ad8146a84abd0b66",
+        "service:fd3b16d707204ad2",
+        "service:391554d70c7586af",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_youth_day_center_beaverton#turn-1",
+          "score": 0.834625,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_beaverton",
+          "user": "Can you find youth day center in Beaverton?"
+        },
+        {
+          "recordId": "matrix_mental_health_beaverton#turn-1",
+          "score": 0.806781,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_beaverton",
+          "user": "Can you find mental health services in Beaverton?"
+        },
+        {
+          "recordId": "matrix_mail_service_beaverton#turn-1",
+          "score": 0.778079,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_beaverton",
+          "user": "Can you find mail service in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_hillsboro#turn-1",
+      "scenarioId": "matrix_medical_clinic_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Hillsboro?",
+      "normalizedQuery": "medical clinic health hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:11c8cb54e283cb73",
+        "service:ae7950a80cfa3f78",
+        "service:c128c47630ab737d",
+        "service:929eeefd245d3386",
+        "service:9e5d5425a56fa2ea"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_hillsboro#turn-1",
+          "score": 0.982605,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_hillsboro",
+          "user": "Can you find dental clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+          "score": 0.95038,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_medical_clinic_hillsboro",
+          "user": "I am in Hillsboro and need medical clinic."
+        },
+        {
+          "recordId": "matrix_dental_clinic_beaverton#turn-1",
+          "score": 0.800131,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_beaverton",
+          "user": "Can you find dental clinic in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_clackamas#turn-1",
+      "scenarioId": "matrix_medical_clinic_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Clackamas County?",
+      "normalizedQuery": "medical clinic health clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:410fe197c6ccd912",
+        "service:435cf768920ea60f",
+        "service:4c5041d367613ef6",
+        "service:79d0e47dc4e0e5ac",
+        "service:a45de2e1dea0b817"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+          "score": 0.743152,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_060_medical_clinic_clackamas",
+          "user": "I'm calling from my phone. I'm staying outside near Clackamas County and need a clinic."
+        },
+        {
+          "recordId": "matrix_eviction_prevention_clackamas#turn-1",
+          "score": 0.723747,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_clackamas",
+          "user": "Can you find eviction prevention in Clackamas County?"
+        },
+        {
+          "recordId": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+          "score": 0.705978,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_042_medical_clinic_beaverton",
+          "user": "I'm sleeping in my car around Beaverton. I need a clinic, preferably somewhere that answers the phone."
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_salem#turn-1",
+      "scenarioId": "matrix_medical_clinic_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Salem?",
+      "normalizedQuery": "medical clinic health salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:f271a5c8d14f9de1",
+        "service:3fc4bcaa38f90f7b",
+        "service:854bcc082ee90a4f"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_gresham#turn-1",
+          "score": 0.970592,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_gresham",
+          "user": "Can you find medical clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_medford#turn-1",
+          "score": 0.811682,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_medford",
+          "user": "Can you find medical clinic in Medford?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.784602,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_eugene#turn-1",
+      "scenarioId": "matrix_medical_clinic_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Eugene?",
+      "normalizedQuery": "medical clinic health eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:88767b264b39295e",
+        "service:3d103f65a69856d0",
+        "service:91035f1235ed3213",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+          "score": 0.867444,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_006_medical_clinic_eugene",
+          "user": "I'm on a borrowed phone in Eugene. Please find a clinic."
+        },
+        {
+          "recordId": "matrix_dental_clinic_eugene#turn-1",
+          "score": 0.83712,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_eugene",
+          "user": "Can you find dental clinic in Eugene?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_eugene#turn-1",
+          "score": 0.79592,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_eugene",
+          "user": "Can you find youth day center in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_medical_clinic_medford#turn-1",
+      "scenarioId": "matrix_medical_clinic_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find medical clinic in Medford?",
+      "normalizedQuery": "medical clinic health medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:7aac824b62477306",
+        "service:31a22008e2b10cbf",
+        "service:5d7b69e27cf0f47a",
+        "service:f271a5c8d14f9de1",
+        "service:a8682c03031f55ca"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_gresham#turn-1",
+          "score": 0.811682,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_gresham",
+          "user": "Can you find medical clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_salem#turn-1",
+          "score": 0.811682,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_salem",
+          "user": "Can you find medical clinic in Salem?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_portland#turn-1",
+          "score": 0.747534,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_portland",
+          "user": "Can you find medical clinic in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_portland#turn-1",
+      "scenarioId": "matrix_dental_clinic_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Portland?",
+      "normalizedQuery": "dental dentist clinic medical health portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "dental_clinic_portland#turn-1",
+          "score": 0.944402,
+          "route": "grounded_211_answer",
+          "scenarioId": "dental_clinic_portland",
+          "user": "I need a low cost dental clinic in Portland."
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_gresham#turn-1",
+      "scenarioId": "matrix_dental_clinic_gresham",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Gresham?",
+      "normalizedQuery": "dental dentist clinic medical health gresham",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_medford#turn-1",
+          "score": 0.9697,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_medford",
+          "user": "Can you find dental clinic in Medford?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_beaverton#turn-1",
+      "scenarioId": "matrix_dental_clinic_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Beaverton?",
+      "normalizedQuery": "dental dentist clinic medical health beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9ec0f5096970bbfd",
+        "page:bafkreienrusvj3p44y4gfobplhwgske2hh3qrmn33id4whj72xq5lsqjtm",
+        "page:bafkreidc6skebkc54co5zho222zelnr3warf6hwielrdx7xm2inwhjzkoe",
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_hillsboro#turn-1",
+          "score": 0.821952,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_hillsboro",
+          "user": "Can you find dental clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_medical_clinic_hillsboro#turn-1",
+          "score": 0.800131,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_hillsboro",
+          "user": "Can you find medical clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+          "score": 0.76043,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_medical_clinic_hillsboro",
+          "user": "I am in Hillsboro and need medical clinic."
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_hillsboro#turn-1",
+      "scenarioId": "matrix_dental_clinic_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Hillsboro?",
+      "normalizedQuery": "dental dentist clinic medical health hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:11c8cb54e283cb73",
+        "service:ae7950a80cfa3f78",
+        "service:176623b9d4cfda18",
+        "service:929eeefd245d3386",
+        "service:c128c47630ab737d"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_hillsboro#turn-1",
+          "score": 0.982605,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_hillsboro",
+          "user": "Can you find medical clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+          "score": 0.93385,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_medical_clinic_hillsboro",
+          "user": "I am in Hillsboro and need medical clinic."
+        },
+        {
+          "recordId": "matrix_dental_clinic_beaverton#turn-1",
+          "score": 0.821952,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_beaverton",
+          "user": "Can you find dental clinic in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_clackamas#turn-1",
+      "scenarioId": "matrix_dental_clinic_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Clackamas County?",
+      "normalizedQuery": "dental dentist clinic medical health clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+          "score": 0.95743,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_dental_clinic_clackamas",
+          "user": "I am in Clackamas County and need dental clinic."
+        },
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_salem#turn-1",
+      "scenarioId": "matrix_dental_clinic_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Salem?",
+      "normalizedQuery": "dental dentist clinic medical health salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:4cd6737ca6799e9a",
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.815593,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.815593,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.815593,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_eugene#turn-1",
+      "scenarioId": "matrix_dental_clinic_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Eugene?",
+      "normalizedQuery": "dental dentist clinic medical health eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:88767b264b39295e",
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.859544,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.859544,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        },
+        {
+          "recordId": "dental_clinic_portland#turn-1",
+          "score": 0.83712,
+          "route": "grounded_211_answer",
+          "scenarioId": "dental_clinic_portland",
+          "user": "I need a low cost dental clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "matrix_dental_clinic_medford#turn-1",
+      "scenarioId": "matrix_dental_clinic_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find dental clinic in Medford?",
+      "normalizedQuery": "dental dentist clinic medical health medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.9697,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.909094,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_portland#turn-1",
+      "scenarioId": "matrix_mental_health_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Portland?",
+      "normalizedQuery": "mental health services portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:34af8c2108871a0a",
+        "service:8c50169455946afc",
+        "service:51a09fdf5366e4b7",
+        "service:84cb1838907e1450",
+        "service:99734059c7675a26"
+      ],
+      "similarCases": [
+        {
+          "recordId": "mental_health_crisis_nonurgent#turn-1",
+          "score": 0.999999,
+          "route": "grounded_211_answer",
+          "scenarioId": "mental_health_crisis_nonurgent",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_broad_then_mental_health_portland#turn-2",
+          "score": 0.951033,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_mental_health_portland",
+          "user": "I am in Portland and need mental health services."
+        },
+        {
+          "recordId": "matrix_mental_health_salem#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_salem",
+          "user": "Can you find mental health services in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_gresham#turn-1",
+      "scenarioId": "matrix_mental_health_gresham",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Gresham?",
+      "normalizedQuery": "mental health services gresham",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3009b3dc46953c2a",
+        "service:a83142ab9bffc6d5",
+        "service:ae2dd2b1264b73a7",
+        "service:bc262b0ceb000a33",
+        "service:d33c329fbe8c48d9"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_child_care_gresham#turn-1",
+          "score": 0.885363,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_gresham",
+          "user": "Can you find child care help in Gresham?"
+        },
+        {
+          "recordId": "mental_health_crisis_nonurgent#turn-1",
+          "score": 0.739692,
+          "route": "grounded_211_answer",
+          "scenarioId": "mental_health_crisis_nonurgent",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_mental_health_portland#turn-1",
+          "score": 0.739692,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_portland",
+          "user": "Can you find mental health services in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_beaverton#turn-1",
+      "scenarioId": "matrix_mental_health_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Beaverton?",
+      "normalizedQuery": "mental health services beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:fd3b16d707204ad2",
+        "service:df15bfd5df7ead05",
+        "service:7b76539f63e37721",
+        "service:843bb5003193d004",
+        "service:f0565939ed66ab54"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_laundry_beaverton#turn-1",
+          "score": 0.820901,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_beaverton",
+          "user": "Can you find laundry services in Beaverton?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_beaverton#turn-1",
+          "score": 0.818317,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_beaverton",
+          "user": "Can you find youth day center in Beaverton?"
+        },
+        {
+          "recordId": "matrix_mail_service_beaverton#turn-1",
+          "score": 0.813735,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_beaverton",
+          "user": "Can you find mail service in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_hillsboro#turn-1",
+      "scenarioId": "matrix_mental_health_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Hillsboro?",
+      "normalizedQuery": "mental health services hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5204246fd59d24b1",
+        "service:5cf9e6901cabeff9",
+        "service:9c3306bc88db0a03",
+        "service:cc972e8f005c614f",
+        "service:dfb4e873a8e98f35"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_child_care_hillsboro#turn-1",
+          "score": 0.857689,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_hillsboro",
+          "user": "Can you find child care help in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_hillsboro#turn-1",
+          "score": 0.808136,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_hillsboro",
+          "user": "Can you find youth day center in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_mental_health_clackamas#turn-1",
+          "score": 0.777777,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_clackamas",
+          "user": "Can you find mental health services in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_clackamas#turn-1",
+      "scenarioId": "matrix_mental_health_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Clackamas County?",
+      "normalizedQuery": "mental health services clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:2d63f632b46d0d29",
+        "service:c1be66b3f546e230",
+        "service:03f0d7f3a93aaddb",
+        "service:40087f84f2e0d13b",
+        "service:06444d1cd7707c2e"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_warming_center_clackamas#turn-1",
+          "score": 0.84678,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_clackamas",
+          "user": "Can you find warming center in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_detox_clackamas#turn-1",
+          "score": 0.843273,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_clackamas",
+          "user": "Can you find detox help in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_laundry_clackamas#turn-1",
+          "score": 0.8365,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_clackamas",
+          "user": "Can you find laundry services in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_salem#turn-1",
+      "scenarioId": "matrix_mental_health_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Salem?",
+      "normalizedQuery": "mental health services salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5830d3ec8e8bcf8c",
+        "service:27c3a3a9cc500a28",
+        "service:4b42df756753dbd4",
+        "service:a1618e11842606ec",
+        "service:4587a7eaacd8e077"
+      ],
+      "similarCases": [
+        {
+          "recordId": "mental_health_crisis_nonurgent#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "mental_health_crisis_nonurgent",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_mental_health_portland#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_portland",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_food_pantry_salem#turn-1",
+          "score": 0.801784,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_salem",
+          "user": "Can you find food pantry in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_eugene#turn-1",
+      "scenarioId": "matrix_mental_health_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Eugene?",
+      "normalizedQuery": "mental health services eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:fed476ca51c8757f",
+        "service:bbadcb2bdf0463c1",
+        "service:235705af986ccfb0",
+        "service:4a98f68b90f31cf4",
+        "service:59f114daf3db449e"
+      ],
+      "similarCases": [
+        {
+          "recordId": "mental_health_crisis_nonurgent#turn-1",
+          "score": 0.823687,
+          "route": "grounded_211_answer",
+          "scenarioId": "mental_health_crisis_nonurgent",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_mental_health_portland#turn-1",
+          "score": 0.823687,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_portland",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_broad_then_mental_health_portland#turn-2",
+          "score": 0.790263,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_mental_health_portland",
+          "user": "I am in Portland and need mental health services."
+        }
+      ]
+    },
+    {
+      "id": "matrix_mental_health_medford#turn-1",
+      "scenarioId": "matrix_mental_health_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find mental health services in Medford?",
+      "normalizedQuery": "mental health services medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:91726752b7b56c46",
+        "service:5a04af88f4853a11",
+        "service:7912f9a5f2ad796d",
+        "service:c2084da2f559db16",
+        "service:dfb4e873a8e98f35"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_007#turn-2",
+          "score": 0.817151,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_broad_to_service_007",
+          "user": "I'm with my kid and we are near Medford. We need mental health help."
+        },
+        {
+          "recordId": "matrix_mental_health_eugene#turn-1",
+          "score": 0.784464,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_eugene",
+          "user": "Can you find mental health services in Eugene?"
+        },
+        {
+          "recordId": "matrix_warming_center_eugene#turn-1",
+          "score": 0.745241,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_eugene",
+          "user": "Can you find warming center in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_portland#turn-1",
+      "scenarioId": "matrix_disability_benefits_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Portland?",
+      "normalizedQuery": "disability benefits snap assistance portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:87b89caa28f00960",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "service:d58a8e52f7c74e3f"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_medford#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_medford",
+          "user": "Can you find disability benefits help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_gresham#turn-1",
+      "scenarioId": "matrix_disability_benefits_gresham",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Gresham?",
+      "normalizedQuery": "disability benefits snap assistance gresham",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:9f02d53fbb3e9c6a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_medford#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_medford",
+          "user": "Can you find disability benefits help in Medford?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_portland#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_portland",
+          "user": "Can you find disability benefits help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_beaverton#turn-1",
+      "scenarioId": "matrix_disability_benefits_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Beaverton?",
+      "normalizedQuery": "disability benefits snap assistance beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:9f02d53fbb3e9c6a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_medford#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_medford",
+          "user": "Can you find disability benefits help in Medford?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_portland#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_portland",
+          "user": "Can you find disability benefits help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_hillsboro#turn-1",
+      "scenarioId": "matrix_disability_benefits_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Hillsboro?",
+      "normalizedQuery": "disability benefits snap assistance hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:59169fe563af08b7",
+        "service:6cc3b66978eab7fc",
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_clackamas#turn-1",
+          "score": 0.803591,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_clackamas",
+          "user": "Can you find disability benefits help in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.707107,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.707107,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_clackamas#turn-1",
+      "scenarioId": "matrix_disability_benefits_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Clackamas County?",
+      "normalizedQuery": "disability benefits snap assistance clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:59169fe563af08b7",
+        "service:6cc3b66978eab7fc",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_hillsboro#turn-1",
+          "score": 0.803591,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_hillsboro",
+          "user": "Can you find disability benefits help in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.778108,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.778108,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_salem#turn-1",
+      "scenarioId": "matrix_disability_benefits_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Salem?",
+      "normalizedQuery": "disability benefits snap assistance salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9f02d53fbb3e9c6a",
+        "service:1a1c9e1d22a02f0b",
+        "service:1c026470db6ca453",
+        "service:1f766ab1492218f0",
+        "service:81124e3057b57631"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_veteran_housing_salem#turn-1",
+          "score": 0.906252,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_veteran_housing_salem",
+          "user": "Can you find veteran housing help in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.726723,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        },
+        {
+          "recordId": "matrix_id_replacement_gresham#turn-1",
+          "score": 0.722185,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_gresham",
+          "user": "Can you find ID replacement help in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_eugene#turn-1",
+      "scenarioId": "matrix_disability_benefits_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Eugene?",
+      "normalizedQuery": "disability benefits snap assistance eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8969865724a665f2",
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.834965,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.814091,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_medford#turn-1",
+          "score": 0.814091,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_medford",
+          "user": "Can you find disability benefits help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_disability_benefits_medford#turn-1",
+      "scenarioId": "matrix_disability_benefits_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Medford?",
+      "normalizedQuery": "disability benefits snap assistance medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:9f02d53fbb3e9c6a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_disability_benefits_gresham#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_gresham",
+          "user": "Can you find disability benefits help in Gresham?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_beaverton#turn-1",
+          "score": 0.977776,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_beaverton",
+          "user": "Can you find disability benefits help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_disability_benefits_portland#turn-1",
+          "score": 0.913259,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_disability_benefits_portland",
+          "user": "Can you find disability benefits help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "scenarioId": "matrix_broad_then_medical_clinic_hillsboro",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Hillsboro and need medical clinic.",
+      "normalizedQuery": "hillsboro medical clinic health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:11c8cb54e283cb73",
+        "service:ae7950a80cfa3f78",
+        "service:c128c47630ab737d",
+        "service:929eeefd245d3386",
+        "service:9e5d5425a56fa2ea"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_medical_clinic_hillsboro#turn-1",
+          "score": 0.95038,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_medical_clinic_hillsboro",
+          "user": "Can you find medical clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_hillsboro#turn-1",
+          "score": 0.93385,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_hillsboro",
+          "user": "Can you find dental clinic in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_beaverton#turn-1",
+          "score": 0.76043,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_beaverton",
+          "user": "Can you find dental clinic in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+      "scenarioId": "matrix_broad_then_dental_clinic_clackamas",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Clackamas County and need dental clinic.",
+      "normalizedQuery": "clackamas county dental dentist clinic medical health",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:119ca1b7c61c8ad1",
+        "service:1277e7a84dfeb48e",
+        "service:96d8aa19d315c2bb",
+        "service:9be65dd99896b229",
+        "service:12625a2dc4f2fd29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_dental_clinic_clackamas#turn-1",
+          "score": 0.95743,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_clackamas",
+          "user": "Can you find dental clinic in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_portland#turn-1",
+          "score": 0.870391,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_portland",
+          "user": "Can you find dental clinic in Portland?"
+        },
+        {
+          "recordId": "matrix_dental_clinic_gresham#turn-1",
+          "score": 0.870391,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_dental_clinic_gresham",
+          "user": "Can you find dental clinic in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_mental_health_portland#turn-2",
+      "scenarioId": "matrix_broad_then_mental_health_portland",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Portland and need mental health services.",
+      "normalizedQuery": "portland mental health services",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:34af8c2108871a0a",
+        "service:8c50169455946afc",
+        "service:51a09fdf5366e4b7",
+        "service:84cb1838907e1450",
+        "service:99734059c7675a26"
+      ],
+      "similarCases": [
+        {
+          "recordId": "mental_health_crisis_nonurgent#turn-1",
+          "score": 0.951033,
+          "route": "grounded_211_answer",
+          "scenarioId": "mental_health_crisis_nonurgent",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_mental_health_portland#turn-1",
+          "score": 0.951033,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_portland",
+          "user": "Can you find mental health services in Portland?"
+        },
+        {
+          "recordId": "matrix_mental_health_eugene#turn-1",
+          "score": 0.790263,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_eugene",
+          "user": "Can you find mental health services in Eugene?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.952788,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.950708,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.904748,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "template_guided_fallback->live_agent"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.952788,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.905823,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.880773,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-2",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.663293,
+      "routeTransition": "live_agent->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-2",
+      "to": "snap_help_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.646508,
+      "routeTransition": "live_agent->grounded_211_answer"
+    },
+    {
+      "from": "snap_help_portland#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.830453,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "snap_help_portland#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.830453,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "snap_help_portland#turn-1",
+      "to": "matrix_disability_benefits_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.830453,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "birth_certificate_help#turn-1",
+      "to": "internet_discount#turn-1",
+      "type": "semantic_similar",
+      "score": 0.758097,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "birth_certificate_help#turn-1",
+      "to": "domestic_violence_advocacy#turn-1",
+      "type": "semantic_similar",
+      "score": 0.742781,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "transportation_to_clinic#turn-1",
+      "to": "broad_then_transport#turn-2",
+      "type": "semantic_similar",
+      "score": 0.96177,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "transportation_to_clinic#turn-1",
+      "to": "medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.837121,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "transportation_to_clinic#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.802261,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "medical_clinic_portland#turn-1",
+      "to": "transportation_to_clinic#turn-1",
+      "type": "semantic_similar",
+      "score": 0.837121,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "medical_clinic_portland#turn-1",
+      "to": "broad_then_transport#turn-2",
+      "type": "semantic_similar",
+      "score": 0.805117,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "medical_clinic_portland#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.776525,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "dental_clinic_portland#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.944402,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "dental_clinic_portland#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.887165,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "dental_clinic_portland#turn-1",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.887165,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "mental_health_crisis_nonurgent#turn-1",
+      "to": "matrix_mental_health_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.999999,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "mental_health_crisis_nonurgent#turn-1",
+      "to": "matrix_broad_then_mental_health_portland#turn-2",
+      "type": "semantic_similar",
+      "score": 0.951033,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "mental_health_crisis_nonurgent#turn-1",
+      "to": "matrix_mental_health_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.852435,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "disability_benefits_help#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-2",
+      "type": "semantic_similar",
+      "score": 0.94673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "tax_help_low_income#turn-1",
+      "to": "internet_discount#turn-1",
+      "type": "semantic_similar",
+      "score": 0.695378,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "internet_discount#turn-1",
+      "to": "birth_certificate_help#turn-1",
+      "type": "semantic_similar",
+      "score": 0.758097,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.950708,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.905823,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.860151,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "apply_for_oregon_health_plan#turn-1",
+      "to": "oregon_health_plan_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.71293,
+      "routeTransition": "template_guided_fallback->grounded_211_answer"
+    },
+    {
+      "from": "apply_for_oregon_health_plan#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.686209,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_medical#turn-2",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.966844,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_medical#turn-2",
+      "to": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.917462,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_medical#turn-2",
+      "to": "broad_then_transport#turn-2",
+      "type": "semantic_similar",
+      "score": 0.815943,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_transport#turn-2",
+      "to": "transportation_to_clinic#turn-1",
+      "type": "semantic_similar",
+      "score": 0.96177,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_transport#turn-2",
+      "to": "broad_then_medical#turn-2",
+      "type": "semantic_similar",
+      "score": 0.815943,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_transport#turn-2",
+      "to": "medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.805117,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-2",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-2",
+      "to": "disability_benefits_help#turn-1",
+      "type": "semantic_similar",
+      "score": 0.94673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "broad_then_benefits_documents_then_repeat#turn-4",
+      "type": "scenario_next_turn",
+      "routeTransition": "template_guided_fallback->live_agent"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.904748,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.880773,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.860151,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+      "to": "matrix_medical_clinic_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.867444,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+      "to": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.733673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.948929,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "to": "broad_then_medical#turn-2",
+      "type": "semantic_similar",
+      "score": 0.917462,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "to": "transportation_to_clinic#turn-1",
+      "type": "semantic_similar",
+      "score": 0.767234,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "to": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.795132,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "to": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.733673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+      "to": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.795132,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+      "to": "matrix_medical_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.743152,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_078_medical_clinic_eugene#turn-1",
+      "to": "matrix_medical_clinic_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.775865,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_007#turn-2",
+      "to": "realistic_broad_to_service_007#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_007#turn-2",
+      "to": "matrix_mental_health_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.817151,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_007#turn-2",
+      "to": "matrix_mental_health_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.700001,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_007#turn-3",
+      "to": "realistic_broad_to_service_007#turn-2",
+      "type": "semantic_similar",
+      "score": 0.678416,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_portland#turn-1",
+      "to": "broad_then_medical#turn-2",
+      "type": "semantic_similar",
+      "score": 0.966844,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_portland#turn-1",
+      "to": "realistic_grounded_024_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.948929,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_portland#turn-1",
+      "to": "transportation_to_clinic#turn-1",
+      "type": "semantic_similar",
+      "score": 0.802261,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_gresham#turn-1",
+      "to": "matrix_medical_clinic_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.970592,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_gresham#turn-1",
+      "to": "matrix_medical_clinic_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.811682,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_gresham#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.784602,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_beaverton#turn-1",
+      "to": "matrix_mental_health_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.806781,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_hillsboro#turn-1",
+      "to": "matrix_dental_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.982605,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_hillsboro#turn-1",
+      "to": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "type": "semantic_similar",
+      "score": 0.95038,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_hillsboro#turn-1",
+      "to": "matrix_dental_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.800131,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_clackamas#turn-1",
+      "to": "realistic_grounded_060_medical_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.743152,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_clackamas#turn-1",
+      "to": "realistic_grounded_042_medical_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.705978,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_salem#turn-1",
+      "to": "matrix_medical_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.970592,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_salem#turn-1",
+      "to": "matrix_medical_clinic_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.811682,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_salem#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.784602,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_eugene#turn-1",
+      "to": "realistic_grounded_006_medical_clinic_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.867444,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_eugene#turn-1",
+      "to": "matrix_dental_clinic_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.83712,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_medford#turn-1",
+      "to": "matrix_medical_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.811682,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_medford#turn-1",
+      "to": "matrix_medical_clinic_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.811682,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_medical_clinic_medford#turn-1",
+      "to": "matrix_medical_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.747534,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_portland#turn-1",
+      "to": "dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.944402,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_portland#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_portland#turn-1",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_gresham#turn-1",
+      "to": "matrix_dental_clinic_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.9697,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_gresham#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_gresham#turn-1",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_beaverton#turn-1",
+      "to": "matrix_dental_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.821952,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_beaverton#turn-1",
+      "to": "matrix_medical_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.800131,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_beaverton#turn-1",
+      "to": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "type": "semantic_similar",
+      "score": 0.76043,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_hillsboro#turn-1",
+      "to": "matrix_medical_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.982605,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_hillsboro#turn-1",
+      "to": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "type": "semantic_similar",
+      "score": 0.93385,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_hillsboro#turn-1",
+      "to": "matrix_dental_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.821952,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_clackamas#turn-1",
+      "to": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+      "type": "semantic_similar",
+      "score": 0.95743,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_clackamas#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_clackamas#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_salem#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.815593,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_salem#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.815593,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_salem#turn-1",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.815593,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_eugene#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.859544,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_eugene#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.859544,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_eugene#turn-1",
+      "to": "dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.83712,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_medford#turn-1",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.9697,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_medford#turn-1",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_dental_clinic_medford#turn-1",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.909094,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_portland#turn-1",
+      "to": "mental_health_crisis_nonurgent#turn-1",
+      "type": "semantic_similar",
+      "score": 0.999999,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_portland#turn-1",
+      "to": "matrix_broad_then_mental_health_portland#turn-2",
+      "type": "semantic_similar",
+      "score": 0.951033,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_portland#turn-1",
+      "to": "matrix_mental_health_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.852435,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_gresham#turn-1",
+      "to": "mental_health_crisis_nonurgent#turn-1",
+      "type": "semantic_similar",
+      "score": 0.739692,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_gresham#turn-1",
+      "to": "matrix_mental_health_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.739692,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_hillsboro#turn-1",
+      "to": "matrix_mental_health_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.777777,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_salem#turn-1",
+      "to": "mental_health_crisis_nonurgent#turn-1",
+      "type": "semantic_similar",
+      "score": 0.852435,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_salem#turn-1",
+      "to": "matrix_mental_health_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.852435,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_eugene#turn-1",
+      "to": "mental_health_crisis_nonurgent#turn-1",
+      "type": "semantic_similar",
+      "score": 0.823687,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_eugene#turn-1",
+      "to": "matrix_mental_health_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.823687,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_eugene#turn-1",
+      "to": "matrix_broad_then_mental_health_portland#turn-2",
+      "type": "semantic_similar",
+      "score": 0.790263,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_medford#turn-1",
+      "to": "realistic_broad_to_service_007#turn-2",
+      "type": "semantic_similar",
+      "score": 0.817151,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_mental_health_medford#turn-1",
+      "to": "matrix_mental_health_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.784464,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_portland#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_portland#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_portland#turn-1",
+      "to": "matrix_disability_benefits_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_gresham#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_gresham#turn-1",
+      "to": "matrix_disability_benefits_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_gresham#turn-1",
+      "to": "matrix_disability_benefits_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_beaverton#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_beaverton#turn-1",
+      "to": "matrix_disability_benefits_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_beaverton#turn-1",
+      "to": "matrix_disability_benefits_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_hillsboro#turn-1",
+      "to": "matrix_disability_benefits_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.803591,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_hillsboro#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.707107,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_hillsboro#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.707107,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_clackamas#turn-1",
+      "to": "matrix_disability_benefits_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.803591,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_clackamas#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.778108,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_clackamas#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.778108,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_eugene#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.834965,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_eugene#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.814091,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_eugene#turn-1",
+      "to": "matrix_disability_benefits_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.814091,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_medford#turn-1",
+      "to": "matrix_disability_benefits_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_medford#turn-1",
+      "to": "matrix_disability_benefits_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.977776,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_disability_benefits_medford#turn-1",
+      "to": "matrix_disability_benefits_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.913259,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "to": "matrix_medical_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.95038,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "to": "matrix_dental_clinic_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.93385,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_medical_clinic_hillsboro#turn-2",
+      "to": "matrix_dental_clinic_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.76043,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+      "to": "matrix_dental_clinic_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.95743,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+      "to": "matrix_dental_clinic_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.870391,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_dental_clinic_clackamas#turn-2",
+      "to": "matrix_dental_clinic_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.870391,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_mental_health_portland#turn-2",
+      "to": "mental_health_crisis_nonurgent#turn-1",
+      "type": "semantic_similar",
+      "score": 0.951033,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_mental_health_portland#turn-2",
+      "to": "matrix_mental_health_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.951033,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_mental_health_portland#turn-2",
+      "to": "matrix_mental_health_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.790263,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

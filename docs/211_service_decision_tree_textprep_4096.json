@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T15:58:51.190002+00:00",
+  "purpose": "Route Abby service-navigation turns to grounded 211 answers, prompt-template clarification/fallback, or live agents.",
+  "nodes": [
+    {
+      "id": "start",
+      "question": "Does the user mention immediate danger, medical emergency, self-harm, violence, or urgent shelter tonight?",
+      "yes": "live_agent",
+      "no": "service_related"
+    },
+    {
+      "id": "service_related",
+      "question": "Is the request about 211-style service navigation or a supported wallet/app action?",
+      "yes": "retrieval_strength",
+      "no": "live_agent"
+    },
+    {
+      "id": "retrieval_strength",
+      "question": "Did local 211 retrieval produce a strong match with usable evidence?",
+      "yes": "grounded_211_answer",
+      "no": "need_clarification"
+    },
+    {
+      "id": "need_clarification",
+      "question": "Can one missing detail, such as city/county/service type/urgency, likely improve retrieval?",
+      "yes": "clarifying_prompt",
+      "no": "template_guided_fallback"
+    },
+    {
+      "id": "fallback_exhausted",
+      "question": "After clarification or template fallback, is the user still unsupported or asking for a person?",
+      "yes": "live_agent",
+      "no": "grounded_211_answer"
+    }
+  ],
+  "leaves": {
+    "grounded_211_answer": {
+      "templateId": "grounded_service_match",
+      "title": "Grounded 211 Service Match",
+      "observedSimulationCount": 2086,
+      "checklist": [
+        "Name the matched provider or program.",
+        "Mention eligibility, intake steps, documents, phone, hours, or location only when present in evidence.",
+        "Cite the 211 source URL or document ID.",
+        "Offer to save the service or create a follow-up plan only after the user confirms."
+      ]
+    },
+    "clarifying_prompt": {
+      "templateId": "clarify_need_or_location",
+      "title": "Clarify Need or Location",
+      "observedSimulationCount": 410,
+      "checklist": [
+        "Ask only one question.",
+        "Avoid collecting unnecessary sensitive information.",
+        "Explain that the answer will be grounded in 211 service records."
+      ]
+    },
+    "template_guided_fallback": {
+      "templateId": "fallback_general_guidance",
+      "title": "Template-Guided Fallback",
+      "observedSimulationCount": 633,
+      "checklist": [
+        "Do not invent provider names.",
+        "Explain the evidence gap.",
+        "Offer a next search or direct 211 contact."
+      ]
+    },
+    "live_agent": {
+      "templateId": "live_agent_handoff",
+      "title": "Live Agent Handoff",
+      "observedSimulationCount": 3183,
+      "checklist": [
+        "Do not continue automated troubleshooting when urgent safety signals are present.",
+        "Give emergency guidance when appropriate.",
+        "Hand off with the minimum necessary context."
+      ]
+    }
+  },
+  "observedTransitions": {
+    "clarifying_prompt->clarifying_prompt": 10,
+    "clarifying_prompt->grounded_211_answer": 272,
+    "clarifying_prompt->live_agent": 116,
+    "clarifying_prompt->template_guided_fallback": 1,
+    "grounded_211_answer->grounded_211_answer": 229,
+    "grounded_211_answer->live_agent": 165,
+    "grounded_211_answer->template_guided_fallback": 15,
+    "live_agent->live_agent": 1099,
+    "template_guided_fallback->live_agent": 309
+  }
+}

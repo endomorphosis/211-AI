@@ -7,6 +7,7 @@ from scripts import agent_chat_implementation_supervisor as agent_supervisor
 from scripts import manage_implementation_services as manager
 from scripts import portal_implementation_supervisor as portal_supervisor
 from scripts import portland_graphrag_implementation_supervisor as graphrag_supervisor
+from scripts import provekit_implementation_supervisor as provekit_supervisor
 from scripts import wallet_implementation_supervisor as wallet_supervisor
 
 
@@ -72,6 +73,12 @@ def test_parser_defaults_to_implementation_mode():
     assert args.implement is True
 
 
+def test_parser_uses_long_default_implementation_timeout():
+    args = manager.parse_args(["start", "clzkml"])
+
+    assert args.implementation_timeout == manager.DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS
+
+
 def test_restart_parser_defaults_to_implementation_mode():
     args = manager.parse_args(["restart", "all"])
 
@@ -102,10 +109,97 @@ def test_parser_accepts_wallet_service():
     assert args.service == "wallet"
 
 
-def test_all_service_selection_includes_graphrag_and_wallet():
+def test_parser_accepts_chainlink_worldid_and_provekit_services():
+    for service_name in ("clzkml", "worldid_backend", "worldid_ui", "worldid", "provekit"):
+        args = manager.parse_args(["status", service_name])
+
+        assert args.service == service_name
+
+
+def test_all_service_selection_includes_registered_services():
     services = manager._selected_services("all")
 
-    assert [service.name for service in services] == ["portal", "agent", "graphrag", "wallet"]
+    assert [service.name for service in services] == [
+        "portal",
+        "agent",
+        "graphrag",
+        "wallet",
+        "clzkml",
+        "worldid_backend",
+        "worldid_ui",
+        "provekit",
+    ]
+
+
+def test_worldid_service_group_selects_backend_and_ui():
+    services = manager._selected_services("worldid")
+
+    assert [service.name for service in services] == ["worldid_backend", "worldid_ui"]
+
+
+def test_chainlink_service_command_uses_consensus_todo_scope():
+    command = manager.SERVICES["clzkml"].command(
+        log_level="INFO",
+        check_interval=5.0,
+        daemon_interval=5.0,
+        implement=True,
+        implementation_command="",
+        implementation_timeout=1800.0,
+        use_ephemeral_worktree=True,
+    )
+
+    assert "docs/CHAINLINK_ZKML_LLM_ROUTER_CONSENSUS_TODO.md" in command
+    assert "## CLZKML-" in command
+    assert "clzkml" in command
+    assert "--until-complete" not in command
+
+
+def test_worldid_service_commands_preserve_parallel_scopes():
+    backend_command = manager.SERVICES["worldid_backend"].command(
+        log_level="INFO",
+        check_interval=5.0,
+        daemon_interval=5.0,
+        implement=True,
+        implementation_command="",
+        implementation_timeout=1800.0,
+        use_ephemeral_worktree=True,
+    )
+    ui_command = manager.SERVICES["worldid_ui"].command(
+        log_level="INFO",
+        check_interval=5.0,
+        daemon_interval=5.0,
+        implement=True,
+        implementation_command="",
+        implementation_timeout=1800.0,
+        use_ephemeral_worktree=True,
+    )
+
+    assert "docs/WORLD_ID_IDKIT_WALLET_TODO.md" in backend_command
+    assert "data/world_id_backend_implementation/state" in backend_command
+    assert "proofs,core,wallet,privacy,ops,quality" in backend_command
+    assert "--allowed-task-ids" not in backend_command
+    assert "data/world_id_ui_implementation/state" in ui_command
+    assert "ui" in ui_command
+    assert "--allowed-task-ids" not in ui_command
+    assert "--until-complete" not in backend_command
+    assert "--until-complete" not in ui_command
+
+
+def test_provekit_service_command_uses_dedicated_wrapper():
+    command = manager.SERVICES["provekit"].command(
+        log_level="INFO",
+        check_interval=60.0,
+        daemon_interval=300.0,
+        implement=True,
+        implementation_command="",
+        implementation_timeout=1800.0,
+        use_ephemeral_worktree=True,
+    )
+
+    assert Path(command[1]).name == "provekit_implementation_supervisor.py"
+    assert "data/provekit_implementation/state" in command
+    assert "provekit" in command
+    assert "--until-complete" not in command
 
 
 def test_status_mode_detects_requested_implementation_mode():
@@ -150,8 +244,12 @@ def test_supervisor_entrypoints_default_to_implementation_mode():
         agent_supervisor,
         graphrag_supervisor,
         wallet_supervisor,
+        provekit_supervisor,
     ):
-        assert module.parse_args(["--once"]).implement is True
+        args = module.parse_args(["--once"])
+
+        assert args.implement is True
+        assert args.implementation_timeout == manager.DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS
         assert module.parse_args(["--once", "--implement"]).implement is True
 
 

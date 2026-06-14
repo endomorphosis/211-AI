@@ -1,0 +1,301 @@
+{
+  "schema_version": "chainlink-cre-llm-consensus-workflow-template-v1",
+  "workflow": {
+    "workflow_id": "wf-llm-router-v1",
+    "don_id": "don-42",
+    "registry": "private",
+    "chain_id": "11155111",
+    "uses_chainlink_functions": false,
+    "capability": {
+      "mode": "http",
+      "http_endpoint_url": "https://inference.example.invalid/v1/consensus",
+      "confidential_http_endpoint_url": "https://confidential-inference.example.invalid/v1/consensus",
+      "credential_ref": "secret-manager://chainlink/cre/inference-api",
+      "secret_template_id": "secret-template-llm-consensus-v1",
+      "expected_enclave_measurement": "sha256:optional-confidential-http-measurement"
+    },
+    "model_policy": {
+      "model_policy_id": "policy-qwen-json-v1",
+      "endpoint_policy_id": "policy-inference-http-v1",
+      "provider": "hf_inference_api",
+      "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+      "model_commitment": "hf:Qwen/Qwen2.5-1.5B-Instruct@revision-or-digest",
+      "comparison": "canonical_json",
+      "quorum": 3,
+      "min_operators": 5,
+      "generation_params": {
+        "temperature": 0,
+        "top_p": 1,
+        "max_tokens": 128,
+        "seed": 42,
+        "response_format": {
+          "type": "json_object"
+        }
+      },
+      "generation_params_hash": "sha256:1a4cf8f533d2b1c88996abf3d20c6e72815f6cf18a333d6730f90df5f7fce61d",
+      "response_schema_hash": "sha256:75a2c0a81fed6b90d3f3a5940ab08c239b7d1e313d35021b79ba1e9420f05014"
+    },
+    "aggregation": {
+      "group_by": "normalized_output_hash",
+      "tie_break": [
+        "highest_count",
+        "lowest_normalized_output_hash",
+        "lowest_output_hash"
+      ],
+      "fail_closed": true,
+      "return_partial_outputs_on_failure": false
+    }
+  },
+  "canonical_request_input": {
+    "schema_version": "chainlink-cre-llm-consensus-request-v1",
+    "workflow_id": "wf-llm-router-v1",
+    "don_id": "don-42",
+    "registry": "private",
+    "chain_id": "11155111",
+    "request_id": "req-2026-06-13-0001",
+    "request_hash": "sha256:7d6d0f6cdd6bdb2d6d9cb9238fe6e17b6c1df527c006b2f6adf9afbf5838df6f",
+    "deadline_unix_ms": 1781395152000,
+    "request": {
+      "schema_version": "llm-router-consensus-request-v1",
+      "request_id": "req-2026-06-13-0001",
+      "request_hash": "sha256:7d6d0f6cdd6bdb2d6d9cb9238fe6e17b6c1df527c006b2f6adf9afbf5838df6f",
+      "provider": "hf_inference_api",
+      "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+      "model_commitment": "hf:Qwen/Qwen2.5-1.5B-Instruct@revision-or-digest",
+      "comparison": "canonical_json",
+      "quorum": 3,
+      "min_operators": 5,
+      "deadline_unix_ms": 1781395152000,
+      "proof_policy": {
+        "mode": "chainlink_cre",
+        "cre_workflow_id": "wf-llm-router-v1",
+        "cre_registry": "private"
+      },
+      "metadata": {
+        "nonce": "nonce-cre-1",
+        "prompt_hash": "sha256:95f3c2e84e37e680aef09cbcb05bdcc99154d450d3336f1b22448947abde9c92",
+        "generation_params_hash": "sha256:1a4cf8f533d2b1c88996abf3d20c6e72815f6cf18a333d6730f90df5f7fce61d",
+        "response_schema_hash": "sha256:75a2c0a81fed6b90d3f3a5940ab08c239b7d1e313d35021b79ba1e9420f05014"
+      }
+    },
+    "prompt": "Return JSON with answer=yes",
+    "metadata": {
+      "model_policy_id": "policy-qwen-json-v1",
+      "endpoint_policy_id": "policy-inference-http-v1"
+    }
+  },
+  "node_call_template": {
+    "http": {
+      "method": "POST",
+      "url": "https://inference.example.invalid/v1/consensus",
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "secret://credential_ref"
+      },
+      "body_fields": [
+        "request_id",
+        "request_hash",
+        "prompt",
+        "model_name",
+        "model_commitment",
+        "generation_params",
+        "response_schema_hash",
+        "nonce"
+      ]
+    },
+    "confidential_http": {
+      "method": "POST",
+      "url": "https://confidential-inference.example.invalid/v1/consensus",
+      "secret_template_id": "secret-template-llm-consensus-v1",
+      "attestation_nonce_field": "request.metadata.nonce",
+      "body_fields": [
+        "encrypted_prompt_cid",
+        "request_hash",
+        "model_policy_id"
+      ]
+    }
+  },
+  "node_results": [
+    {
+      "node_id": "don-node-1",
+      "status": "completed",
+      "output_text": "{\"answer\":\"yes\"}",
+      "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+      "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+      "latency_ms": 842,
+      "proof_metadata": {
+        "model_policy_id": "policy-qwen-json-v1",
+        "endpoint_policy_id": "policy-inference-http-v1",
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null
+      }
+    },
+    {
+      "node_id": "don-node-2",
+      "status": "completed",
+      "output_text": "{\"answer\":\"yes\"}",
+      "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+      "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+      "latency_ms": 901,
+      "proof_metadata": {
+        "model_policy_id": "policy-qwen-json-v1",
+        "endpoint_policy_id": "policy-inference-http-v1",
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null
+      }
+    },
+    {
+      "node_id": "don-node-3",
+      "status": "completed",
+      "output_text": "{\"answer\":\"yes\"}",
+      "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+      "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+      "latency_ms": 875,
+      "proof_metadata": {
+        "model_policy_id": "policy-qwen-json-v1",
+        "endpoint_policy_id": "policy-inference-http-v1",
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null
+      }
+    },
+    {
+      "node_id": "don-node-4",
+      "status": "completed",
+      "output_text": "{\"answer\":\"yes\"}",
+      "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+      "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+      "latency_ms": 927,
+      "proof_metadata": {
+        "model_policy_id": "policy-qwen-json-v1",
+        "endpoint_policy_id": "policy-inference-http-v1",
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null
+      }
+    },
+    {
+      "node_id": "don-node-5",
+      "status": "completed",
+      "output_text": "{\"answer\":\"yes\"}",
+      "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+      "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+      "latency_ms": 889,
+      "proof_metadata": {
+        "model_policy_id": "policy-qwen-json-v1",
+        "endpoint_policy_id": "policy-inference-http-v1",
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null
+      }
+    }
+  ],
+  "success_result": {
+    "schema_version": "chainlink-cre-inference-result-v1",
+    "submission_id": "sha256:b96f8cf10949624080f612cc77c06d26888f2d463d3ee858bc9c24709d79aebb",
+    "workflow_id": "wf-llm-router-v1",
+    "don_id": "don-42",
+    "request_hash": "sha256:7d6d0f6cdd6bdb2d6d9cb9238fe6e17b6c1df527c006b2f6adf9afbf5838df6f",
+    "output_hash": "sha256:7543a1b13a63f1f4c9a85f0ff49b314ab6a9d0ec7c38160863d1c81a8e4fcb5d",
+    "normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c",
+    "output_text": "{\"answer\":\"yes\"}",
+    "status": "completed",
+    "cre_round": 7,
+    "cre_report_hash": "sha256:c491e35845ecf9fd990dd8e7fb5dfb5e2b33ab38848a0f16437bafeb5d0b52f1",
+    "cre_report_id": "cre-report-2026-06-13-0007",
+    "chain_id": "11155111",
+    "tx_hash": "0xabc1230000000000000000000000000000000000000000000000000000000000",
+    "latency_ms": 1288,
+    "nonce": "nonce-cre-1",
+    "metadata": {
+      "model_policy_id": "policy-qwen-json-v1",
+      "endpoint_policy_id": "policy-inference-http-v1",
+      "operator_set_hash": "sha256:3af40c2b78fe4ef2d95572ca9fd0985edcb0c7f8f08e9ba94f0e1f6a2d1e3b71",
+      "aggregation": {
+        "comparison": "canonical_json",
+        "quorum": 3,
+        "min_operators": 5,
+        "successful_nodes": 5,
+        "selected_count": 5,
+        "selected_normalized_output_hash": "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c"
+      },
+      "proof": {
+        "model_commitment": "hf:Qwen/Qwen2.5-1.5B-Instruct@revision-or-digest",
+        "node_response_hashes": [
+          "sha256:node-result-1",
+          "sha256:node-result-2",
+          "sha256:node-result-3",
+          "sha256:node-result-4",
+          "sha256:node-result-5"
+        ],
+        "confidential_http_attestation_hash": null,
+        "tee_attestation_hash": null,
+        "zkml_proof_cid": null,
+        "verifier_contract": "0x0000000000000000000000000000000000000000",
+        "verifier_event": "CREInferenceVerified(bytes32 requestHash, bytes32 outputHash)"
+      }
+    }
+  },
+  "failure_result_template": {
+    "schema_version": "chainlink-cre-inference-result-v1",
+    "submission_id": "sha256:b96f8cf10949624080f612cc77c06d26888f2d463d3ee858bc9c24709d79aebb",
+    "workflow_id": "wf-llm-router-v1",
+    "don_id": "don-42",
+    "request_hash": "sha256:7d6d0f6cdd6bdb2d6d9cb9238fe6e17b6c1df527c006b2f6adf9afbf5838df6f",
+    "output_hash": "",
+    "normalized_output_hash": "",
+    "output_text": "",
+    "status": "failed",
+    "cre_round": 7,
+    "cre_report_hash": null,
+    "cre_report_id": null,
+    "chain_id": "11155111",
+    "tx_hash": null,
+    "latency_ms": 1288,
+    "nonce": "nonce-cre-1",
+    "metadata": {
+      "error": "quorum_not_met",
+      "quorum": 3,
+      "successful_nodes": 2,
+      "group_counts": {
+        "sha256:bb1e43b00f86c236bc18a55b9558d0c20432c890e41d20146218df52b3f6fd8c": 2
+      }
+    }
+  },
+  "returned_receipt_fields": {
+    "bridge_result_type": "CREInferenceResult",
+    "required_for_verification": [
+      "workflow_id",
+      "don_id",
+      "request_hash",
+      "output_hash",
+      "cre_round",
+      "cre_report_hash"
+    ],
+    "operator_response": {
+      "transport": "chainlink_cre",
+      "provider": "chainlink_cre",
+      "attestation_fields": [
+        "request_hash",
+        "output_hash",
+        "cre_workflow_id",
+        "cre_don_id",
+        "cre_round",
+        "cre_report_hash",
+        "nonce",
+        "chain_id",
+        "tx_hash"
+      ]
+    },
+    "proof_receipt": {
+      "policy": "chainlink_cre",
+      "verified": true,
+      "cre_workflow_id": "wf-llm-router-v1",
+      "cre_report_id": "cre-report-2026-06-13-0007",
+      "chain_id": "11155111",
+      "tx_hash": "0xabc1230000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}

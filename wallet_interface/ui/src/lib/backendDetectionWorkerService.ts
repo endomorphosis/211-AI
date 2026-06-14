@@ -1,3 +1,4 @@
+import { LLM_CONFIG } from "./llmConfig";
 import { detectBrowserMlBackends } from "./backendDetection";
 import type {
   BackendBenchmarkResult,
@@ -42,7 +43,11 @@ class BackendDetectionWorkerService {
   async detect(options: BackendDetectionOptions = {}): Promise<BackendDetectionStatus> {
     if (this.worker) {
       try {
-        const response = await this.sendWorkerRequest("detect", options, options.benchmark ? 60000 : 15000);
+        const response = await this.sendWorkerRequest(
+          "detect",
+          options,
+          options.benchmark ? LLM_CONFIG.localPerfBenchmarkTimeoutMs : LLM_CONFIG.localProbeTimeoutMs,
+        );
         if (!response.result) {
           throw new Error("Backend detection worker returned no result");
         }

@@ -46,6 +46,11 @@ _SIGNOFF_REQUIRED_ENVIRONMENT_FIELDS = (
     "proof_verifier_service",
     "proof_verifier_id",
     "proof_system",
+    "world_id_enabled_decision",
+    "world_id_environment",
+    "world_id_app_id",
+    "world_id_rp_id",
+    "world_id_verify_endpoint",
     "retention_policy_version",
 )
 
@@ -54,6 +59,8 @@ _SIGNOFF_REQUIRED_SECRET_REFS = (
     "alert_credentials",
     "proof_verifier_credentials",
     "storage_credentials",
+    "world_id_rp_signing_key",
+    "world_id_nullifier_commitment_key",
 )
 
 _SIGNOFF_REQUIRED_ARTIFACT_REFS = (
@@ -62,6 +69,12 @@ _SIGNOFF_REQUIRED_ARTIFACT_REFS = (
     "ops_health_report",
     "proof_contract_report",
     "distance_proof_contract_report",
+    "world_id_staging_simulator",
+    "world_id_fullstack_playwright",
+    "world_id_ux_review",
+    "world_id_privacy_nullifier_review",
+    "world_id_security_signoff",
+    "world_id_support_playbook",
 )
 
 _SIGNOFF_REQUIRED_RETENTION_FIELDS = (
@@ -101,7 +114,17 @@ _READINESS_TARGET_ENV_VARS = (
     "WALLET_OPS_ALERT_SECRET_REF",
     "WALLET_PROOF_CREDENTIAL_SECRET_REF",
     "WALLET_STORAGE_CREDENTIAL_SECRET_REF",
+    "WORLD_ID_ENABLED",
+    "WORLD_ID_APP_ID",
+    "WORLD_ID_RP_ID",
+    "WORLD_ID_RP_SIGNING_KEY_SECRET_REF",
+    "WORLD_ID_NULLIFIER_HMAC_KEY_SECRET_REF",
 )
+
+_WORLD_ID_REACHABILITY_EVIDENCE_ENV = "WORLD_ID_VERIFY_ENDPOINT_REACHABILITY_EVIDENCE"
+_WORLD_ID_SANITIZATION_EVIDENCE_ENV = "WORLD_ID_PROOF_SANITIZATION_EVIDENCE"
+_WORLD_ID_SIGNATURE_VECTOR_CREATED_AT = 1_770_000_000
+_WORLD_ID_SIGNATURE_VECTOR_ENTROPY = bytes.fromhex("42" * 32)
 
 
 @dataclass
@@ -169,6 +192,213 @@ def _bool_env(env: Mapping[str, str] | None, name: str) -> bool | None:
     if value in _FALSE_VALUES:
         return False
     return None
+
+
+def _world_id_production_readiness_checks(env: Mapping[str, str] | None) -> list[dict[str, Any]]:
+    enabled_value = _env(env, "WORLD_ID_ENABLED")
+    enabled = _bool_env(env, "WORLD_ID_ENABLED")
+    if not enabled_value or enabled is False:
+        return []
+
+    from .world_id import (
+        DEFAULT_WORLD_ID_VERIFY_BASE_URL,
+        load_world_id_config,
+        redact_world_id_payload,
+        sign_world_id_request_from_config,
+    )
+
+    checks: list[dict[str, Any]] = []
+
+    def add_check(name: str, status: str, summary: str, details: dict[str, Any] | None = None) -> None:
+        checks.append(
+            {
+                "name": name,
+                "status": status,
+                "summary": summary,
+                "details": details or {},
+            }
+        )
+
+    config = None
+    config_error = ""
+    try:
+        config = load_world_id_config(env=env)
+    except Exception as exc:
+        config_error = str(exc)
+
+    environment_errors: list[str] = []
+    if enabled is not True:
+        environment_errors.append("WORLD_ID_ENABLED must be true or false")
+    if config_error:
+        environment_errors.append(config_error)
+    if config is not None:
+        if config.environment != "production":
+            environment_errors.append("WORLD_ID_ENVIRONMENT must be production")
+        if not _env(env, "WORLD_ID_VERIFY_BASE_URL"):
+            environment_errors.append("WORLD_ID_VERIFY_BASE_URL")
+        if config.verify_base_url.rstrip("/") != DEFAULT_WORLD_ID_VERIFY_BASE_URL.rstrip("/"):
+            environment_errors.append("WORLD_ID_VERIFY_BASE_URL must target the production World Developer Portal")
+    add_check(
+        "world_id_environment",
+        "error" if environment_errors else "ok",
+        (
+            "World ID app, RP, action, environment, and production verifier endpoint are configured."
+            if not environment_errors
+            else "World ID app, RP, action, environment, or verifier endpoint configuration is incomplete."
+        ),
+        {
+            "missing_or_invalid": environment_errors,
+            "environment": config.environment if config is not None else _env(env, "WORLD_ID_ENVIRONMENT"),
+            "app_id_configured": bool(config.app_id if config is not None else _env(env, "WORLD_ID_APP_ID")),
+            "rp_id_configured": bool(config.rp_id if config is not None else _env(env, "WORLD_ID_RP_ID")),
+            "allowed_action_count": len(config.allowed_actions) if config is not None else 0,
+            "verify_base_url_configured": bool(_env(env, "WORLD_ID_VERIFY_BASE_URL")),
+        },
+    )
+
+    secret_ref_values = {
+        "WORLD_ID_RP_SIGNING_KEY_SECRET_REF": _env(env, "WORLD_ID_RP_SIGNING_KEY_SECRET_REF"),
+        "WORLD_ID_NULLIFIER_HMAC_KEY_SECRET_REF": _env(env, "WORLD_ID_NULLIFIER_HMAC_KEY_SECRET_REF"),
+    }
+    missing_secret_refs = [name for name, value in secret_ref_values.items() if not value]
+    placeholder_secret_refs = [
+        name for name, value in secret_ref_values.items() if value and _is_placeholder(value)
+    ]
+    add_check(
+        "world_id_secret_references",
+        "error" if missing_secret_refs or placeholder_secret_refs else "ok",
+        (
+            "World ID RP signing and nullifier commitment secret-manager references are configured."
+            if not missing_secret_refs and not placeholder_secret_refs
+            else "World ID RP signing or nullifier commitment secret-manager references are missing or placeholders."
+        ),
+        {
+            "missing": missing_secret_refs,
+            "placeholder_vars": placeholder_secret_refs,
+            "configured": [name for name, value in secret_ref_values.items() if value],
+        },
+    )
+
+    signature_errors: list[str] = []
+    signature_details: dict[str, Any] = {
+        "created_at": _WORLD_ID_SIGNATURE_VECTOR_CREATED_AT,
+        "entropy_bytes": len(_WORLD_ID_SIGNATURE_VECTOR_ENTROPY),
+    }
+    if config is None:
+        signature_errors.append("World ID config must load before RP signature vector testing")
+    elif not config.rp_signing_key.value:
+        signature_errors.append("WORLD_ID_RP_SIGNING_KEY value is required for RP signature vector testing")
+    else:
+        try:
+            signature = sign_world_id_request_from_config(
+                config,
+                action=config.default_action,
+                random_bytes=_WORLD_ID_SIGNATURE_VECTOR_ENTROPY,
+                created_at=_WORLD_ID_SIGNATURE_VECTOR_CREATED_AT,
+            )
+            signature_details.update(
+                {
+                    "action": signature.action,
+                    "ttl_seconds": signature.expires_at - signature.created_at,
+                    "nonce_bytes": 32 if signature.nonce.startswith("0x") else 0,
+                    "signature_bytes": 65 if signature.signature.startswith("0x") else 0,
+                }
+            )
+            if len(signature.nonce) != 66:
+                signature_errors.append("World ID RP signature vector produced an invalid nonce")
+            if len(signature.signature) != 132:
+                signature_errors.append("World ID RP signature vector produced an invalid signature")
+            if signature.action != config.default_action:
+                signature_errors.append("World ID RP signature vector action did not match default action")
+        except Exception as exc:
+            signature_errors.append(str(exc))
+    add_check(
+        "world_id_rp_signature_vector",
+        "error" if signature_errors else "ok",
+        (
+            "World ID RP signing passed a deterministic vector check."
+            if not signature_errors
+            else "World ID RP signing did not pass the deterministic vector check."
+        ),
+        {"missing_or_invalid": signature_errors, **signature_details},
+    )
+
+    reachability_evidence = _env(env, _WORLD_ID_REACHABILITY_EVIDENCE_ENV)
+    endpoint_errors: list[str] = []
+    explicit_base_url = _env(env, "WORLD_ID_VERIFY_BASE_URL")
+    if not explicit_base_url:
+        endpoint_errors.append("WORLD_ID_VERIFY_BASE_URL")
+    elif _is_placeholder(explicit_base_url):
+        endpoint_errors.append("WORLD_ID_VERIFY_BASE_URL must not be a placeholder")
+    elif explicit_base_url.rstrip("/") != DEFAULT_WORLD_ID_VERIFY_BASE_URL.rstrip("/"):
+        endpoint_errors.append("WORLD_ID_VERIFY_BASE_URL must target the production World Developer Portal")
+    if not reachability_evidence:
+        endpoint_errors.append(_WORLD_ID_REACHABILITY_EVIDENCE_ENV)
+    elif _is_placeholder(reachability_evidence):
+        endpoint_errors.append(f"{_WORLD_ID_REACHABILITY_EVIDENCE_ENV} must not be a placeholder")
+    add_check(
+        "world_id_verify_endpoint",
+        "error" if endpoint_errors else "ok",
+        (
+            "World ID production Developer Portal endpoint and reachability evidence are configured."
+            if not endpoint_errors
+            else "World ID production Developer Portal endpoint or reachability evidence is missing."
+        ),
+        {
+            "missing_or_invalid": endpoint_errors,
+            "production_endpoint": explicit_base_url.rstrip("/") == DEFAULT_WORLD_ID_VERIFY_BASE_URL.rstrip("/"),
+            "reachability_evidence_configured": bool(reachability_evidence),
+        },
+    )
+
+    sanitization_evidence = _env(env, _WORLD_ID_SANITIZATION_EVIDENCE_ENV)
+    sanitization_errors: list[str] = []
+    if not sanitization_evidence:
+        sanitization_errors.append(_WORLD_ID_SANITIZATION_EVIDENCE_ENV)
+    elif _is_placeholder(sanitization_evidence):
+        sanitization_errors.append(f"{_WORLD_ID_SANITIZATION_EVIDENCE_ENV} must not be a placeholder")
+    sentinels = (
+        "WORLD_ID_RAW_NULLIFIER_READINESS_SENTINEL",
+        "WORLD_ID_RAW_PROOF_READINESS_SENTINEL",
+        "WORLD_ID_RAW_RP_SIGNATURE_READINESS_SENTINEL",
+        "WORLD_ID_RAW_DEVELOPER_RESPONSE_READINESS_SENTINEL",
+    )
+    sample_payload = {
+        "idkit_payload": {
+            "responses": [
+                {
+                    "nullifier": sentinels[0],
+                    "proof": [sentinels[1], "0x2", "0x3", "0x4", "0x5"],
+                    "merkle_root": "WORLD_ID_RAW_MERKLE_ROOT_READINESS_SENTINEL",
+                }
+            ]
+        },
+        "rp_signature": sentinels[2],
+        "developer_portal_response": {"nullifier": sentinels[3]},
+    }
+    try:
+        rendered_redacted = json.dumps(redact_world_id_payload(sample_payload), sort_keys=True)
+        leaked = [token for token in sentinels if token in rendered_redacted]
+        if leaked:
+            sanitization_errors.append("World ID proof sanitization leaked private sentinels")
+    except Exception as exc:
+        sanitization_errors.append(str(exc))
+    add_check(
+        "world_id_proof_sanitization",
+        "error" if sanitization_errors else "ok",
+        (
+            "World ID proof sanitization evidence is configured and sentinel redaction passed."
+            if not sanitization_errors
+            else "World ID proof sanitization evidence is missing or sentinel redaction failed."
+        ),
+        {
+            "missing_or_invalid": sanitization_errors,
+            "sanitization_evidence_configured": bool(sanitization_evidence),
+            "sentinel_count": len(sentinels),
+        },
+    )
+
+    return checks
 
 
 def _report_status(checks: list[dict[str, Any]]) -> str:
@@ -859,6 +1089,7 @@ def validate_production_readiness(
             "configured": [name for name, value in secret_ref_values.items() if value],
         },
     )
+    checks.extend(_world_id_production_readiness_checks(env))
 
     resolved_service = service
     if resolved_service is None:
@@ -1027,6 +1258,23 @@ def validate_local_production_readiness_self_check(*, verify_storage: bool = Tru
             "WALLET_OPS_ALERT_SECRET_REF": "secret://local-self-check/wallet/ops-alert",
             "WALLET_PROOF_CREDENTIAL_SECRET_REF": "secret://local-self-check/wallet/proof-verifier",
             "WALLET_STORAGE_CREDENTIAL_SECRET_REF": "secret://local-self-check/wallet/storage",
+            "WORLD_ID_ENABLED": "1",
+            "WORLD_ID_ENVIRONMENT": "production",
+            "WORLD_ID_APP_ID": "app_local_self_check_world_id",
+            "WORLD_ID_RP_ID": "rp_local_self_check_world_id",
+            "WORLD_ID_ALLOWED_ACTIONS": "wallet-attach-world-id-v1",
+            "WORLD_ID_DEFAULT_ACTION": "wallet-attach-world-id-v1",
+            "WORLD_ID_CREDENTIAL_POLICY": "proof_of_human",
+            "WORLD_ID_ALLOW_LEGACY_PROOFS": "false",
+            "WORLD_ID_REQUIRE_USER_PRESENCE": "true",
+            "WORLD_ID_RP_SIGNATURE_TTL_SECONDS": "300",
+            "WORLD_ID_RP_SIGNING_KEY": "0x" + "11" * 32,
+            "WORLD_ID_RP_SIGNING_KEY_SECRET_REF": "secret://local-self-check/wallet/world-id-rp-signing",
+            "WORLD_ID_NULLIFIER_HMAC_KEY": "local-self-check-world-id-nullifier-key",
+            "WORLD_ID_NULLIFIER_HMAC_KEY_SECRET_REF": "secret://local-self-check/wallet/world-id-nullifier",
+            "WORLD_ID_VERIFY_BASE_URL": "https://developer.world.org",
+            _WORLD_ID_REACHABILITY_EVIDENCE_ENV: "artifact://local-self-check/world-id-reachability",
+            _WORLD_ID_SANITIZATION_EVIDENCE_ENV: "artifact://local-self-check/world-id-sanitization",
         }
         report = validate_production_readiness(
             service,

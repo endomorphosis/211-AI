@@ -1,0 +1,43 @@
+[
+  {
+    "command": [
+      "/home/barberb/miniforge3/bin/python",
+      "-m",
+      "pytest",
+      "ipfs_datasets_py/tests/unit/test_data_wallet.py",
+      "ipfs_datasets_py/tests/mcp/test_wallet_tools.py",
+      "ipfs_datasets_py/tests/mcp/unit/test_hierarchical_tool_manager.py",
+      "tests/test_wallet_interface_api.py",
+      "tests/test_wallet_interface_ops.py",
+      "tests/test_wallet_interface_deploy.py",
+      "tests/test_wallet_implementation_plan_docs.py",
+      "tests/test_wallet_release_check_runner.py",
+      "tests/test_wallet_production_handoff_blackbox.py",
+      "-q"
+    ],
+    "cwd": "/tmp/211-ai-implementation-worktrees/wallet-110-attempt-10-1778197887",
+    "env": {
+      "IPFS_AUTO_INSTALL": "false",
+      "IPFS_DATASETS_AUTO_INSTALL": "false",
+      "IPFS_DATASETS_PY_MINIMAL_IMPORTS": "1",
+      "PYTEST_PLUGINS": "tests.wallet_testclient_compat",
+      "PYTHONPATH": "/tmp/211-ai-implementation-worktrees/wallet-110-attempt-10-1778197887:/tmp/211-ai-implementation-worktrees/wallet-110-attempt-10-1778197887/ipfs_datasets_py"
+    },
+    "name": "backend-wallet-pytest",
+    "timeout_seconds": 900
+  },
+  {
+    "command": [
+      "/home/barberb/miniforge3/bin/python",
+      "-m",
+      "compileall",
+      "-q",
+      "wallet_interface",
+      "ipfs_datasets_py/ipfs_datasets_py/wallet"
+    ],
+    "cwd": "/tmp/211-ai-implementation-worktrees/wallet-110-attempt-10-1778197887",
+    "env": {},
+    "name": "wallet-compileall",
+    "timeout_seconds": 120
+  }
+]

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__rent__hillsboro",
+  "kind": "service_location",
+  "key": "rent__hillsboro",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_rent_assistance_hillsboro#turn-1",
+      "scenarioId": "matrix_rent_assistance_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "rent",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find rent assistance in Hillsboro?",
+      "normalizedQuery": "rent eviction assistance hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8a6c6604cd95e457",
+        "service:3655daf83f45f8e3",
+        "service:a825ede72ffb05a6",
+        "service:66df89740da9485c",
+        "service:4bfb7e6eaea01bbd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_rent_assistance_beaverton#turn-1",
+          "score": 0.958332,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_rent_assistance_beaverton",
+          "user": "Can you find rent assistance in Beaverton?"
+        },
+        {
+          "recordId": "matrix_rent_assistance_eugene#turn-1",
+          "score": 0.958332,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_rent_assistance_eugene",
+          "user": "Can you find rent assistance in Eugene?"
+        },
+        {
+          "recordId": "matrix_broad_then_rent_assistance_beaverton#turn-2",
+          "score": 0.903524,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_rent_assistance_beaverton",
+          "user": "I am in Beaverton and need rent assistance."
+        }
+      ]
+    },
+    {
+      "id": "matrix_eviction_prevention_hillsboro#turn-1",
+      "scenarioId": "matrix_eviction_prevention_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "rent",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find eviction prevention in Hillsboro?",
+      "normalizedQuery": "eviction prevention hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:6f7a5b8f93e42931",
+        "service:5baf40645f0369dd",
+        "service:bca29fac3dc200d0",
+        "service:99768db5e6feeafd",
+        "service:b1c486f2b438c521"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_eviction_prevention_portland#turn-1",
+          "score": 0.964283,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_portland",
+          "user": "Can you find eviction prevention in Portland?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_beaverton#turn-1",
+          "score": 0.964283,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_beaverton",
+          "user": "Can you find eviction prevention in Beaverton?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_eugene#turn-1",
+          "score": 0.964283,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_eugene",
+          "user": "Can you find eviction prevention in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_eviction_prevention_hillsboro#turn-2",
+      "scenarioId": "matrix_broad_then_eviction_prevention_hillsboro",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "rent",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Hillsboro and need eviction prevention.",
+      "normalizedQuery": "hillsboro eviction prevention",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:6f7a5b8f93e42931",
+        "service:5baf40645f0369dd",
+        "service:bca29fac3dc200d0",
+        "service:99768db5e6feeafd",
+        "service:b1c486f2b438c521"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_eviction_prevention_hillsboro#turn-1",
+          "score": 0.95038,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_hillsboro",
+          "user": "Can you find eviction prevention in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_portland#turn-1",
+          "score": 0.916438,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_portland",
+          "user": "Can you find eviction prevention in Portland?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_beaverton#turn-1",
+          "score": 0.916438,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_beaverton",
+          "user": "Can you find eviction prevention in Beaverton?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_broad_then_eviction_prevention_hillsboro#turn-2",
+      "to": "matrix_eviction_prevention_hillsboro#turn-1",
+      "type": "semantic_similar",
+      "score": 0.95038,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

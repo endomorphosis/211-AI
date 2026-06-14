@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__health__eugene",
+  "kind": "service_location",
+  "key": "health__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "realistic_broad_to_service_006#turn-2",
+      "scenarioId": "realistic_broad_to_service_006",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent_handoff",
+      "user": "My stuff got taken and I'm around Eugene. Can you help me find medical care?",
+      "normalizedQuery": "don't know ask i'm eugene everything kind falling apart stuff got taken around medical care",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:9c7b6b28cfc2b7b2",
+        "service:47377170b90d739c",
+        "service:0c199a9aef4e80f0",
+        "service:9fc8a4423060d526"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_006#turn-3",
+          "score": 0.979796,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "Can I go there today?"
+        },
+        {
+          "recordId": "realistic_broad_to_service_006#turn-1",
+          "score": 0.726375,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "I don't know what to ask for. I'm in Eugene, and everything is kind of falling apart."
+        },
+        {
+          "recordId": "realistic_broad_to_service_000#turn-3",
+          "score": 0.710048,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "Do they answer after hours?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_006#turn-3",
+      "scenarioId": "realistic_broad_to_service_006",
+      "turnIndex": 2,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Can I go there today?",
+      "normalizedQuery": "don't know ask i'm eugene everything kind falling apart stuff got taken around medical care go there",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:9c7b6b28cfc2b7b2",
+        "service:47377170b90d739c",
+        "service:0c199a9aef4e80f0",
+        "service:9fc8a4423060d526"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_006#turn-2",
+          "score": 0.979796,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "My stuff got taken and I'm around Eugene. Can you help me find medical care?"
+        },
+        {
+          "recordId": "realistic_broad_to_service_006#turn-1",
+          "score": 0.711697,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "I don't know what to ask for. I'm in Eugene, and everything is kind of falling apart."
+        },
+        {
+          "recordId": "realistic_broad_to_service_000#turn-3",
+          "score": 0.695699,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "Do they answer after hours?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_eugene#turn-1",
+      "scenarioId": "matrix_detox_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Eugene?",
+      "normalizedQuery": "detox eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:5859932a69e4e47a",
+        "service:3e4063037c39ae4c",
+        "service:507a859ca3a7d126",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.894426,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_detox_gresham#turn-1",
+          "score": 0.86258,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_gresham",
+          "user": "Can you find detox help in Gresham?"
+        },
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.823531,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_broad_to_service_006#turn-2",
+      "to": "realistic_broad_to_service_006#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_006#turn-2",
+      "to": "realistic_broad_to_service_006#turn-3",
+      "type": "semantic_similar",
+      "score": 0.979796,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_006#turn-3",
+      "to": "realistic_broad_to_service_006#turn-2",
+      "type": "semantic_similar",
+      "score": 0.979796,
+      "routeTransition": "live_agent->live_agent"
+    }
+  ]
+}

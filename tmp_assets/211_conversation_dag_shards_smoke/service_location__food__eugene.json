@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__food__eugene",
+  "kind": "service_location",
+  "key": "food__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_food_pantry_eugene#turn-1",
+      "scenarioId": "matrix_food_pantry_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find food pantry in Eugene?",
+      "normalizedQuery": "food pantry meal meals groceries eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:b8c762144d937988",
+        "service:0dfbfb30f06432a9",
+        "service:d8559ced93d0f936",
+        "service:0420159846f1dd26",
+        "service:e4b8188e069aee8c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_food_pantry_gresham#turn-1",
+          "score": 1.000002,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_gresham",
+          "user": "Can you find food pantry in Gresham?"
+        },
+        {
+          "recordId": "matrix_food_pantry_beaverton#turn-1",
+          "score": 0.968752,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_beaverton",
+          "user": "Can you find food pantry in Beaverton?"
+        },
+        {
+          "recordId": "matrix_food_pantry_hillsboro#turn-1",
+          "score": 0.968752,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_hillsboro",
+          "user": "Can you find food pantry in Hillsboro?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_community_meals_eugene#turn-1",
+      "scenarioId": "matrix_community_meals_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find community meals in Eugene?",
+      "normalizedQuery": "community meals eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:fbd5bccefe3a07a8",
+        "service:cdae73e665cd7e51",
+        "service:d8559ced93d0f936",
+        "service:0420159846f1dd26",
+        "page:bafkreieshrmg2i4oxhqgww626eqzokz7wbtmfd3u3rnzl7zry7n62tlbze"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_food_pantry_portland#turn-1",
+          "score": 0.866719,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_portland",
+          "user": "Can you find food pantry in Portland?"
+        },
+        {
+          "recordId": "matrix_food_pantry_gresham#turn-1",
+          "score": 0.866719,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_gresham",
+          "user": "Can you find food pantry in Gresham?"
+        },
+        {
+          "recordId": "matrix_food_pantry_eugene#turn-1",
+          "score": 0.866719,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_eugene",
+          "user": "Can you find food pantry in Eugene?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_senior_meals_eugene#turn-1",
+      "scenarioId": "matrix_senior_meals_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find senior meals in Eugene?",
+      "normalizedQuery": "senior meals eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:fbd5bccefe3a07a8",
+        "service:d9cee87d456bd06b",
+        "service:cdae73e665cd7e51",
+        "service:3e6d01012573fc89",
+        "service:cf214c29c2d9d13a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_community_meals_eugene#turn-1",
+          "score": 0.840672,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_community_meals_eugene",
+          "user": "Can you find community meals in Eugene?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_gresham#turn-1",
+          "score": 0.808692,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_gresham",
+          "user": "Can you find eviction prevention in Gresham?"
+        },
+        {
+          "recordId": "matrix_community_meals_gresham#turn-1",
+          "score": 0.806558,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_community_meals_gresham",
+          "user": "Can you find community meals in Gresham?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_community_meals_eugene#turn-1",
+      "to": "matrix_food_pantry_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.866719,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_senior_meals_eugene#turn-1",
+      "to": "matrix_community_meals_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.840672,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

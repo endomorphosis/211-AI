@@ -1,6 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bot, UserRound } from "lucide-react";
 import type { AgentConfirmationRequest, AgentMessage, AgentToolCall, AgentToolResult, EvidenceBundle } from "../../agent/types";
+import { generateOpenRouterTranslation } from "../../lib/openRouterClient";
+import { getLocaleOptionLabel, type SupportedLocale, t } from "../../lib/localization";
+import { Button } from "../ui";
 import { AgentConfirmationCard } from "./AgentConfirmationCard";
 import { AgentEvidencePanel } from "./AgentEvidencePanel";
 import { AgentToolResultCard } from "./AgentToolResultCard";
@@ -12,9 +15,12 @@ export function AgentMessageList({
   toolCalls = [],
   toolResults = [],
   responding = false,
+  autoTranslateAssistant = false,
   onConfirm,
   onCancel,
-  onOpenServiceDetail
+  onOpenServiceDetail,
+  siteLocale = "en",
+  translationLocale = "en"
 }: {
   messages: AgentMessage[];
   confirmations?: AgentConfirmationRequest[];
@@ -22,9 +28,12 @@ export function AgentMessageList({
   toolCalls?: AgentToolCall[];
   toolResults?: AgentToolResult[];
   responding?: boolean;
+  autoTranslateAssistant?: boolean;
   onConfirm?: (confirmationId: string) => void;
   onCancel?: (confirmationId: string) => void;
   onOpenServiceDetail?: (docId: string) => void;
+  siteLocale?: SupportedLocale;
+  translationLocale?: string;
 }) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const renderedConfirmationIds = new Set<string>();
@@ -48,7 +57,17 @@ export function AgentMessageList({
               <strong>{message.role === "user" ? "You" : "Abby assistant"}</strong>
               <span>{formatMessageTime(message.createdAt)}</span>
             </div>
-            <p>{message.content}</p>
+            <div className="agent-text-bubble">
+              <p>{message.content}</p>
+            </div>
+            {message.role === "assistant" ? (
+              <AssistantMessageTranslation
+                autoTranslate={autoTranslateAssistant}
+                message={message}
+                siteLocale={siteLocale}
+                translationLocale={translationLocale}
+              />
+            ) : null}
             <AgentEvidencePanel
               bundleIds={message.evidenceBundleIds}
               bundles={evidenceBundles}
@@ -96,6 +115,76 @@ export function AgentMessageList({
           />
         ))}
       <div ref={endRef} />
+    </div>
+  );
+}
+
+function AssistantMessageTranslation({
+  autoTranslate,
+  message,
+  siteLocale,
+  translationLocale
+}: {
+  autoTranslate: boolean;
+  message: AgentMessage;
+  siteLocale: SupportedLocale;
+  translationLocale: string;
+}) {
+  const [translatedText, setTranslatedText] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const localeLabel = useMemo(() => getLocaleOptionLabel(translationLocale), [translationLocale]);
+  const shouldOfferTranslation = !/^en\b/i.test(translationLocale);
+
+  useEffect(() => {
+    setTranslatedText("");
+    setStatus("idle");
+  }, [message.id, translationLocale]);
+
+  useEffect(() => {
+    if (!autoTranslate || !shouldOfferTranslation || status !== "idle") return;
+    void handleTranslate();
+  }, [autoTranslate, shouldOfferTranslation, status]);
+
+  async function handleTranslate() {
+    if (!shouldOfferTranslation || status === "loading") return;
+    setStatus("loading");
+    try {
+      const result = await generateOpenRouterTranslation({
+        text: message.content,
+        targetLocale: translationLocale,
+        sourceLocale: "en",
+      });
+      setTranslatedText(result.text);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (!shouldOfferTranslation) return null;
+
+  return (
+    <div className="agent-message-translation">
+      {status !== "ready" ? (
+        <Button
+          ariaLabel={`${t(siteLocale, "chat.translate")} ${localeLabel}`}
+          className="agent-translate-button"
+          disabled={status === "loading"}
+          onClick={() => void handleTranslate()}
+          variant="quiet"
+        >
+          {status === "loading"
+            ? t(siteLocale, "chat.translating")
+            : `${t(siteLocale, "chat.translate")} ${localeLabel}`}
+        </Button>
+      ) : null}
+      {status === "ready" ? (
+        <div className="agent-translation-bubble" lang={translationLocale}>
+          <small>{t(siteLocale, "chat.translationReady")}</small>
+          <p>{translatedText}</p>
+        </div>
+      ) : null}
+      {status === "error" ? <small className="agent-translation-error">{t(siteLocale, "chat.translationError")}</small> : null}
     </div>
   );
 }
