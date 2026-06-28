@@ -41,6 +41,11 @@ def _cors_origins_from_env() -> list[str]:
     return origins
 
 
+def _cors_origin_regex_from_env() -> str | None:
+    value = str(os.environ.get("WALLET_API_CORS_ORIGIN_REGEX", "")).strip()
+    return value or None
+
+
 class CreateWalletRequest(BaseModel):
     owner_did: str
     controller_dids: List[str] = Field(default_factory=list)
@@ -552,10 +557,12 @@ def create_app(*, service: WalletInterfaceService | None = None):
     app_service = service or WalletInterfaceService()
     app = FastAPI(title="211-AI Wallet Interface", version="0.1.0")
     cors_origins = _cors_origins_from_env()
-    if cors_origins:
+    cors_origin_regex = _cors_origin_regex_from_env()
+    if cors_origins or cors_origin_regex:
         app.add_middleware(
             CORSMiddleware,
             allow_origins=cors_origins,
+            allow_origin_regex=cors_origin_regex,
             allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
             allow_headers=["authorization", "content-type", "x-wallet-ops-shared-secret"],
         )

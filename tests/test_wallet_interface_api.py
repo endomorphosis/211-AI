@@ -49,6 +49,25 @@ def test_wallet_api_cors_allows_configured_browser_origin(monkeypatch) -> None:
     assert response.headers["access-control-allow-origin"] == origin
 
 
+def test_wallet_api_cors_allows_github_pages_origin_regex(monkeypatch) -> None:
+    origin = "https://endomorphosis.github.io"
+    monkeypatch.delenv("WALLET_API_CORS_ORIGINS", raising=False)
+    monkeypatch.setenv("WALLET_API_CORS_ORIGIN_REGEX", r"https://[a-z0-9-]+\.github\.io")
+    client = _client()
+
+    response = client.options(
+        "/wallets",
+        headers={
+            "Access-Control-Request-Headers": "content-type",
+            "Access-Control-Request-Method": "POST",
+            "Origin": origin,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == origin
+
+
 def test_wallet_api_private_analytics_flow() -> None:
     client = _client()
     wallet_ids = []
