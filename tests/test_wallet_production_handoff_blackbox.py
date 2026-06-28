@@ -257,6 +257,11 @@ def _completed_signoff_packet(verifier_url: str) -> dict[str, Any]:
             "proof_verifier_service": verifier_url,
             "proof_verifier_id": "blackbox-verifier-v1",
             "proof_system": "groth16",
+            "world_id_enabled_decision": "enabled-for-pilot",
+            "world_id_environment": "production",
+            "world_id_app_id": "app_ci_world_id_wallet",
+            "world_id_rp_id": "rp_ci_world_id_wallet",
+            "world_id_verify_endpoint": "https://developer.world.org",
             "retention_policy_version": "docs/WALLET_RETENTION_POLICY.md@2026-05-05",
         },
         "secret_manager_refs": {
@@ -264,6 +269,8 @@ def _completed_signoff_packet(verifier_url: str) -> dict[str, Any]:
             "alert_credentials": "secret://ci/wallet/ops-alert",
             "proof_verifier_credentials": "secret://ci/wallet/proof-verifier",
             "storage_credentials": "secret://ci/wallet/storage",
+            "world_id_rp_signing_key": "secret://ci/wallet/world-id-rp-signing",
+            "world_id_nullifier_commitment_key": "secret://ci/wallet/world-id-nullifier",
         },
         "artifact_refs": {
             "release_check_evidence": "artifact://ci/release-checks",
@@ -271,6 +278,12 @@ def _completed_signoff_packet(verifier_url: str) -> dict[str, Any]:
             "ops_health_report": "artifact://ci/ops-health",
             "proof_contract_report": "artifact://ci/proof-contract",
             "distance_proof_contract_report": "artifact://ci/distance-proof-contract",
+            "world_id_staging_simulator": "artifact://ci/world-id/staging-simulator",
+            "world_id_fullstack_playwright": "artifact://ci/world-id/fullstack",
+            "world_id_ux_review": "artifact://ci/world-id/ux-review",
+            "world_id_privacy_nullifier_review": "artifact://ci/world-id/privacy-nullifier",
+            "world_id_security_signoff": "artifact://ci/world-id/security",
+            "world_id_support_playbook": "artifact://ci/world-id/support",
         },
         "retention_mapping": {
             "policy_version": "ci-retention-policy",

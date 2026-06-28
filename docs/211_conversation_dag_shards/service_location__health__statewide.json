@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__health__statewide",
+  "kind": "service_location",
+  "key": "health__statewide",
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "id": "medical_emergency_signal#turn-1",
+      "scenarioId": "medical_emergency_signal",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I have a medical emergency and cannot breathe.",
+      "normalizedQuery": "have medical emergency breathe",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:38e1292dd11bc0d7",
+        "service:b03287ff06662c46",
+        "service:d5d4ac236c6cd15c",
+        "service:d51408fa91a6f897",
+        "service:72db06bcc7c9ff8d"
+      ],
+      "similarCases": [
+        {
+          "recordId": "urgent_then_calmer_followup#turn-1",
+          "score": 0.667466,
+          "route": "live_agent",
+          "scenarioId": "urgent_then_calmer_followup",
+          "user": "I am unsafe right now."
+        },
+        {
+          "recordId": "broad_help_then_urgent_shelter#turn-2",
+          "score": 0.66294,
+          "route": "live_agent",
+          "scenarioId": "broad_help_then_urgent_shelter",
+          "user": "I am outside tonight and do not feel safe."
+        },
+        {
+          "recordId": "bleeding_emergency#turn-1",
+          "score": 0.643677,
+          "route": "live_agent",
+          "scenarioId": "bleeding_emergency",
+          "user": "I am bleeding and need emergency help."
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

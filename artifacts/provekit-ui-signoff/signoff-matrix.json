@@ -1,0 +1,98 @@
+{
+  "task_id": "PROVEKIT-280",
+  "title": "Wallet UI Signoff Addendum",
+  "timestamp": "2026-06-14T08:32:25Z",
+  "status": "signed_off_with_production_gate",
+  "rollout_decision": {
+    "non_production_wallet_attach": "approved",
+    "production_visible_client_wallet_attach": "blocked_until_release_owner_enables_after_cutover_controls",
+    "reason": "Backend, wallet API, full-stack Playwright, UX/accessibility, QR/export no-leak, and label-review evidence are recorded; production binary, verifier-key, HSM, CI, and release-owner controls remain explicit cutover gates."
+  },
+  "evidence": {
+    "backend_signoff": {
+      "artifact": "artifacts/provekit-release-checks/results.json",
+      "coverage": [
+        "ProveKit WHIR backend proof generation and verification",
+        "deontic bridge commitments",
+        "cache/IPFS public payload safety",
+        "fail-closed backend availability",
+        "deterministic public inputs",
+        "witness no-leak boundaries"
+      ]
+    },
+    "wallet_api_contract_results": {
+      "tests": [
+        "tests/test_wallet_interface_api.py",
+        "tests/test_wallet_interface_proof_backends.py",
+        "tests/test_world_id_wallet_api.py"
+      ],
+      "last_recorded_result": "56 passed, 2 warnings",
+      "assertions": [
+        "proof receipts preserve backend metadata, verifier IDs, artifact refs, public-input hashes, and verification state",
+        "fail-closed disabled/unavailable/artifact-mismatch paths are surfaced without silent downgrade",
+        "private axioms, witness text, local artifact paths, and raw proof payloads are excluded from response surfaces"
+      ]
+    },
+    "full_stack_playwright_results": {
+      "tests": [
+        "wallet_interface/ui/tests/provekit-proof-fullstack.spec.ts"
+      ],
+      "last_recorded_result": "2 passed",
+      "assertions": [
+        "proof creation and listing work with deterministic ProveKit fixtures",
+        "QR review, export/import, audit refresh, provider, and public surfaces render sanitized proof metadata",
+        "disabled, unavailable, artifact mismatch, and backend error states fail closed"
+      ]
+    },
+    "ux_accessibility_review": {
+      "artifact": "artifacts/provekit-ui-review",
+      "tests": [
+        "wallet_interface/ui/tests/provekit-proof-ux.spec.ts",
+        "wallet_interface/ui/tests/wallet-ux-review.spec.ts"
+      ],
+      "last_recorded_result": "5 passed, 1 expected skip; 4 passed",
+      "assertions": [
+        "desktop and mobile layouts do not overflow",
+        "keyboard focus and touch target coverage are verified",
+        "visible copy avoids legal or cryptographic overclaiming"
+      ]
+    },
+    "qr_export_no_leak": {
+      "surfaces": [
+        "QR proof review",
+        "encrypted export",
+        "saved wallet files",
+        "public dashboard",
+        "provider eligibility",
+        "download link metadata"
+      ],
+      "blocked_values": [
+        "private witness",
+        "private axioms",
+        "raw proof payload",
+        "local artifact path",
+        "operator secret",
+        "non-public prover input"
+      ]
+    },
+    "proof_system_label_review": {
+      "labels": [
+        "simulated",
+        "Groth16",
+        "ProveKit WHIR",
+        "recursive-wrapper"
+      ],
+      "decision": "ProveKit WHIR evidence is not labeled as Groth16, EVM-verifiable, or on-chain-ready without independent recursive-wrapper evidence."
+    }
+  },
+  "validation": [
+    {
+      "command": "test -f docs/PROVEKIT_ZKP_TARGET_SIGNOFF.md",
+      "result": "pass"
+    },
+    {
+      "command": "test -d artifacts/provekit-ui-signoff",
+      "result": "pass"
+    }
+  ]
+}

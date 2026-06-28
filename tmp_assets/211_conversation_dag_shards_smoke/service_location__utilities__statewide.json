@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__utilities__statewide",
+  "kind": "service_location",
+  "key": "utilities__statewide",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "emergency_heat_assistance#turn-1",
+      "scenarioId": "emergency_heat_assistance",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need emergency heat assistance in Oregon.",
+      "normalizedQuery": "emergency heat utility utilities electric assistance oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:6c757db4a03b77e1"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_utility_assistance_beaverton#turn-1",
+          "score": 0.935482,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_beaverton",
+          "user": "Can you find utility assistance in Beaverton?"
+        },
+        {
+          "recordId": "matrix_utility_assistance_hillsboro#turn-1",
+          "score": 0.935482,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_hillsboro",
+          "user": "Can you find utility assistance in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_utility_assistance_medford#turn-1",
+          "score": 0.935482,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_medford",
+          "user": "Can you find utility assistance in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "proof_for_utility_help#turn-1",
+      "scenarioId": "proof_for_utility_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "What proof do I need before applying for utility assistance?",
+      "normalizedQuery": "proof before applying utility utilities heat electric assistance",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "emergency_heat_assistance#turn-1",
+          "score": 0.875428,
+          "route": "grounded_211_answer",
+          "scenarioId": "emergency_heat_assistance",
+          "user": "I need emergency heat assistance in Oregon."
+        },
+        {
+          "recordId": "matrix_utility_assistance_beaverton#turn-1",
+          "score": 0.875428,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_beaverton",
+          "user": "Can you find utility assistance in Beaverton?"
+        },
+        {
+          "recordId": "matrix_utility_assistance_hillsboro#turn-1",
+          "score": 0.875428,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_hillsboro",
+          "user": "Can you find utility assistance in Hillsboro?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "proof_for_utility_help#turn-1",
+      "to": "emergency_heat_assistance#turn-1",
+      "type": "semantic_similar",
+      "score": 0.875428,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

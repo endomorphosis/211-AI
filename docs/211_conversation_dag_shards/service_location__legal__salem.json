@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__legal__salem",
+  "kind": "service_location",
+  "key": "legal__salem",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_legal_aid_salem#turn-1",
+      "scenarioId": "matrix_legal_aid_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "legal",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find legal aid in Salem?",
+      "normalizedQuery": "legal aid attorney advocacy salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:799e6ab996caa563",
+        "service:1c2165c5293480a3",
+        "service:252041b98d8d25e0",
+        "service:331d3bf1bed204ec",
+        "service:4c69fc06bd8aef68"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0135_legal_aid_salem_3#turn-1",
+          "score": 0.937181,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0135_legal_aid_salem_3",
+          "user": "Where should someone call for legal aid in Salem?"
+        },
+        {
+          "recordId": "stress_0551_legal_aid_salem_11#turn-2",
+          "score": 0.91579,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0551_legal_aid_salem_11",
+          "user": "I am in Salem and need legal aid."
+        },
+        {
+          "recordId": "matrix_legal_aid_portland#turn-1",
+          "score": 0.865073,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_portland",
+          "user": "Can you find legal aid in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0135_legal_aid_salem_3#turn-1",
+      "scenarioId": "stress_0135_legal_aid_salem_3",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "legal",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Where should someone call for legal aid in Salem?",
+      "normalizedQuery": "should someone call legal aid attorney advocacy salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:799e6ab996caa563",
+        "service:1c2165c5293480a3",
+        "service:252041b98d8d25e0",
+        "service:331d3bf1bed204ec",
+        "service:4c69fc06bd8aef68"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_legal_aid_salem#turn-1",
+          "score": 0.937181,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_salem",
+          "user": "Can you find legal aid in Salem?"
+        },
+        {
+          "recordId": "stress_0551_legal_aid_salem_11#turn-2",
+          "score": 0.926575,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0551_legal_aid_salem_11",
+          "user": "I am in Salem and need legal aid."
+        },
+        {
+          "recordId": "stress_0291_legal_aid_hillsboro_3#turn-1",
+          "score": 0.871393,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0291_legal_aid_hillsboro_3",
+          "user": "Where should someone call for legal aid in Hillsboro?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0551_legal_aid_salem_11#turn-2",
+      "scenarioId": "stress_0551_legal_aid_salem_11",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "legal",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Salem and need legal aid.",
+      "normalizedQuery": "salem legal aid attorney advocacy",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:799e6ab996caa563",
+        "service:1c2165c5293480a3",
+        "service:252041b98d8d25e0",
+        "service:331d3bf1bed204ec",
+        "service:4c69fc06bd8aef68"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0135_legal_aid_salem_3#turn-1",
+          "score": 0.926575,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0135_legal_aid_salem_3",
+          "user": "Where should someone call for legal aid in Salem?"
+        },
+        {
+          "recordId": "matrix_legal_aid_salem#turn-1",
+          "score": 0.91579,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_salem",
+          "user": "Can you find legal aid in Salem?"
+        },
+        {
+          "recordId": "stress_0083_legal_aid_hillsboro_11#turn-2",
+          "score": 0.893194,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0083_legal_aid_hillsboro_11",
+          "user": "I am in Hillsboro and need legal aid."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_legal_aid_salem#turn-1",
+      "to": "stress_0135_legal_aid_salem_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.937181,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_legal_aid_salem#turn-1",
+      "to": "stress_0551_legal_aid_salem_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.91579,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0135_legal_aid_salem_3#turn-1",
+      "to": "matrix_legal_aid_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.937181,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0135_legal_aid_salem_3#turn-1",
+      "to": "stress_0551_legal_aid_salem_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.926575,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0551_legal_aid_salem_11#turn-2",
+      "to": "stress_0551_legal_aid_salem_11#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "stress_0551_legal_aid_salem_11#turn-2",
+      "to": "stress_0135_legal_aid_salem_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.926575,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0551_legal_aid_salem_11#turn-2",
+      "to": "matrix_legal_aid_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.91579,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

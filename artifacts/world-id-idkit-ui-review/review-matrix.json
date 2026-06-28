@@ -1,0 +1,49 @@
+{
+  "artifact": "world-id-idkit-ui-review",
+  "generated_at": "2026-06-14T00:00:00Z",
+  "reviewed_surfaces": [
+    "proof-center",
+    "wallet-uploads",
+    "register-intake",
+    "security",
+    "qr-proof-review",
+    "export-import"
+  ],
+  "viewport_coverage": [
+    {
+      "name": "Desktop Chrome",
+      "evidence": "desktop-chrome/*.png"
+    },
+    {
+      "name": "Mobile Chrome",
+      "evidence": "mobile-chrome/*.png"
+    },
+    {
+      "name": "Mobile Safari",
+      "evidence": "mobile-safari/*.png"
+    }
+  ],
+  "checks": [
+    "World ID controls expose accessible names and keyboard focus on proof center, uploads, register/intake, security, QR proof review, and export/import surfaces.",
+    "Emergency and essential-service fallback copy remains visible when World ID is verified, unavailable, or disabled.",
+    "Manual intake fallback remains operable when World ID cannot be used for accessibility, device availability, or emergency service access.",
+    "No route has horizontal overflow or clipped control text in desktop, mobile Chrome, or mobile Safari viewports.",
+    "Visible UI, download metadata, QR proof review, and export review omit raw nullifier, IDKit proof, RP signature, Developer Portal response, and PII sentinel tokens.",
+    "Proof-of-human language avoids legal identity, citizenship, age, address, document ownership, and guaranteed eligibility overclaims."
+  ],
+  "private_token_policy": {
+    "source": "wallet_interface/ui/tests/fixtures/world-id-fixtures.ts",
+    "forbidden_token_classes": [
+      "raw nullifier",
+      "legacy nullifier hash",
+      "IDKit proof",
+      "Merkle root",
+      "RP signature",
+      "Developer Portal response",
+      "legal name",
+      "phone",
+      "email",
+      "precise address"
+    ]
+  }
+}

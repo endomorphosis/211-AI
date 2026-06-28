@@ -1,0 +1,815 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service__health",
+  "kind": "service",
+  "key": "health",
+  "nodeCount": 14,
+  "nodes": [
+    {
+      "id": "substance_detox_help#turn-1",
+      "scenarioId": "substance_detox_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need detox or substance use treatment near Portland.",
+      "normalizedQuery": "detox substance use treatment portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreih7t2sags57vtf4ym7u223x5c5fzv6gwicl45n3hmdk57zwxjqwg4",
+        "page:bafkreidx47niconcxolp2u5pfimstfyrmrv264yawscdvwasfrbwlkzbou",
+        "page:bafkreih2g4g3p7xgdp7lduhpmbxxc6kzqg3qrxlju6mv6vh677l2xayr2e",
+        "page:bafkreiahqjad66eltbleg5qsaw3rsqparwej3i653j4takrxqtrqxbbfae",
+        "page:bafkreifm3txt6jll2kfc4tp7srsofiqoxgyvq2s4kstuv2kgk325hk7y5u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_child_care_portland#turn-1",
+          "score": 0.730296,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_portland",
+          "user": "Can you find child care help in Portland?"
+        },
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.716114,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        },
+        {
+          "recordId": "matrix_laundry_portland#turn-1",
+          "score": 0.708087,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_portland",
+          "user": "Can you find laundry services in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "medical_emergency_signal#turn-1",
+      "scenarioId": "medical_emergency_signal",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I have a medical emergency and cannot breathe.",
+      "normalizedQuery": "have medical emergency breathe",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:38e1292dd11bc0d7",
+        "service:b03287ff06662c46",
+        "service:d5d4ac236c6cd15c",
+        "service:d51408fa91a6f897",
+        "service:72db06bcc7c9ff8d"
+      ],
+      "similarCases": [
+        {
+          "recordId": "violence_threat_now#turn-1",
+          "score": 0.679365,
+          "route": "live_agent",
+          "scenarioId": "violence_threat_now",
+          "user": "Someone is threatening violence and I need help right now."
+        },
+        {
+          "recordId": "unsafe_domestic_violence_now#turn-1",
+          "score": 0.666666,
+          "route": "live_agent",
+          "scenarioId": "unsafe_domestic_violence_now",
+          "user": "I am unsafe because of domestic violence right now in Portland."
+        },
+        {
+          "recordId": "broad_help_then_urgent_shelter#turn-2",
+          "score": 0.654653,
+          "route": "live_agent",
+          "scenarioId": "broad_help_then_urgent_shelter",
+          "user": "I am outside tonight and do not feel safe."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_006#turn-2",
+      "scenarioId": "realistic_broad_to_service_006",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent_handoff",
+      "user": "My stuff got taken and I'm around Eugene. Can you help me find medical care?",
+      "normalizedQuery": "don't know ask i'm eugene everything kind falling apart stuff got taken around medical care",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:9c7b6b28cfc2b7b2",
+        "service:47377170b90d739c",
+        "service:0c199a9aef4e80f0",
+        "service:9fc8a4423060d526"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_006#turn-3",
+          "score": 0.979796,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "Can I go there today?"
+        },
+        {
+          "recordId": "realistic_broad_to_service_006#turn-1",
+          "score": 0.726375,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "I don't know what to ask for. I'm in Eugene, and everything is kind of falling apart."
+        },
+        {
+          "recordId": "realistic_broad_to_service_000#turn-3",
+          "score": 0.710048,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "Do they answer after hours?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_006#turn-3",
+      "scenarioId": "realistic_broad_to_service_006",
+      "turnIndex": 2,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Can I go there today?",
+      "normalizedQuery": "don't know ask i'm eugene everything kind falling apart stuff got taken around medical care go there",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:9c7b6b28cfc2b7b2",
+        "service:47377170b90d739c",
+        "service:0c199a9aef4e80f0",
+        "service:9fc8a4423060d526"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_006#turn-2",
+          "score": 0.979796,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "My stuff got taken and I'm around Eugene. Can you help me find medical care?"
+        },
+        {
+          "recordId": "realistic_broad_to_service_006#turn-1",
+          "score": 0.711697,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "I don't know what to ask for. I'm in Eugene, and everything is kind of falling apart."
+        },
+        {
+          "recordId": "realistic_broad_to_service_000#turn-3",
+          "score": 0.695699,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "Do they answer after hours?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_then_urgent_008_portland#turn-1",
+      "scenarioId": "realistic_grounded_then_urgent_008_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in a motel until tomorrow near Portland. I need detox.",
+      "normalizedQuery": "motel until tomorrow portland detox",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:45707f0c70045863",
+        "service:c80f8c8996de8a78",
+        "service:756ab3b40b1a5727",
+        "service:e11164e196a9603f"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.784465,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.782476,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "realistic_grounded_019_food_pantry_hillsboro#turn-1",
+          "score": 0.764219,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_019_food_pantry_hillsboro",
+          "user": "I am in a motel until tomorrow near Hillsboro. I need a pantry."
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_portland#turn-1",
+      "scenarioId": "matrix_detox_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Portland?",
+      "normalizedQuery": "detox portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:45707f0c70045863",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy",
+        "page:bafkreif6ycgr5wr22b6fsimoaetsqofsjv4o73mhzuc3i2lsphtor5rmui",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_medford#turn-1",
+          "score": 0.961537,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_medford",
+          "user": "Can you find detox help in Medford?"
+        },
+        {
+          "recordId": "matrix_detox_beaverton#turn-1",
+          "score": 0.941357,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_beaverton",
+          "user": "Can you find detox help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.920736,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_gresham#turn-1",
+      "scenarioId": "matrix_detox_gresham",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Gresham?",
+      "normalizedQuery": "detox gresham",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:d968ced621aea83d",
+        "service:d7abe58ca7495460",
+        "service:45707f0c70045863",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_broad_then_detox_gresham#turn-2",
+          "score": 0.95038,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_detox_gresham",
+          "user": "I am in Gresham and need detox help."
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.887243,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_detox_beaverton#turn-1",
+          "score": 0.869317,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_beaverton",
+          "user": "Can you find detox help in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_beaverton#turn-1",
+      "scenarioId": "matrix_detox_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Beaverton?",
+      "normalizedQuery": "detox beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy",
+        "page:bafkreif6ycgr5wr22b6fsimoaetsqofsjv4o73mhzuc3i2lsphtor5rmui",
+        "service:45707f0c70045863",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.941357,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        },
+        {
+          "recordId": "matrix_detox_medford#turn-1",
+          "score": 0.941357,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_medford",
+          "user": "Can you find detox help in Medford?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.898146,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_hillsboro#turn-1",
+      "scenarioId": "matrix_detox_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Hillsboro?",
+      "normalizedQuery": "detox hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:45707f0c70045863",
+        "service:cbb641cc5af6e9d6",
+        "service:a927abbe60497dda",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.852803,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_detox_gresham#turn-1",
+          "score": 0.82244,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_gresham",
+          "user": "Can you find detox help in Gresham?"
+        },
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.819347,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_clackamas#turn-1",
+      "scenarioId": "matrix_detox_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Clackamas County?",
+      "normalizedQuery": "detox clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:2d63f632b46d0d29",
+        "service:c1be66b3f546e230",
+        "service:45707f0c70045863",
+        "service:77801dbfae971c49"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_warming_center_clackamas#turn-1",
+          "score": 0.876355,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_clackamas",
+          "user": "Can you find warming center in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_youth_day_center_clackamas#turn-1",
+          "score": 0.859336,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_clackamas",
+          "user": "Can you find youth day center in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.857158,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_salem#turn-1",
+      "scenarioId": "matrix_detox_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Salem?",
+      "normalizedQuery": "detox salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:7a13b77aa237b2eb",
+        "service:45707f0c70045863",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy",
+        "page:bafkreif6ycgr5wr22b6fsimoaetsqofsjv4o73mhzuc3i2lsphtor5rmui"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.920736,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        },
+        {
+          "recordId": "matrix_detox_medford#turn-1",
+          "score": 0.920736,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_medford",
+          "user": "Can you find detox help in Medford?"
+        },
+        {
+          "recordId": "matrix_detox_beaverton#turn-1",
+          "score": 0.898146,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_beaverton",
+          "user": "Can you find detox help in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_eugene#turn-1",
+      "scenarioId": "matrix_detox_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Eugene?",
+      "normalizedQuery": "detox eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:5859932a69e4e47a",
+        "service:3e4063037c39ae4c",
+        "service:507a859ca3a7d126",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.894426,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_detox_gresham#turn-1",
+          "score": 0.86258,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_gresham",
+          "user": "Can you find detox help in Gresham?"
+        },
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.823531,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_detox_medford#turn-1",
+      "scenarioId": "matrix_detox_medford",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "medford",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Medford?",
+      "normalizedQuery": "detox medford",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:45707f0c70045863",
+        "page:bafkreia5rv36ksutfdch5zzanzjbctx6qejdxuubtlymqtieoiwnw3kkiy",
+        "page:bafkreif6ycgr5wr22b6fsimoaetsqofsjv4o73mhzuc3i2lsphtor5rmui",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_portland#turn-1",
+          "score": 0.961537,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_portland",
+          "user": "Can you find detox help in Portland?"
+        },
+        {
+          "recordId": "matrix_detox_beaverton#turn-1",
+          "score": 0.941357,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_beaverton",
+          "user": "Can you find detox help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.920736,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_broad_then_detox_gresham#turn-2",
+      "scenarioId": "matrix_broad_then_detox_gresham",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "gresham",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Gresham and need detox help.",
+      "normalizedQuery": "gresham detox",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:d968ced621aea83d",
+        "service:d7abe58ca7495460",
+        "service:45707f0c70045863",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_gresham#turn-1",
+          "score": 0.95038,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_gresham",
+          "user": "Can you find detox help in Gresham?"
+        },
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.84322,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_broad_then_community_meals_gresham#turn-2",
+          "score": 0.831656,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_community_meals_gresham",
+          "user": "I am in Gresham and need community meals."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "substance_detox_help#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.716114,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_006#turn-2",
+      "to": "realistic_broad_to_service_006#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_006#turn-2",
+      "to": "realistic_broad_to_service_006#turn-3",
+      "type": "semantic_similar",
+      "score": 0.979796,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_006#turn-3",
+      "to": "realistic_broad_to_service_006#turn-2",
+      "type": "semantic_similar",
+      "score": 0.979796,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_008_portland#turn-1",
+      "to": "realistic_grounded_then_urgent_008_portland#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_008_portland#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.784465,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_008_portland#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.782476,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_portland#turn-1",
+      "to": "matrix_detox_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.961537,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_portland#turn-1",
+      "to": "matrix_detox_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.941357,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_portland#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.920736,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_gresham#turn-1",
+      "to": "matrix_broad_then_detox_gresham#turn-2",
+      "type": "semantic_similar",
+      "score": 0.95038,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_gresham#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.887243,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_gresham#turn-1",
+      "to": "matrix_detox_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.869317,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_beaverton#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.941357,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_beaverton#turn-1",
+      "to": "matrix_detox_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.941357,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_beaverton#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.898146,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_hillsboro#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.852803,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_hillsboro#turn-1",
+      "to": "matrix_detox_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.82244,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_hillsboro#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.819347,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_clackamas#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.857158,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_salem#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.920736,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_salem#turn-1",
+      "to": "matrix_detox_medford#turn-1",
+      "type": "semantic_similar",
+      "score": 0.920736,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_salem#turn-1",
+      "to": "matrix_detox_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.898146,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_eugene#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.894426,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_eugene#turn-1",
+      "to": "matrix_detox_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.86258,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_eugene#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.823531,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_medford#turn-1",
+      "to": "matrix_detox_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.961537,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_medford#turn-1",
+      "to": "matrix_detox_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.941357,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_medford#turn-1",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.920736,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_detox_gresham#turn-2",
+      "to": "matrix_detox_gresham#turn-1",
+      "type": "semantic_similar",
+      "score": 0.95038,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_broad_then_detox_gresham#turn-2",
+      "to": "matrix_detox_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.84322,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

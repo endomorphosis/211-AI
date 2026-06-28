@@ -29,6 +29,8 @@ interface AccessRequestApiRecord {
   approval_threshold?: number | null;
   approval_count?: number;
   grant_status?: "active" | "revoked" | null;
+  consensus?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 interface AccessRequestApiResponse {
@@ -47,6 +49,8 @@ interface GrantReceiptApiRecord {
   status: "active" | "revoked";
   created_at: string;
   expires_at?: string | null;
+  consensus?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 interface GrantReceiptApiResponse {
@@ -61,6 +65,8 @@ interface AuditEventApiRecord {
   resource: string;
   decision: string;
   grant_id?: string | null;
+  consensus?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 interface AuditEventApiResponse {
@@ -74,6 +80,8 @@ interface WalletRecordApiRecord {
   public_descriptor: string;
   status: string;
   created_at: string;
+  consensus?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 interface WalletRecordsApiResponse {
@@ -92,7 +100,7 @@ interface ServiceInteractionsApiResponse {
   interactions: ServiceInteractionEvent[];
 }
 
-interface ProofReceiptApiRecord {
+export interface ProofReceiptApiRecord {
   proof_id: string;
   proof_type: string;
   statement?: Record<string, unknown>;
@@ -107,6 +115,10 @@ interface ProofReceiptApiRecord {
   proof_artifact_ref?: string | null;
   verification_status?: string;
   created_at: string;
+  metadata?: Record<string, unknown>;
+  wallet_id?: string;
+  witness_label?: string;
+  consensus?: unknown;
 }
 
 interface ProofReceiptsApiResponse {
@@ -253,11 +265,14 @@ interface DerivedArtifactApiResponse {
     digest?: string;
   };
   created_at: string;
+  consensus?: unknown;
+  metadata?: Record<string, unknown>;
 }
 
 interface DerivedAnalysisResultApiResponse {
   artifact: DerivedArtifactApiResponse;
   output: Record<string, unknown>;
+  consensus?: unknown;
 }
 
 interface DecryptedRecordApiResponse {
@@ -427,6 +442,424 @@ export interface WalletApiConfig {
   audienceKeyHex?: string;
 }
 
+export interface WorldIdWalletConfig {
+  enabled: boolean;
+  environment: "staging" | "production" | string;
+  app_id: string;
+  rp_id: string;
+  allowed_actions: string[];
+  default_action: string;
+  credential_policy: string;
+  allow_legacy_proofs: boolean;
+  require_user_presence: boolean;
+  rp_signature_ttl_seconds?: number;
+  verify_base_url?: string;
+  http_timeout_seconds?: number;
+}
+
+export interface WorldIdBinding {
+  binding_id: string;
+  wallet_id: string;
+  actor_did: string;
+  rp_id: string;
+  action: string;
+  protocol_version: string;
+  environment: string;
+  nullifier_ref: string;
+  app_id?: string;
+  credential_identifiers?: string[];
+  issuer_schema_ids?: number[];
+  proof_receipt_id?: string | null;
+  session_id?: string;
+  signal_hash_ref?: string;
+  verification_status?: string;
+  status: "active" | "revoked" | string;
+  verified_at: string;
+  expires_at_min?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface WorldIdWalletStatus {
+  enabled: boolean;
+  environment: "staging" | "production" | string;
+  app_id: string;
+  rp_id: string;
+  allowed_actions: string[];
+  default_action: string;
+  credential_policy: string;
+  configured?: {
+    nullifier_hmac_key?: boolean;
+    rp_signing_key?: boolean;
+  };
+  wallet?: {
+    active_binding_count: number;
+    binding_count: number;
+    bindings: WorldIdBinding[];
+    wallet_id: string;
+  };
+}
+
+export interface WorldIdRpSignatureResponse {
+  rp_id: string;
+  sig: string;
+  signature: string;
+  nonce: string;
+  created_at: number;
+  expires_at: number;
+  action: string;
+}
+
+export interface WorldIdRpSignatureRequest {
+  action?: string;
+}
+
+export type WorldIdIdkitPayload = Record<string, unknown>;
+
+export interface WorldIdVerificationRequest {
+  idkitPayload: WorldIdIdkitPayload;
+}
+
+export interface WorldIdVerificationResult {
+  success: boolean;
+  action?: string;
+  nullifier?: string;
+  created_at?: string;
+  environment?: string;
+  session_id?: string;
+  message?: string;
+  results?: Array<Record<string, unknown>>;
+}
+
+export interface WorldIdVerificationResponse {
+  binding: WorldIdBinding;
+  proof?: ProofReceiptView;
+  verification: WorldIdVerificationResult;
+}
+
+export interface WorldIdBindingRevokeRequest {
+  reason?: string;
+}
+
+export type WorldIdWalletApiErrorCode =
+  | "disabled"
+  | "replayed"
+  | "conflict"
+  | "expired"
+  | "verification_failed"
+  | "request_failed";
+
+export class WorldIdWalletApiError extends Error {
+  readonly code: WorldIdWalletApiErrorCode;
+  readonly detail: unknown;
+  readonly status: number;
+
+  constructor({
+    code,
+    detail,
+    message,
+    status
+  }: {
+    code: WorldIdWalletApiErrorCode;
+    detail: unknown;
+    message: string;
+    status: number;
+  }) {
+    super(message);
+    this.name = "WorldIdWalletApiError";
+    this.code = code;
+    this.detail = detail;
+    this.status = status;
+  }
+}
+
+export function isWorldIdWalletApiError(error: unknown): error is WorldIdWalletApiError {
+  return error instanceof WorldIdWalletApiError;
+}
+
+export type WalletConsensusMode =
+  | "direct"
+  | "receipt_only"
+  | "libp2p_quorum"
+  | "chainlink_cre"
+  | "zkml_required"
+  | "tee_or_zkml"
+  | "hybrid";
+
+export type WalletConsensusProofMode = "receipt_only" | "zkml_required" | "tee_or_zkml";
+
+export type WalletConsensusComparison = "exact" | "normalized_text" | "canonical_json" | "semantic";
+
+export type WalletConsensusFailClosedError =
+  | "consensus_unavailable"
+  | "quorum_not_reached"
+  | "proof_verification_failed"
+  | "cre_workflow_mismatch"
+  | "receipt_replay_or_mismatch"
+  | "policy_requires_manual_review";
+
+export interface WalletConsensusRequestPolicy {
+  mode: Exclude<WalletConsensusMode, "direct">;
+  comparison?: WalletConsensusComparison;
+  quorum?: number;
+  minOperators?: number;
+  failClosed?: boolean;
+  timeoutSeconds?: number;
+}
+
+export interface WalletProofPolicy {
+  mode: WalletConsensusProofMode;
+}
+
+export interface WalletConsensusMetadata {
+  schema_version: "llm-router-consensus-receipt-v1";
+  mode: Exclude<WalletConsensusMode, "direct">;
+  comparison: WalletConsensusComparison;
+  quorum_reached: boolean;
+  operator_count: number;
+  selected_operator_count: number;
+  proof_mode: WalletConsensusProofMode;
+  verification_label: string;
+  receipt_hash?: string;
+  receipt_cid?: string;
+  created_at: string;
+  failure_reason?: string;
+  fail_closed_error?: WalletConsensusFailClosedError;
+  proof_cid?: string;
+  public_inputs_hash?: string;
+  tee_attestation_hash?: string;
+  cre_workflow_id?: string;
+  cre_report_id?: string;
+  chain_id?: string;
+  tx_hash?: string;
+}
+
+export type WalletConsensusSurfaceFamily =
+  | "direct"
+  | "consensus"
+  | "chainlink-cre"
+  | "zkml"
+  | "tee"
+  | "manual-review";
+
+export interface WalletConsensusDisplayState {
+  family: WalletConsensusSurfaceFamily;
+  statusLabel: string;
+  badgeLabel: string;
+  tone: "neutral" | "success" | "warning" | "danger";
+  detailLabel: string;
+  evidenceLabel: string;
+  providerLabel: string;
+  dashboardLabel: string;
+  exportLabel: string;
+  qrReviewLabel: string;
+  inputBoundaryLabel: string;
+  onChainLabel: string;
+  failClosed: boolean;
+  manualReview: boolean;
+  mathematicalZkProof: boolean;
+  receiptOnly: boolean;
+}
+
+export interface ConsensusBearingView {
+  consensus?: WalletConsensusMetadata;
+}
+
+export interface WalletRouterTextRequest {
+  prompt: string;
+  systemPrompt?: string;
+  provider?: string;
+  modelName?: string;
+  walletCid?: string;
+  maxTokens?: number;
+  maxNewTokens?: number;
+  kwargs?: Record<string, unknown>;
+  consensus?: WalletConsensusRequestPolicy;
+  proofPolicy?: WalletProofPolicy;
+}
+
+export interface WalletRouterTextResult {
+  router: string;
+  walletId: string;
+  walletCid: string;
+  provider: string;
+  modelName: string;
+  text: string;
+  rateLimit?: {
+    limit: number;
+    remaining: number;
+    resetAt: number;
+  };
+  consensus?: WalletConsensusMetadata;
+}
+
+export interface WalletEmbeddingsRouterResponse {
+  router?: string;
+  wallet_id?: string;
+  wallet_cid?: string;
+  provider?: string;
+  model_name?: string;
+  embeddings?: number[][];
+  dimension?: number;
+  text_count?: number;
+  raw?: Record<string, unknown>;
+}
+
+export interface WalletHmisOperationResult {
+  status?: string;
+  summary?: string;
+  clients?: Array<Record<string, unknown>>;
+  programs?: Array<Record<string, unknown>>;
+  referralDraft?: Record<string, unknown>;
+  eligibility?: Record<string, unknown>;
+  raw: Record<string, unknown>;
+  consensus?: WalletConsensusMetadata;
+}
+
+export interface WalletAnalyticsContributionResult {
+  contributionId?: string;
+  templateId?: string;
+  status?: string;
+  raw: Record<string, unknown>;
+  consensus?: WalletConsensusMetadata;
+}
+
+export interface WalletAnalyticsAggregateResult {
+  templateId?: string;
+  metric?: string;
+  released?: boolean;
+  suppressed?: boolean;
+  count?: number | null;
+  noisyCount?: number | null;
+  groupBy?: string[];
+  groups?: Array<Record<string, unknown>>;
+  privacyBudgetSpent?: number;
+  raw: Record<string, unknown>;
+  consensus?: WalletConsensusMetadata;
+}
+
+export interface DerivedServiceMatchResult {
+  matches: Array<Record<string, unknown>>;
+  raw: Record<string, unknown>;
+  consensus?: WalletConsensusMetadata;
+}
+
+export type ProofSystemFamily =
+  | "simulated"
+  | "groth16"
+  | "provekit"
+  | "provekit_recursive_groth16"
+  | "consensus_receipt"
+  | "chainlink_cre"
+  | "zkml"
+  | "tee"
+  | "unknown";
+
+export interface ProofReceiptDisplayState {
+  proofSystemFamily: ProofSystemFamily;
+  proofSystemLabel: string;
+  statusLabel: string;
+  statusTone: "neutral" | "success" | "warning" | "danger";
+  accepted: boolean;
+  productionEvidence: boolean;
+  failClosed: boolean;
+  manualFallback: boolean;
+  onChainLabel: string;
+  providerLabel: string;
+  dashboardLabel: string;
+  exportLabel: string;
+  qrReviewLabel: string;
+  inputBoundaryLabel: string;
+  evidenceLabel: string;
+  consensus?: WalletConsensusMetadata;
+  mathematicalZkProof: boolean;
+}
+
+const PRIVATE_PUBLIC_INPUT_KEY_PATTERN =
+  /(^|_)(private|private_axiom|private_axioms|private_axiom_text|witness|prover|prover_key|pkp|pkp_path|prover_toml)(_|$)/i;
+
+const PRIVATE_CONSENSUS_VALUE_PATTERNS = [
+  /SHOULD_NOT_RENDER/i,
+  /RAW_PROMPT/i,
+  /WALLET_PLAINTEXT/i,
+  /OPERATOR_SECRET/i,
+  /RAW_ZK_PROOF_PAYLOAD/i,
+  /TEE_QUOTE_BYTES/i,
+  /CRE_PRIVATE_REPORT/i,
+  /BEARER_TOKEN/i,
+  /sk_live/i,
+  /quote_base64/i,
+  /private_don_report/i
+];
+
+const PRIVATE_PUBLIC_INPUT_VALUE_PATTERNS = [
+  /PRIVATE_WITNESS_SENTINEL/i,
+  /private_axiom_text/i,
+  /Prover\.toml/i,
+  /witness_theorem_hash_field/i,
+  /prover_key_path/i,
+  /pkp_path/i
+];
+
+export class WalletApiRequestError extends Error {
+  code?: string;
+  detail?: string;
+  status: number;
+  consensus?: WalletConsensusMetadata;
+
+  constructor(label: string, status: number, detail?: string, code?: string, consensus?: WalletConsensusMetadata) {
+    super(`${label} request failed with status ${status}${detail ? `: ${detail}` : ""}`);
+    this.name = "WalletApiRequestError";
+    this.code = code;
+    this.detail = detail;
+    this.status = status;
+    this.consensus = consensus;
+  }
+}
+
+export class WalletApiConsensusFailClosedError extends WalletApiRequestError {
+  failClosedError: WalletConsensusFailClosedError;
+  mode?: Exclude<WalletConsensusMode, "direct">;
+  retryable: boolean;
+
+  constructor({
+    code,
+    consensus,
+    detail,
+    label,
+    mode,
+    retryable,
+    status
+  }: {
+    code: WalletConsensusFailClosedError;
+    consensus?: WalletConsensusMetadata;
+    detail?: string;
+    label: string;
+    mode?: Exclude<WalletConsensusMode, "direct">;
+    retryable?: boolean;
+    status: number;
+  }) {
+    super(label, status, detail, code, consensus);
+    this.name = "WalletApiConsensusFailClosedError";
+    this.failClosedError = code;
+    this.mode = mode;
+    this.retryable = retryable ?? false;
+  }
+}
+
+export interface ServicePlanShareGrantResponse {
+  grantId: string;
+  receiptId?: string;
+  audienceDid: string;
+  resources: string[];
+  abilities: string[];
+  scopes: string[];
+  expiresAt?: string;
+  plan?: ServicePlan;
+  receipt?: WalletGrantReceipt;
+}
+
 export async function loadWalletAccessState(config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId">): Promise<{
   accessRequests: WalletAccessRequest[];
   grantReceipts: WalletGrantReceipt[];
@@ -465,6 +898,73 @@ export async function listWalletProofReceipts(
   const data = await fetchJson<ProofReceiptsApiResponse>(url, "Proof receipts");
   return data.proofs.map(toProofReceiptView);
 }
+
+export async function loadWalletWorldIdConfig(
+  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId">
+): Promise<WorldIdWalletConfig> {
+  const url = new URL(`/wallets/${config.walletId}/world-id/config`, normalizedBaseUrl(config.apiBaseUrl));
+  return fetchWorldIdJson<WorldIdWalletConfig>(url, "World ID config");
+}
+
+export async function loadWalletWorldIdStatus(
+  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId" | "actorDid">
+): Promise<WorldIdWalletStatus> {
+  const url = new URL(`/wallets/${config.walletId}/world-id/status`, normalizedBaseUrl(config.apiBaseUrl));
+  url.searchParams.set("actor_did", requiredActorDid(config));
+  return fetchWorldIdJson<WorldIdWalletStatus>(url, "World ID status");
+}
+
+export async function createWalletWorldIdRpSignature(
+  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId" | "actorDid">,
+  { action }: WorldIdRpSignatureRequest = {}
+): Promise<WorldIdRpSignatureResponse> {
+  const url = new URL(`/wallets/${config.walletId}/world-id/rp-signature`, normalizedBaseUrl(config.apiBaseUrl));
+  return postWorldIdJson<WorldIdRpSignatureResponse>(url, "World ID RP signature", {
+    action,
+    actor_did: requiredActorDid(config)
+  });
+}
+
+export async function registerWalletWorldIdVerification(
+  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId" | "actorDid">,
+  { idkitPayload }: WorldIdVerificationRequest
+): Promise<WorldIdVerificationResponse> {
+  const url = new URL(`/wallets/${config.walletId}/world-id/verifications`, normalizedBaseUrl(config.apiBaseUrl));
+  const data = await postWorldIdJson<{
+    binding: WorldIdBinding;
+    proof?: ProofReceiptApiRecord | null;
+    verification: WorldIdVerificationResult;
+  }>(url, "World ID verification", {
+    actor_did: requiredActorDid(config),
+    idkit_payload: idkitPayload
+  });
+  return {
+    binding: data.binding,
+    proof: data.proof ? toProofReceiptView(data.proof) : undefined,
+    verification: data.verification
+  };
+}
+
+export async function revokeWalletWorldIdBinding(
+  config: Pick<WalletApiConfig, "apiBaseUrl" | "walletId" | "actorDid">,
+  bindingId: string,
+  { reason = "" }: WorldIdBindingRevokeRequest = {}
+): Promise<WorldIdBinding> {
+  const url = new URL(
+    `/wallets/${config.walletId}/world-id/bindings/${bindingId}/revoke`,
+    normalizedBaseUrl(config.apiBaseUrl)
+  );
+  return postWorldIdJson<WorldIdBinding>(url, "World ID binding revoke", {
+    actor_did: requiredActorDid(config),
+    reason
+  });
+}
+
+export const loadWorldIdConfig = loadWalletWorldIdConfig;
+export const loadWorldIdStatus = loadWalletWorldIdStatus;
+export const createWorldIdRpSignature = createWalletWorldIdRpSignature;
+export const registerWorldIdVerification = registerWalletWorldIdVerification;
+export const revokeWorldIdBinding = revokeWalletWorldIdBinding;
 
 export async function listAnalyticsTemplates({
   apiBaseUrl,
@@ -515,6 +1015,279 @@ export async function revokeWalletAnalyticsConsent(
     actor_did: requiredActorDid(config)
   });
   return toWalletAnalyticsConsentView(consent);
+}
+
+export async function createWalletAnalyticsContribution(
+  config: WalletApiConfig,
+  input: {
+    consentId: string;
+    templateId: string;
+    fields: Record<string, unknown>;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  }
+): Promise<WalletAnalyticsContributionResult> {
+  const url = new URL(`/wallets/${config.walletId}/analytics/contributions`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "Analytics contribution", {
+    actor_did: requiredActorDid(config),
+    consent_id: input.consentId,
+    fields: input.fields,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    template_id: input.templateId,
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletAnalyticsContributionResult(payload);
+}
+
+export async function countAnalyticsTemplate(
+  config: Pick<WalletApiConfig, "apiBaseUrl"> & { actorDid?: string },
+  templateId: string,
+  input: {
+    epsilon?: number;
+    minCohortSize?: number;
+    budgetKey?: string;
+    budgetLimit?: number;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  } = {}
+): Promise<WalletAnalyticsAggregateResult> {
+  const url = new URL(`/analytics/${templateId}/count`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "Analytics aggregate count", {
+    actor_did: config.actorDid,
+    budget_key: input.budgetKey,
+    budget_limit: input.budgetLimit,
+    epsilon: input.epsilon,
+    min_cohort_size: input.minCohortSize,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletAnalyticsAggregateResult(payload);
+}
+
+export async function countAnalyticsTemplateByFields(
+  config: Pick<WalletApiConfig, "apiBaseUrl"> & { actorDid?: string },
+  templateId: string,
+  input: {
+    groupBy: string[];
+    epsilon?: number;
+    minCohortSize?: number;
+    budgetKey?: string;
+    budgetLimit?: number;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  }
+): Promise<WalletAnalyticsAggregateResult> {
+  const url = new URL(`/analytics/${templateId}/count-by-fields`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "Analytics aggregate count by fields", {
+    actor_did: config.actorDid,
+    budget_key: input.budgetKey,
+    budget_limit: input.budgetLimit,
+    epsilon: input.epsilon,
+    group_by: input.groupBy,
+    min_cohort_size: input.minCohortSize,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletAnalyticsAggregateResult(payload);
+}
+
+export async function generateWalletRouterText(
+  config: WalletApiConfig,
+  input: WalletRouterTextRequest
+): Promise<WalletRouterTextResult> {
+  const url = new URL(`/wallets/${config.walletId}/ai-router/llm`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "Wallet router LLM", {
+    actor_did: requiredActorDid(config),
+    actor_key_hex: config.issuerKeyHex || config.audienceKeyHex,
+    kwargs: input.kwargs,
+    max_new_tokens: input.maxNewTokens ?? input.maxTokens,
+    model_name: input.modelName,
+    prompt: input.prompt,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    provider: input.provider,
+    system_prompt: input.systemPrompt,
+    wallet_cid: input.walletCid,
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletRouterTextResult(payload, config);
+}
+
+export async function generateWalletRouterEmbeddings(
+  config: WalletApiConfig,
+  input: {
+    text?: string;
+    texts?: string[];
+    modelName?: string;
+    provider?: string;
+    walletCid?: string;
+    kwargs?: Record<string, unknown>;
+  }
+): Promise<WalletEmbeddingsRouterResponse> {
+  const url = new URL(`/wallets/${config.walletId}/ai-router/embeddings`, normalizedBaseUrl(config.apiBaseUrl));
+  return postJson<WalletEmbeddingsRouterResponse>(url, "Wallet embeddings router", {
+    actor_did: requiredActorDid(config),
+    actor_key_hex: config.issuerKeyHex || config.audienceKeyHex,
+    kwargs: input.kwargs ?? {},
+    model_name: input.modelName,
+    provider: input.provider ?? "hf_inference_api",
+    text: input.text,
+    texts: input.texts ?? [],
+    wallet_cid: input.walletCid
+  });
+}
+
+export async function lookupHmisClients(
+  config: WalletApiConfig,
+  input: {
+    query?: Record<string, unknown>;
+    localSubjectRef?: string;
+    consentGrantId?: string;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  } = {}
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(`/wallets/${config.walletId}/hmis/lookup-clients`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "HMIS client lookup", {
+    actor_did: requiredActorDid(config),
+    consent_grant_id: input.consentGrantId,
+    local_subject_ref: input.localSubjectRef,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    query: input.query || {},
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function listHmisProgramLinks(
+  config: WalletApiConfig,
+  input: {
+    clientRef?: string;
+    programId?: string;
+    consentGrantId?: string;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  } = {}
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(`/wallets/${config.walletId}/hmis/program-links`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "HMIS program links", {
+    actor_did: requiredActorDid(config),
+    client_ref: input.clientRef,
+    consent_grant_id: input.consentGrantId,
+    program_id: input.programId,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function createHmisReferralDraft(
+  config: WalletApiConfig,
+  input: {
+    clientRef: string;
+    programId: string;
+    fields?: Record<string, unknown>;
+    consentGrantId?: string;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  }
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(`/wallets/${config.walletId}/hmis/referral-drafts`, normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "HMIS referral draft", {
+    actor_did: requiredActorDid(config),
+    client_ref: input.clientRef,
+    consent_grant_id: input.consentGrantId,
+    fields: input.fields || {},
+    program_id: input.programId,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function updateHmisReferralDraft(
+  config: WalletApiConfig,
+  referralDraftId: string,
+  input: {
+    fields?: Record<string, unknown>;
+    status?: string;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  }
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(
+    `/wallets/${config.walletId}/hmis/referral-drafts/${referralDraftId}`,
+    normalizedBaseUrl(config.apiBaseUrl)
+  );
+  const payload = await patchJson<Record<string, unknown>>(url, "HMIS referral draft update", {
+    actor_did: requiredActorDid(config),
+    fields: input.fields || {},
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    status: input.status,
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function validateHmisReferralDraft(
+  config: WalletApiConfig,
+  referralDraftId: string,
+  input: {
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  } = {}
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(
+    `/wallets/${config.walletId}/hmis/referral-drafts/${referralDraftId}/validate`,
+    normalizedBaseUrl(config.apiBaseUrl)
+  );
+  const payload = await postJson<Record<string, unknown>>(url, "HMIS referral draft validation", {
+    actor_did: requiredActorDid(config),
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function submitHmisReferralDraft(
+  config: WalletApiConfig,
+  referralDraftId: string,
+  input: {
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  } = {}
+): Promise<WalletHmisOperationResult> {
+  const url = new URL(
+    `/wallets/${config.walletId}/hmis/referral-drafts/${referralDraftId}/submit`,
+    normalizedBaseUrl(config.apiBaseUrl)
+  );
+  const payload = await postJson<Record<string, unknown>>(url, "HMIS referral draft submit", {
+    actor_did: requiredActorDid(config),
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toWalletHmisOperationResult(payload);
+}
+
+export async function matchDerivedServices(
+  config: Pick<WalletApiConfig, "apiBaseUrl"> & { actorDid?: string },
+  input: {
+    needTerms: string[];
+    locationClaim?: Record<string, unknown>;
+    limit?: number;
+    consensus?: WalletConsensusRequestPolicy;
+    proofPolicy?: WalletProofPolicy;
+  }
+): Promise<DerivedServiceMatchResult> {
+  const url = new URL("/services/match-derived", normalizedBaseUrl(config.apiBaseUrl));
+  const payload = await postJson<Record<string, unknown>>(url, "Derived service match", {
+    actor_did: config.actorDid,
+    limit: input.limit,
+    location_claim: input.locationClaim,
+    need_terms: input.needTerms,
+    proof_policy: toProofPolicyPayload(input.proofPolicy),
+    ...toConsensusRequestPayload(input.consensus)
+  });
+  return toDerivedServiceMatchResult(payload);
 }
 
 export async function createLocationRegionProof(
@@ -715,6 +1488,32 @@ export async function updateWalletServicePlan(
     related_interaction_ids: input.relatedInteractionIds,
     private_notes_record_id: input.privateNotesRecordId
   });
+}
+
+export async function createWalletServicePlanShareGrant(
+  config: WalletApiConfig,
+  planId: string,
+  input: {
+    audienceDid: string;
+    expiresAt?: string;
+    scopes?: string[];
+    workerName?: string;
+    workerRecipientId?: string;
+  }
+): Promise<ServicePlanShareGrantResponse> {
+  const url = new URL(
+    `/wallets/${config.walletId}/portal/plans/${planId}/share-grants`,
+    normalizedBaseUrl(config.apiBaseUrl)
+  );
+  const payload = await postJson<Record<string, unknown>>(url, "Service plan share grant", {
+    actor_did: requiredActorDid(config),
+    audience_did: input.audienceDid,
+    expires_at: input.expiresAt,
+    scopes: input.scopes || [],
+    worker_name: input.workerName || "",
+    worker_recipient_id: input.workerRecipientId || ""
+  });
+  return toServicePlanShareGrantResponse(payload, input);
 }
 
 export async function listWalletServiceInteractions(
@@ -1713,7 +2512,7 @@ export async function loadExportBundleView({
 
 function toAccessRequestView(request: AccessRequestApiRecord): WalletAccessRequest {
   const grantStatus = request.status === "revoked" ? "revoked" : request.grant_status ?? undefined;
-  return {
+  const view: WalletAccessRequest & ConsensusBearingView = {
     id: request.request_id,
     requesterName: labelFromDid(request.requester_did),
     requesterDid: request.requester_did,
@@ -1730,11 +2529,14 @@ function toAccessRequestView(request: AccessRequestApiRecord): WalletAccessReque
     approvalCount: request.approval_count,
     grantStatus
   };
+  const consensus = consensusFromApiRecord(request);
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
 function toGrantReceiptView(receipt: GrantReceiptApiRecord): WalletGrantReceipt {
   const resource = receipt.resources[0] ?? "wallet resource";
-  return {
+  const view: WalletGrantReceipt & ConsensusBearingView = {
     id: receipt.receipt_id,
     grantId: receipt.grant_id,
     audienceName: labelFromDid(receipt.audience_did),
@@ -1750,10 +2552,13 @@ function toGrantReceiptView(receipt: GrantReceiptApiRecord): WalletGrantReceipt 
     createdAt: formatTimestamp(receipt.created_at),
     expiresAt: receipt.expires_at ? formatTimestamp(receipt.expires_at) : undefined
   };
+  const consensus = consensusFromApiRecord(receipt);
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
 function toDerivedArtifactView(artifact: DerivedArtifactApiResponse): DerivedArtifactView {
-  return {
+  const view: DerivedArtifactView & ConsensusBearingView = {
     id: artifact.artifact_id,
     sourceRecordIds: artifact.source_record_ids,
     artifactType: artifact.artifact_type,
@@ -1765,40 +2570,159 @@ function toDerivedArtifactView(artifact: DerivedArtifactApiResponse): DerivedArt
       "encrypted derived artifact",
     createdAt: formatTimestamp(artifact.created_at)
   };
+  const consensus = consensusFromApiRecord(artifact);
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
 function toDerivedAnalysisResultView(result: DerivedAnalysisResultApiResponse): DerivedAnalysisResultView {
-  return {
-    artifact: toDerivedArtifactView(result.artifact),
-    output: result.output
+  const consensus = sanitizeConsensusMetadata(
+    result.consensus ?? result.output?.consensus ?? result.artifact.consensus ?? result.artifact.metadata?.consensus
+  );
+  const artifact = toDerivedArtifactView(result.artifact) as DerivedArtifactView & ConsensusBearingView;
+  if (consensus) artifact.consensus = consensus;
+  const output = sanitizeConsensusBearingOutput(result.output, consensus);
+  const view: DerivedAnalysisResultView & ConsensusBearingView = {
+    artifact,
+    output
   };
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
-function toProofReceiptView(proof: ProofReceiptApiRecord): ProofReceiptView {
-  const claim = stringValue(proof.public_inputs.claim) || proof.proof_type;
-  return {
+export function toProofReceiptView(proof: ProofReceiptApiRecord): ProofReceiptView {
+  const publicInputs = sanitizeProofPublicInputs(proof.public_inputs);
+  const claim = sanitizeProofDisplayValue(publicInputs.claim ?? proof.statement?.claim ?? proof.proof_type) || proof.proof_type;
+  const system = proofSystemDetails(proof.proof_system, proof.is_simulated);
+  const witnessLabel = proof.witness_record_ids.length
+    ? proof.witness_record_ids
+        .map(labelFromResource)
+        .filter((label) => !containsPrivateProofToken(label))
+        .join(", ")
+    : "";
+  const view: ProofReceiptView & ConsensusBearingView = {
     id: proof.proof_id,
     proofType: proof.proof_type,
     claim,
     verifier: proof.verifier_id,
-    proofSystem: proof.proof_system ?? (proof.is_simulated ? "simulated" : "unknown"),
+    proofSystem: system.label,
     verificationStatus: proof.verification_status ?? "unknown",
     circuitId: proof.circuit_id ?? undefined,
     verifierDigest: proof.verifier_digest ?? undefined,
     proofArtifactRef: proof.proof_artifact_ref ?? undefined,
-    publicInputs: Object.fromEntries(
-      Object.entries(proof.public_inputs).map(([key, value]) => [key, stringValue(value)])
-    ),
-    witnessLabel: proof.witness_record_ids.length
-      ? proof.witness_record_ids.map(labelFromResource).join(", ")
-      : "Wallet witness",
+    publicInputs,
+    witnessLabel: witnessLabel || "Wallet commitment reference",
     simulated: proof.is_simulated,
     createdAt: formatTimestamp(proof.created_at)
+  };
+  const consensus = sanitizeConsensusMetadata(proof.consensus ?? proof.metadata?.consensus);
+  if (consensus) view.consensus = consensus;
+  return view;
+}
+
+export function mapProofReceiptRecordForUi(record: Record<string, unknown>): ProofReceiptView {
+  const publicInputs = isRecord(record.public_inputs) ? record.public_inputs : {};
+  const statement = isRecord(record.statement) ? record.statement : undefined;
+  return toProofReceiptView({
+    proof_id: stringValue(record.proof_id) || "proof-receipt",
+    proof_type: stringValue(record.proof_type) || "proof",
+    statement,
+    verifier_id: stringValue(record.verifier_id) || "unknown verifier",
+    public_inputs: publicInputs,
+    proof_hash: stringValue(record.proof_hash),
+    witness_record_ids: stringArray(record.witness_record_ids),
+    is_simulated: Boolean(record.is_simulated),
+    proof_system: stringValue(record.proof_system) || undefined,
+    circuit_id: stringValue(record.circuit_id) || null,
+    verifier_digest: stringValue(record.verifier_digest) || null,
+    proof_artifact_ref: stringValue(record.proof_artifact_ref) || null,
+    verification_status: stringValue(record.verification_status) || "unknown",
+    created_at: stringValue(record.created_at) || new Date(0).toISOString(),
+    metadata: isRecord(record.metadata) ? record.metadata : undefined,
+    wallet_id: stringValue(record.wallet_id) || undefined,
+    witness_label: stringValue(record.witness_label) || undefined,
+    consensus: record.consensus
+  });
+}
+
+export function getProofReceiptUiState(proof: ProofReceiptView): ProofReceiptDisplayState {
+  const consensus = getConsensusMetadataFromView(proof);
+  if (consensus) {
+    const consensusState = getConsensusDisplayState(consensus);
+    const accepted = !consensusState.failClosed && consensus.quorum_reached;
+    const productionEvidence =
+      accepted &&
+      (consensus.mode === "chainlink_cre" ||
+        consensus.proof_mode === "zkml_required" ||
+        consensus.proof_mode === "tee_or_zkml");
+
+    return {
+      proofSystemFamily:
+        consensusState.family === "chainlink-cre"
+          ? "chainlink_cre"
+          : consensusState.family === "zkml"
+            ? "zkml"
+            : consensusState.family === "tee"
+              ? "tee"
+              : "consensus_receipt",
+      proofSystemLabel: consensusState.statusLabel,
+      statusLabel: consensusState.statusLabel,
+      statusTone: consensusState.tone,
+      accepted,
+      productionEvidence,
+      failClosed: consensusState.failClosed,
+      manualFallback: consensusState.manualReview,
+      onChainLabel: consensusState.onChainLabel,
+      providerLabel: consensusState.providerLabel,
+      dashboardLabel: consensusState.dashboardLabel,
+      exportLabel: consensusState.exportLabel,
+      qrReviewLabel: consensusState.qrReviewLabel,
+      inputBoundaryLabel: consensusState.inputBoundaryLabel,
+      evidenceLabel: consensusState.evidenceLabel,
+      consensus,
+      mathematicalZkProof: consensusState.mathematicalZkProof
+    };
+  }
+
+  const system = proofSystemDetails(proof.proofSystem, proof.simulated);
+  const status = verificationStatusDetails(proof.verificationStatus, system.family, proof.simulated);
+  const productionEvidence = status.accepted && system.family !== "simulated" && system.family !== "unknown";
+  const onChainReady = status.accepted && system.family === "provekit_recursive_groth16";
+
+  return {
+    proofSystemFamily: system.family,
+    proofSystemLabel: system.label,
+    statusLabel: status.label,
+    statusTone: status.tone,
+    accepted: status.accepted,
+    productionEvidence,
+    failClosed: status.failClosed,
+    manualFallback: status.failClosed || system.family === "unknown",
+    onChainLabel: onChainReady
+      ? "Recursive Groth16 wrapper evidence only"
+      : system.family === "provekit"
+        ? "Not on-chain ready without recursive wrapper"
+        : system.family === "simulated"
+          ? "No on-chain claim"
+          : "No contract submission claimed here",
+    providerLabel: productionEvidence
+      ? "Provider may review public proof metadata"
+      : "Provider must use manual review",
+    dashboardLabel: productionEvidence
+      ? "Counts as proof coverage"
+      : "Not counted as production proof coverage",
+    exportLabel: status.failClosed
+      ? "Export blocked until verifier state is accepted"
+      : "Export carries public proof metadata only",
+    qrReviewLabel: "QR review shows proof system, verifier, and public inputs only",
+    inputBoundaryLabel: "Private witness and private axioms hidden",
+    evidenceLabel: status.accepted ? "verified proof" : "not accepted",
+    mathematicalZkProof: status.accepted && (system.family === "groth16" || system.family === "provekit_recursive_groth16")
   };
 }
 
 function toAuditEventView(event: AuditEventApiRecord): AuditEvent {
-  return {
+  const view: AuditEvent & ConsensusBearingView = {
     id: event.event_id ?? `${event.action}-${event.created_at}`,
     actor: labelFromDid(event.actor_did),
     action: event.action,
@@ -1807,6 +2731,9 @@ function toAuditEventView(event: AuditEventApiRecord): AuditEvent {
     decision: event.decision,
     grantId: event.grant_id ?? undefined
   };
+  const consensus = consensusFromApiRecord(event);
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
 function toAnalyticsStudyView(template: AnalyticsTemplateApiRecord): AnalyticsStudy {
@@ -1834,8 +2761,315 @@ function toWalletAnalyticsConsentView(consent: AnalyticsConsentApiRecord): Walle
   };
 }
 
-function toUploadItemView(record: WalletRecordApiRecord): UploadItem {
+export function sanitizeConsensusMetadata(value: unknown): WalletConsensusMetadata | undefined {
+  if (!isRecord(value)) return undefined;
+
+  const mode = consensusModeValue(value.mode);
+  if (!mode || mode === "direct") return undefined;
+
+  const proofMode = consensusProofModeValue(value.proof_mode) ?? "receipt_only";
+  const comparison = consensusComparisonValue(value.comparison) ?? "canonical_json";
+  const quorumReached = booleanValue(value.quorum_reached, !consensusFailClosedErrorValue(value.fail_closed_error));
+  const operatorCount = nonNegativeInteger(value.operator_count);
+  const selectedOperatorCount = nonNegativeInteger(value.selected_operator_count);
+  const failClosedError = consensusFailClosedErrorValue(value.fail_closed_error);
+  const createdAt =
+    sanitizeConsensusString(value.created_at) ||
+    sanitizeConsensusString(value.timestamp) ||
+    new Date(0).toISOString();
+  const metadata: WalletConsensusMetadata = {
+    schema_version: "llm-router-consensus-receipt-v1",
+    mode,
+    comparison,
+    quorum_reached: quorumReached,
+    operator_count: operatorCount,
+    selected_operator_count: selectedOperatorCount,
+    proof_mode: proofMode,
+    verification_label: consensusVerificationLabel({
+      failClosedError,
+      mode,
+      proofMode,
+      quorumReached,
+      teeAttestationHash: sanitizeConsensusString(value.tee_attestation_hash)
+    }),
+    created_at: createdAt
+  };
+
+  setConsensusString(metadata, "receipt_hash", value.receipt_hash);
+  setConsensusString(metadata, "receipt_cid", value.receipt_cid);
+  setConsensusString(metadata, "failure_reason", value.failure_reason);
+  setConsensusString(metadata, "proof_cid", value.proof_cid);
+  setConsensusString(metadata, "public_inputs_hash", value.public_inputs_hash);
+  setConsensusString(metadata, "tee_attestation_hash", value.tee_attestation_hash);
+  setConsensusString(metadata, "cre_workflow_id", value.cre_workflow_id);
+  setConsensusString(metadata, "cre_report_id", value.cre_report_id);
+  setConsensusString(metadata, "chain_id", value.chain_id);
+  setConsensusString(metadata, "tx_hash", value.tx_hash);
+
+  if (failClosedError) {
+    metadata.fail_closed_error = failClosedError;
+    metadata.verification_label = "Manual review required";
+  }
+
+  if (!metadata.quorum_reached) {
+    metadata.verification_label = "Manual review required";
+  }
+
+  return metadata;
+}
+
+export function getConsensusMetadataFromView(value: unknown): WalletConsensusMetadata | undefined {
+  if (!isRecord(value)) return undefined;
+  return sanitizeConsensusMetadata(value.consensus);
+}
+
+export function getConsensusDisplayState(consensus?: WalletConsensusMetadata): WalletConsensusDisplayState {
+  if (!consensus) {
+    return {
+      family: "direct",
+      statusLabel: "Direct AI response",
+      badgeLabel: "direct",
+      tone: "neutral",
+      detailLabel: "No consensus receipt is attached.",
+      evidenceLabel: "Direct output only",
+      providerLabel: "Advisory only; provider must review high-impact claims",
+      dashboardLabel: "Direct output, not proof evidence",
+      exportLabel: "No receipt metadata to export",
+      qrReviewLabel: "QR review has no consensus receipt metadata",
+      inputBoundaryLabel: "No consensus metadata attached",
+      onChainLabel: "No on-chain claim",
+      failClosed: false,
+      manualReview: false,
+      mathematicalZkProof: false,
+      receiptOnly: false
+    };
+  }
+
+  const failClosed = Boolean(consensus.fail_closed_error || !consensus.quorum_reached);
+  const teeEvidence = Boolean(consensus.tee_attestation_hash || consensus.proof_mode === "tee_or_zkml");
+  const zkmlEvidence = consensus.proof_mode === "zkml_required" || consensus.mode === "zkml_required";
+  const family: WalletConsensusSurfaceFamily = failClosed
+    ? "manual-review"
+    : teeEvidence
+      ? "tee"
+      : zkmlEvidence
+        ? "zkml"
+        : consensus.mode === "chainlink_cre"
+          ? "chainlink-cre"
+          : "consensus";
+  const mathematicalZkProof = !failClosed && zkmlEvidence && !teeEvidence;
+  const receiptOnly = consensus.proof_mode === "receipt_only";
+  const quorum =
+    consensus.operator_count > 0
+      ? `${consensus.selected_operator_count} of ${consensus.operator_count} operators`
+      : "operator quorum not reported";
+  const receiptLabel = consensus.receipt_hash ? shortConsensusHash(consensus.receipt_hash) : "receipt hash unavailable";
+  const proofLabel = consensus.proof_cid
+    ? `proof ${shortConsensusHash(consensus.proof_cid)}`
+    : consensus.public_inputs_hash
+      ? `public inputs ${shortConsensusHash(consensus.public_inputs_hash)}`
+      : "no proof artifact claimed";
+  const onChainLabel =
+    consensus.chain_id || consensus.tx_hash
+      ? `Chain ${consensus.chain_id || "unknown"}${consensus.tx_hash ? ` · ${shortConsensusHash(consensus.tx_hash)}` : ""}`
+      : "No on-chain claim";
+
+  if (failClosed) {
+    return {
+      family,
+      statusLabel: "Manual review required",
+      badgeLabel: consensus.fail_closed_error ? consensus.fail_closed_error.replace(/_/g, " ") : "manual-review",
+      tone: "danger",
+      detailLabel: consensus.failure_reason || "Consensus failed closed before this claim could be accepted.",
+      evidenceLabel: "Manual review required",
+      providerLabel: "Provider must use manual review",
+      dashboardLabel: "Not counted until manual review resolves",
+      exportLabel: "Export blocked until fail-closed state is resolved",
+      qrReviewLabel: "QR review shows fail-closed receipt metadata only",
+      inputBoundaryLabel: "Sanitized failure metadata only",
+      onChainLabel,
+      failClosed: true,
+      manualReview: true,
+      mathematicalZkProof: false,
+      receiptOnly
+    };
+  }
+
+  if (teeEvidence) {
+    return {
+      family,
+      statusLabel: "TEE attested",
+      badgeLabel: "TEE",
+      tone: "success",
+      detailLabel: `${quorum} · ${proofLabel}`,
+      evidenceLabel: "TEE attestation accepted",
+      providerLabel: "Provider may review TEE attestation metadata",
+      dashboardLabel: "TEE evidence, not ZK proof",
+      exportLabel: "Exports TEE hash and public inputs only",
+      qrReviewLabel: "QR review shows TEE attestation hash only",
+      inputBoundaryLabel: "TEE quote bytes hidden",
+      onChainLabel,
+      failClosed: false,
+      manualReview: false,
+      mathematicalZkProof: false,
+      receiptOnly: false
+    };
+  }
+
+  if (zkmlEvidence) {
+    return {
+      family,
+      statusLabel: "ZKML checker verified",
+      badgeLabel: "ZKML",
+      tone: "success",
+      detailLabel: `${quorum} · ${proofLabel}`,
+      evidenceLabel: "ZKML checker proof verified",
+      providerLabel: "Provider may review ZKML checker public inputs",
+      dashboardLabel: "ZKML proof coverage",
+      exportLabel: "Exports proof CID and public input hash only",
+      qrReviewLabel: "QR review shows ZKML proof metadata only",
+      inputBoundaryLabel: "Proof witness and raw proof payload hidden",
+      onChainLabel,
+      failClosed: false,
+      manualReview: false,
+      mathematicalZkProof,
+      receiptOnly: false
+    };
+  }
+
+  if (consensus.mode === "chainlink_cre") {
+    return {
+      family,
+      statusLabel: "Chainlink CRE verified",
+      badgeLabel: "CRE",
+      tone: "success",
+      detailLabel: `${quorum} · ${receiptLabel}`,
+      evidenceLabel: "Chainlink CRE report accepted",
+      providerLabel: "Provider may review CRE receipt metadata",
+      dashboardLabel: "CRE verification, not ZK proof",
+      exportLabel: "Exports CRE report identifiers only",
+      qrReviewLabel: "QR review shows CRE workflow and report IDs only",
+      inputBoundaryLabel: "CRE private report hidden",
+      onChainLabel,
+      failClosed: false,
+      manualReview: false,
+      mathematicalZkProof: false,
+      receiptOnly
+    };
+  }
+
+  if (consensus.mode === "libp2p_quorum") {
+    return {
+      family,
+      statusLabel: "libp2p quorum receipt",
+      badgeLabel: consensus.operator_count ? `${consensus.selected_operator_count} of ${consensus.operator_count}` : "quorum",
+      tone: "success",
+      detailLabel: `${quorum} · ${receiptLabel}`,
+      evidenceLabel: "Operator quorum receipt accepted",
+      providerLabel: "Provider may review quorum receipt metadata",
+      dashboardLabel: "Consensus receipt, not ZK proof",
+      exportLabel: "Exports receipt hash and CID only",
+      qrReviewLabel: "QR review shows quorum receipt metadata only",
+      inputBoundaryLabel: "Raw operator outputs hidden",
+      onChainLabel,
+      failClosed: false,
+      manualReview: false,
+      mathematicalZkProof: false,
+      receiptOnly
+    };
+  }
+
   return {
+    family,
+    statusLabel: "Consensus receipt",
+    badgeLabel: "receipt-only",
+    tone: "success",
+    detailLabel: `${quorum} · ${receiptLabel}`,
+    evidenceLabel: "Receipt metadata accepted",
+    providerLabel: "Provider may review receipt metadata only",
+    dashboardLabel: "Consensus receipt, not ZK proof",
+    exportLabel: "Exports receipt hash and CID only",
+    qrReviewLabel: "QR review shows receipt metadata only",
+    inputBoundaryLabel: "Raw prompt and operator outputs hidden",
+    onChainLabel,
+    failClosed: false,
+    manualReview: false,
+    mathematicalZkProof: false,
+    receiptOnly
+  };
+}
+
+function toWalletRouterTextResult(payload: Record<string, unknown>, config: WalletApiConfig): WalletRouterTextResult {
+  const rateLimit = isRecord(payload.rate_limit) ? payload.rate_limit : undefined;
+  return {
+    router: sanitizeConsensusString(payload.router) || "llm_router",
+    walletId: sanitizeConsensusString(payload.wallet_id) || config.walletId,
+    walletCid: sanitizeConsensusString(payload.wallet_cid) || "",
+    provider: sanitizeConsensusString(payload.provider) || "",
+    modelName: sanitizeConsensusString(payload.model_name) || "",
+    text: sanitizeConsensusString(payload.text),
+    rateLimit: rateLimit
+      ? {
+          limit: nonNegativeInteger(rateLimit.limit),
+          remaining: nonNegativeInteger(rateLimit.remaining),
+          resetAt: nonNegativeInteger(rateLimit.reset_at)
+        }
+      : undefined,
+    consensus: sanitizeConsensusMetadata(payload.consensus)
+  };
+}
+
+function toWalletHmisOperationResult(payload: Record<string, unknown>): WalletHmisOperationResult {
+  return {
+    status: sanitizeConsensusString(payload.status) || undefined,
+    summary: sanitizeConsensusString(payload.summary) || undefined,
+    clients: arrayOfRecords(payload.clients),
+    programs: arrayOfRecords(payload.programs ?? payload.program_links),
+    referralDraft: isRecord(payload.referral_draft) ? sanitizePublicRecord(payload.referral_draft) : undefined,
+    eligibility: isRecord(payload.eligibility) ? sanitizePublicRecord(payload.eligibility) : undefined,
+    raw: sanitizePublicRecord(payload),
+    consensus: sanitizeConsensusMetadata(payload.consensus)
+  };
+}
+
+function toWalletAnalyticsContributionResult(payload: Record<string, unknown>): WalletAnalyticsContributionResult {
+  return {
+    contributionId: sanitizeConsensusString(payload.contribution_id) || sanitizeConsensusString(payload.id) || undefined,
+    templateId: sanitizeConsensusString(payload.template_id) || undefined,
+    status: sanitizeConsensusString(payload.status) || undefined,
+    raw: sanitizePublicRecord(payload),
+    consensus: sanitizeConsensusMetadata(payload.consensus)
+  };
+}
+
+function toWalletAnalyticsAggregateResult(payload: Record<string, unknown>): WalletAnalyticsAggregateResult {
+  const countValue = nullableNumber(payload.count);
+  const noisyCountValue = nullableNumber(payload.noisy_count);
+  return {
+    templateId: sanitizeConsensusString(payload.template_id) || undefined,
+    metric: sanitizeConsensusString(payload.metric) || undefined,
+    released: typeof payload.released === "boolean" ? payload.released : undefined,
+    suppressed: typeof payload.suppressed === "boolean" ? payload.suppressed : undefined,
+    count: countValue,
+    noisyCount: noisyCountValue,
+    groupBy: stringArray(payload.group_by),
+    groups: arrayOfRecords(payload.groups),
+    privacyBudgetSpent: nullableNumber(payload.privacy_budget_spent) ?? undefined,
+    raw: sanitizePublicRecord(payload),
+    consensus: sanitizeConsensusMetadata(payload.consensus)
+  };
+}
+
+function toDerivedServiceMatchResult(payload: Record<string, unknown>): DerivedServiceMatchResult {
+  return {
+    matches: arrayOfRecords(payload.matches),
+    raw: sanitizePublicRecord(payload),
+    consensus: sanitizeConsensusMetadata(payload.consensus)
+  };
+}
+
+function toUploadItemView(record: WalletRecordApiRecord): UploadItem {
+  const view: UploadItem & ConsensusBearingView = {
     id: record.record_id,
     recordId: record.record_id,
     fileName: labelFromResource(record.record_id),
@@ -1845,6 +3079,9 @@ function toUploadItemView(record: WalletRecordApiRecord): UploadItem {
     status: record.status === "active" ? "stored" : "failed",
     shared: false
   };
+  const consensus = consensusFromApiRecord(record);
+  if (consensus) view.consensus = consensus;
+  return view;
 }
 
 async function toUploadItemViewWithStorage(
@@ -1862,7 +3099,7 @@ async function toUploadItemViewWithStorage(
 async function fetchJson<T>(url: URL, label: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`${label} request failed with status ${response.status}`);
+    throw await toWalletApiRequestError(response, label);
   }
   return (await response.json()) as T;
 }
@@ -1874,9 +3111,82 @@ async function postJson<T>(url: URL, label: string, body: unknown): Promise<T> {
     method: "POST"
   });
   if (!response.ok) {
-    throw new Error(`${label} request failed with status ${response.status}`);
+    throw await toWalletApiRequestError(response, label);
   }
   return (await response.json()) as T;
+}
+
+async function fetchWorldIdJson<T>(url: URL, label: string): Promise<T> {
+  const response = await fetch(url);
+  return readWorldIdResponse<T>(response, label);
+}
+
+async function postWorldIdJson<T>(url: URL, label: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+    method: "POST"
+  });
+  return readWorldIdResponse<T>(response, label);
+}
+
+async function readWorldIdResponse<T>(response: Response, label: string): Promise<T> {
+  if (!response.ok) {
+    throw await toWorldIdWalletApiError(response, label);
+  }
+  return (await response.json()) as T;
+}
+
+async function toWorldIdWalletApiError(response: Response, label: string): Promise<WorldIdWalletApiError> {
+  const detail = await readErrorResponseDetail(response);
+  const message = detailMessage(detail) || `${label} request failed with status ${response.status}`;
+  return new WorldIdWalletApiError({
+    code: classifyWorldIdError(response.status, message, detail),
+    detail,
+    message,
+    status: response.status
+  });
+}
+
+async function readErrorResponseDetail(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text.trim()) return undefined;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+}
+
+function detailMessage(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (isRecord(detail)) {
+    const nested = detail.detail;
+    if (typeof nested === "string") return nested;
+    if (Array.isArray(nested)) return nested.map(detailMessage).filter(Boolean).join("; ");
+    if (typeof detail.message === "string") return detail.message;
+    if (typeof detail.error === "string") return detail.error;
+  }
+  return "";
+}
+
+function classifyWorldIdError(status: number, message: string, detail: unknown): WorldIdWalletApiErrorCode {
+  const rendered = `${message} ${typeof detail === "string" ? detail : JSON.stringify(detail ?? "")}`.toLowerCase();
+  if (rendered.includes("disabled")) return "disabled";
+  if (rendered.includes("expired") || rendered.includes("expires_at") || rendered.includes("expires at")) return "expired";
+  if (
+    rendered.includes("verification failed") ||
+    rendered.includes("verification_failed") ||
+    rendered.includes("verification-failed") ||
+    rendered.includes("verification was not successful") ||
+    rendered.includes("not successful") ||
+    rendered.includes("verify failed")
+  ) {
+    return "verification_failed";
+  }
+  if (rendered.includes("replay") || rendered.includes("replayed") || rendered.includes("nullifier_replayed")) return "replayed";
+  if (rendered.includes("already bound") || rendered.includes("conflict") || status === 409) return "conflict";
+  return "request_failed";
 }
 
 async function patchJson<T>(url: URL, label: string, body: unknown): Promise<T> {
@@ -1886,9 +3196,35 @@ async function patchJson<T>(url: URL, label: string, body: unknown): Promise<T> 
     method: "PATCH"
   });
   if (!response.ok) {
-    throw new Error(`${label} request failed with status ${response.status}`);
+    throw await toWalletApiRequestError(response, label);
   }
   return (await response.json()) as T;
+}
+
+async function toWalletApiRequestError(response: Response, label: string): Promise<WalletApiRequestError> {
+  try {
+    const payload = (await response.clone().json()) as Record<string, unknown>;
+    const detailRecord = isRecord(payload.detail) ? payload.detail : payload;
+    const detail = sanitizeConsensusString(detailRecord.message ?? payload.message ?? payload.error ?? payload.detail);
+    const consensus = sanitizeConsensusMetadata(detailRecord.consensus ?? payload.consensus);
+    const failClosedCode = consensusFailClosedErrorValue(detailRecord.code ?? payload.code);
+    const mode = consensusModeValue(detailRecord.mode ?? consensus?.mode);
+    if (failClosedCode) {
+      return new WalletApiConsensusFailClosedError({
+        code: failClosedCode,
+        consensus,
+        detail: detail || undefined,
+        label,
+        mode: mode && mode !== "direct" ? mode : consensus?.mode,
+        retryable: Boolean(detailRecord.retryable),
+        status: response.status
+      });
+    }
+    const code = sanitizeConsensusString(payload.code);
+    return new WalletApiRequestError(label, response.status, detail || undefined, code || undefined, consensus);
+  } catch {
+    return new WalletApiRequestError(label, response.status);
+  }
 }
 
 async function postAccessRequestDecision(
@@ -1904,7 +3240,222 @@ async function postAccessRequestDecision(
   return postJson<AccessRequestApiRecord>(url, `Access request ${action}`, body);
 }
 
-function requiredActorDid(config: WalletApiConfig): string {
+function toServicePlanShareGrantResponse(
+  payload: Record<string, unknown>,
+  input: { audienceDid: string; expiresAt?: string; scopes?: string[] }
+): ServicePlanShareGrantResponse {
+  const receipt = isRecord(payload.receipt) ? payload.receipt as unknown as WalletGrantReceipt : undefined;
+  const resources = stringArray(payload.resources);
+  const abilities = stringArray(payload.abilities);
+  return {
+    grantId: stringValue(payload.grantId ?? payload.grant_id ?? receipt?.grantId ?? ""),
+    receiptId: stringValue(payload.receiptId ?? payload.receipt_id ?? receipt?.id ?? ""),
+    audienceDid: stringValue(payload.audienceDid ?? payload.audience_did ?? input.audienceDid),
+    resources,
+    abilities,
+    scopes: stringArray(payload.scopes).length ? stringArray(payload.scopes) : input.scopes || [],
+    expiresAt: stringValue(payload.expiresAt ?? payload.expires_at ?? input.expiresAt),
+    plan: isRecord(payload.plan) ? payload.plan as unknown as ServicePlan : undefined,
+    receipt
+  };
+}
+
+function toConsensusRequestPayload(consensus?: WalletConsensusRequestPolicy): Record<string, unknown> {
+  if (!consensus) return {};
+  return {
+    consensus: {
+      comparison: consensus.comparison,
+      fail_closed: consensus.failClosed,
+      min_operators: consensus.minOperators,
+      mode: consensus.mode,
+      quorum: consensus.quorum,
+      timeout_s: consensus.timeoutSeconds
+    }
+  };
+}
+
+function toProofPolicyPayload(proofPolicy?: WalletProofPolicy): Record<string, unknown> | undefined {
+  return proofPolicy ? { mode: proofPolicy.mode } : undefined;
+}
+
+function consensusFromApiRecord(record: { consensus?: unknown; metadata?: Record<string, unknown> }): WalletConsensusMetadata | undefined {
+  return sanitizeConsensusMetadata(record.consensus ?? record.metadata?.consensus);
+}
+
+function sanitizeConsensusBearingOutput(
+  output: Record<string, unknown>,
+  consensus?: WalletConsensusMetadata
+): Record<string, unknown> {
+  const sanitized = sanitizePublicRecord(output);
+  if (consensus) {
+    sanitized.consensus = consensus;
+  } else {
+    delete sanitized.consensus;
+  }
+  return sanitized;
+}
+
+function sanitizePublicRecord(record: Record<string, unknown>): Record<string, unknown> {
+  const entries: Array<[string, unknown]> = [];
+  for (const [key, value] of Object.entries(record)) {
+    if (privateRecordKey(key)) continue;
+    if (key === "consensus") {
+      const consensus = sanitizeConsensusMetadata(value);
+      if (consensus) entries.push([key, consensus]);
+      continue;
+    }
+    if (isRecord(value)) {
+      entries.push([key, sanitizePublicRecord(value)]);
+      continue;
+    }
+    if (Array.isArray(value)) {
+      entries.push([
+        key,
+        value
+          .map((item) => {
+            if (isRecord(item)) return sanitizePublicRecord(item);
+            const safeItem = sanitizeConsensusString(item);
+            return safeItem || undefined;
+          })
+          .filter((item) => item !== undefined)
+      ]);
+      continue;
+    }
+    const safeValue = sanitizeConsensusString(value);
+    if (safeValue || typeof value === "number" || typeof value === "boolean" || value === null) {
+      entries.push([key, typeof value === "number" || typeof value === "boolean" || value === null ? value : safeValue]);
+    }
+  }
+  return Object.fromEntries(entries);
+}
+
+function privateRecordKey(key: string): boolean {
+  return /(^|_)(raw_prompt|prompt|plaintext|operator_secret|secret|private|witness|raw_zk|raw_proof|tee_quote|cre_private|bearer|token|key_hex|credential)(_|$)/i.test(
+    key
+  );
+}
+
+function arrayOfRecords(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).map(sanitizePublicRecord);
+}
+
+function consensusModeValue(value: unknown): WalletConsensusMode | undefined {
+  const mode = stringValue(value);
+  if (
+    mode === "direct" ||
+    mode === "receipt_only" ||
+    mode === "libp2p_quorum" ||
+    mode === "chainlink_cre" ||
+    mode === "zkml_required" ||
+    mode === "tee_or_zkml" ||
+    mode === "hybrid"
+  ) {
+    return mode;
+  }
+  return undefined;
+}
+
+function consensusProofModeValue(value: unknown): WalletConsensusProofMode | undefined {
+  const mode = stringValue(value);
+  if (mode === "receipt_only" || mode === "zkml_required" || mode === "tee_or_zkml") {
+    return mode;
+  }
+  return undefined;
+}
+
+function consensusComparisonValue(value: unknown): WalletConsensusComparison | undefined {
+  const comparison = stringValue(value);
+  if (comparison === "exact" || comparison === "normalized_text" || comparison === "canonical_json" || comparison === "semantic") {
+    return comparison;
+  }
+  return undefined;
+}
+
+function consensusFailClosedErrorValue(value: unknown): WalletConsensusFailClosedError | undefined {
+  const code = stringValue(value);
+  if (
+    code === "consensus_unavailable" ||
+    code === "quorum_not_reached" ||
+    code === "proof_verification_failed" ||
+    code === "cre_workflow_mismatch" ||
+    code === "receipt_replay_or_mismatch" ||
+    code === "policy_requires_manual_review"
+  ) {
+    return code;
+  }
+  return undefined;
+}
+
+function consensusVerificationLabel({
+  failClosedError,
+  mode,
+  proofMode,
+  quorumReached,
+  teeAttestationHash
+}: {
+  failClosedError?: WalletConsensusFailClosedError;
+  mode: Exclude<WalletConsensusMode, "direct">;
+  proofMode: WalletConsensusProofMode;
+  quorumReached: boolean;
+  teeAttestationHash?: string;
+}): string {
+  if (failClosedError || !quorumReached) return "Manual review required";
+  if (proofMode === "tee_or_zkml" && teeAttestationHash) return "TEE attested";
+  if (mode === "tee_or_zkml" && proofMode === "tee_or_zkml") return "TEE attested";
+  if (proofMode === "zkml_required" || mode === "zkml_required") return "ZKML checker verified";
+  if (mode === "chainlink_cre") return "Chainlink CRE verified";
+  if (mode === "libp2p_quorum") return "libp2p quorum receipt";
+  return "Consensus receipt";
+}
+
+function setConsensusString<K extends keyof WalletConsensusMetadata>(
+  metadata: WalletConsensusMetadata,
+  key: K,
+  value: unknown
+) {
+  const safeValue = sanitizeConsensusString(value);
+  if (safeValue) {
+    (metadata as unknown as Record<string, unknown>)[key] = safeValue;
+  }
+}
+
+function sanitizeConsensusString(value: unknown): string {
+  const text = stringValue(value);
+  if (!text) return "";
+  if (PRIVATE_CONSENSUS_VALUE_PATTERNS.some((pattern) => pattern.test(text))) return "";
+  if (containsPrivateProofToken(text)) return "";
+  return text;
+}
+
+function booleanValue(value: unknown, fallback: boolean): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    if (value.toLowerCase() === "true") return true;
+    if (value.toLowerCase() === "false") return false;
+  }
+  return fallback;
+}
+
+function nonNegativeInteger(value: unknown): number {
+  const number = nullableNumber(value);
+  return number === null ? 0 : Math.max(0, Math.trunc(number));
+}
+
+function nullableNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function shortConsensusHash(value: string): string {
+  return value.length > 24 ? `${value.slice(0, 12)}...${value.slice(-8)}` : value;
+}
+
+function requiredActorDid(config: Pick<WalletApiConfig, "actorDid">): string {
   if (!config.actorDid) {
     throw new Error("VITE_DEMO_ACTOR_DID is required for access-request mutations");
   }
@@ -1928,6 +3479,114 @@ function stringValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map((item) => stringValue(item)).filter(Boolean);
+}
+
+function sanitizeProofPublicInputs(publicInputs: Record<string, unknown>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(publicInputs).flatMap(([key, value]) => {
+      if (PRIVATE_PUBLIC_INPUT_KEY_PATTERN.test(key) || containsPrivateProofToken(value)) {
+        return [];
+      }
+      const safeValue = sanitizeProofDisplayValue(value);
+      return safeValue ? [[key, safeValue]] : [];
+    })
+  );
+}
+
+function sanitizeProofDisplayValue(value: unknown): string {
+  const text = stringValue(value);
+  return containsPrivateProofToken(text) ? "" : text;
+}
+
+function containsPrivateProofToken(value: unknown): boolean {
+  const serialized = stringValue(value);
+  return PRIVATE_PUBLIC_INPUT_VALUE_PATTERNS.some((pattern) => pattern.test(serialized));
+}
+
+function proofSystemDetails(
+  proofSystem: string | undefined,
+  isSimulated: boolean
+): { family: ProofSystemFamily; label: string } {
+  const raw = (proofSystem ?? "").trim();
+  const normalized = raw.toLowerCase().replace(/[\s_/-]+/g, "");
+
+  if (isSimulated || normalized.includes("simulated")) {
+    return { family: "simulated", label: "Simulated proof, demo-only" };
+  }
+  if (normalized.includes("provekit") && normalized.includes("recursive") && normalized.includes("groth16")) {
+    return { family: "provekit_recursive_groth16", label: "ProveKit recursive Groth16 wrapper" };
+  }
+  if (normalized.includes("provekit") && normalized.includes("groth16") && normalized.includes("wrapper")) {
+    return { family: "provekit_recursive_groth16", label: "ProveKit recursive Groth16 wrapper" };
+  }
+  if (normalized.includes("provekit") || normalized.includes("whir")) {
+    return { family: "provekit", label: "ProveKit WHIR" };
+  }
+  if (normalized.includes("groth16") || normalized.includes("bn254")) {
+    return { family: "groth16", label: "Groth16 BN254" };
+  }
+  if (normalized.includes("zkml")) {
+    return { family: "zkml", label: "ZKML checker verified" };
+  }
+  if (normalized.includes("tee")) {
+    return { family: "tee", label: "TEE attested" };
+  }
+  if (normalized.includes("chainlinkcre") || normalized.includes("cre")) {
+    return { family: "chainlink_cre", label: "Chainlink CRE verified" };
+  }
+  if (normalized.includes("consensus") || normalized.includes("receipt")) {
+    return { family: "consensus_receipt", label: "Consensus receipt" };
+  }
+  return { family: "unknown", label: raw || "Unknown proof system" };
+}
+
+function verificationStatusDetails(
+  verificationStatus: string | undefined,
+  family: ProofSystemFamily,
+  isSimulated: boolean
+): {
+  label: string;
+  tone: "neutral" | "success" | "warning" | "danger";
+  accepted: boolean;
+  failClosed: boolean;
+} {
+  const normalized = (verificationStatus ?? "unknown").trim().toLowerCase().replace(/[\s-]+/g, "_");
+
+  if (isSimulated || family === "simulated" || normalized === "demo_only") {
+    return { accepted: false, failClosed: false, label: "Demo only", tone: "warning" };
+  }
+  if (["verified", "verification_success", "success", "ok"].includes(normalized)) {
+    return { accepted: true, failClosed: false, label: "verified", tone: "success" };
+  }
+  if (["pending", "proof_pending", "queued"].includes(normalized)) {
+    return { accepted: false, failClosed: false, label: "Pending verification", tone: "neutral" };
+  }
+  if (normalized.includes("artifact_hash_mismatch")) {
+    return { accepted: false, failClosed: true, label: "ProveKit artifact hash mismatch", tone: "danger" };
+  }
+  if (normalized.includes("stale_verifier_key")) {
+    return { accepted: false, failClosed: true, label: "Stale ProveKit verifier key", tone: "warning" };
+  }
+  if (normalized.includes("verification_failed") || normalized.includes("verification_failure")) {
+    return { accepted: false, failClosed: true, label: "ProveKit verification failed", tone: "danger" };
+  }
+  if (normalized.includes("disabled")) {
+    return { accepted: false, failClosed: true, label: "ProveKit backend disabled", tone: "warning" };
+  }
+  if (normalized.includes("unavailable")) {
+    return { accepted: false, failClosed: true, label: "ProveKit backend unavailable", tone: "warning" };
+  }
+  if (normalized.includes("error") || normalized.includes("failed") || normalized.includes("mismatch")) {
+    return { accepted: false, failClosed: true, label: verificationStatus || "Verification failed", tone: "danger" };
+  }
+  return { accepted: false, failClosed: true, label: verificationStatus || "Unknown verifier state", tone: "warning" };
+}
+
 function numberFromPolicy(value: unknown, fallback: number): number {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -1939,6 +3598,10 @@ function numberFromPolicy(value: unknown, fallback: number): number {
     }
   }
   return fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function labelFromResource(resource: string): string {

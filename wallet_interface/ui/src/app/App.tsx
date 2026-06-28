@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ActionCard, Badge, Button, Field, Section, StatusBanner } from "../components/ui";
 import { AgentChatDrawer } from "../components/agent/AgentChatDrawer";
+import { WorldIdVerificationPanel } from "../components/world-id/WorldIdVerificationPanel";
 import { getRouteLabel } from "../agent/surfaceRegistry";
 import {
   getServiceDetailDocIdFromHash,
@@ -77,7 +78,10 @@ import {
   addBinaryDocument,
   addTextDocument,
   createLocationRegionProof,
+  getConsensusDisplayState,
+  getConsensusMetadataFromView,
   createVerifiedExportBundleView,
+  getProofReceiptUiState,
   importExportBundleView,
   listWalletSnapshots,
   loadWalletAccessState,
@@ -89,8 +93,12 @@ import {
   repairRecordStorage,
   saveWalletSnapshot,
   verifyWalletSnapshot,
+  mapProofReceiptRecordForUi,
+  WalletApiConsensusFailClosedError,
+  WalletApiRequestError,
   WalletSnapshotVerification,
-  WalletApiConfig
+  WalletApiConfig,
+  WalletConsensusMetadata
 } from "../services/walletApi";
 import {
   appRoutes,
@@ -114,9 +122,12 @@ const APP_SESSION_KEY = "abby-ui-session-v1";
 const WALLET_API_CONFIG_KEY = "abby-wallet-api-config";
 const ID_DOCUMENT_ACCEPT_ATTR = "image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf";
 const ID_DOCUMENT_ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const DEMO_BOT_CHECK_TOKEN = "mock-captcha-token";
+const MANUAL_INTAKE_FALLBACK_TOKEN = "manual-intake-fallback";
+const PROVIDER_STAFF_WORLD_ID_ACTION = "provider-staff-world-id-v1";
 const ID_DOCUMENT_ACCEPTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".pdf"];
 
-const routeIcons: Record<RouteId, typeof Home> = {
+const routeIcons: Partial<Record<RouteId, typeof Home>> = {
   home: Home,
   register: ClipboardCheck,
   "check-in": CalendarCheck,
@@ -137,10 +148,10 @@ const routeIcons: Record<RouteId, typeof Home> = {
 const removedStandaloneRoutes = new Set<RouteId>(["sharing-rules", "recipient-access", "benefits-protection"]);
 const routes = primaryRoutes
   .filter((route) => !removedStandaloneRoutes.has(route.id))
-  .map((route) => ({ ...route, icon: routeIcons[route.id] }));
+  .map((route) => ({ ...route, icon: routeIcons[route.id] ?? Home }));
 const secondaryNavigationRoutes = secondaryRoutes
   .filter((route) => !removedStandaloneRoutes.has(route.id))
-  .map((route) => ({ ...route, icon: routeIcons[route.id] }));
+  .map((route) => ({ ...route, icon: routeIcons[route.id] ?? Home }));
 const navigationRoutes = [...routes, ...secondaryNavigationRoutes];
 
 function normalizeAppRoute(route: RouteId): RouteId {
@@ -246,6 +257,74 @@ async function generateUploadSummary(file: File): Promise<string> {
   return toShortSummaryTitle(fileNameWithoutExtension || "Uploaded document");
 }
 
+type WorldIdSurfaceState = {
+  actorDidLabel: string;
+  availabilityLabel: string;
+  canOfferVerification: boolean;
+  proofReceiptLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning";
+  verified: boolean;
+  walletLabel: string;
+};
+
+type IntakeVerificationDraft = Pick<RegistrationProfileDraft, "easyBotCheckStatus" | "captchaToken">;
+
+function hasManualIntakeFallback(draft: IntakeVerificationDraft): boolean {
+  return draft.easyBotCheckStatus === "failed" || draft.captchaToken === MANUAL_INTAKE_FALLBACK_TOKEN;
+}
+
+function hasDemoBotCheck(draft: IntakeVerificationDraft): boolean {
+  return draft.easyBotCheckStatus === "passed" && draft.captchaToken === DEMO_BOT_CHECK_TOKEN;
+}
+
+function isIntakeVerified(draft: IntakeVerificationDraft, worldIdState: WorldIdSurfaceState): boolean {
+  return worldIdState.verified || hasManualIntakeFallback(draft) || hasDemoBotCheck(draft);
+}
+
+function getIntakeVerificationMessage(draft: IntakeVerificationDraft, worldIdState: WorldIdSurfaceState): string {
+  if (worldIdState.verified) {
+    return "World ID proof-of-human satisfies intake without the demo bot check.";
+  }
+  if (hasManualIntakeFallback(draft)) {
+    return "Manual fallback is active for accessibility, device availability, or emergency service access.";
+  }
+  if (hasDemoBotCheck(draft)) {
+    return "Demo bot check is active for local testing only.";
+  }
+  return "Choose World ID verification, manual fallback, or the local demo bot check before assisted intake is submitted.";
+}
+
+function getIntakeVerificationTone(
+  draft: IntakeVerificationDraft,
+  worldIdState: WorldIdSurfaceState
+): "info" | "success" | "warning" {
+  if (worldIdState.verified) return "success";
+  if (hasManualIntakeFallback(draft)) return "warning";
+  if (hasDemoBotCheck(draft)) return "info";
+  return "warning";
+}
+
+function getWorldIdSurfaceState(apiConfig: WalletApiConfig | undefined, proofs: ProofReceiptView[]): WorldIdSurfaceState {
+  const worldIdProofs = proofs.filter((proof) => proof.proofType === "world_id_proof_of_human");
+  const verifiedProof = worldIdProofs.find((proof) => getProofReceiptUiState(proof).accepted);
+  const latestProof = verifiedProof ?? worldIdProofs[0];
+  const walletReady = Boolean(apiConfig?.apiBaseUrl && apiConfig.walletId);
+  const actorReady = Boolean(apiConfig?.actorDid);
+  const canOfferVerification = walletReady && actorReady;
+
+  return {
+    actorDidLabel: apiConfig?.actorDid || "Required",
+    availabilityLabel: canOfferVerification ? "Verification available" : walletReady ? "Actor DID required" : "Wallet API required",
+    canOfferVerification,
+    proofReceiptLabel: latestProof ? getProofReceiptUiState(latestProof).statusLabel : "No proof receipt",
+    statusLabel: verifiedProof ? "World ID verified" : "World ID unverified",
+    statusTone: verifiedProof ? "success" : "warning",
+    verified: Boolean(verifiedProof),
+    walletLabel: apiConfig?.walletId ?? "Not connected"
+  };
+}
+
 export function App() {
   const persistedState = useMemo(() => readPersistedAppState(), []);
   const defaultAppState = useMemo(() => createDefaultAppState(persistedState), [persistedState]);
@@ -278,6 +357,7 @@ export function App() {
   const [shelterChecklist, setShelterChecklist] = useState(() => defaultAppState.shelterChecklist);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [agentChatOpen, setAgentChatOpen] = useState(false);
+  const [agentChatMode, setAgentChatMode] = useState<"text" | "audio">("text");
   const walletApiConfig = useMemo(readWalletApiConfig, []);
   const [benefitsOptIn, setBenefitsOptIn] = useState(defaultAppState.benefitsOptIn);
 
@@ -519,9 +599,9 @@ export function App() {
     return next.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   }, [policy.intervalDays, policy.lastCheckInAt]);
 
-  const routes = useMemo(() => primaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] })), []);
-  const secondaryNavigationRoutes = useMemo(() => secondaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] })), []);
-  const navigationRoutes = useMemo(() => appRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] })), []);
+  const routes = useMemo(() => primaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] ?? Home })), []);
+  const secondaryNavigationRoutes = useMemo(() => secondaryRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] ?? Home })), []);
+  const navigationRoutes = useMemo(() => appRoutes.map((route) => ({ ...route, icon: routeIcons[route.id] ?? Home })), []);
 
   if (!signedInUser) {
     return <LoginScreen onSignIn={handleSignIn} />;
@@ -607,14 +687,22 @@ export function App() {
         ) : null}
 
         {activeRoute === "home" ? (
-          <HomeScreen navigate={navigate} nextCheckIn={nextCheckIn} recipients={recipients} uploads={uploads} />
+          <HomeScreen
+            accessRequests={accessRequests}
+            navigate={navigate}
+            nextCheckIn={nextCheckIn}
+            recipients={recipients}
+            uploads={uploads}
+          />
         ) : null}
         {activeRoute === "register" ? (
           <RegistrationScreen
+            onVerifyWorldId={() => navigate("proof-center")}
             profile={profile}
             setProfile={setProfile}
             shelterStaffAccounts={shelterStaffAccounts}
             setShelterStaffAccounts={setShelterStaffAccounts}
+            worldIdState={worldIdSurfaceState}
           />
         ) : null}
         {activeRoute === "check-in" ? (
@@ -641,15 +729,20 @@ export function App() {
         {activeRoute === "uploads" ? (
           <UploadsScreen
             apiConfig={walletApiConfig}
+            onVerifyWorldId={() => navigate("proof-center")}
+            proofs={walletProofReceipts}
             refreshWalletAuditEvents={refreshWalletAuditEvents}
             uploads={uploads}
             setUploads={setUploads}
+            worldIdState={worldIdSurfaceState}
           />
         ) : null}
         {serviceDetailDocId ? (
-          <ServiceDetailScreen docId={serviceDetailDocId} onBack={() => navigate("social-services")} />
+          <ServiceDetailScreen docId={serviceDetailDocId} onBack={() => navigate("social-services")} siteLocale="en" />
         ) : null}
-        {activeRoute === "social-services" && !serviceDetailDocId ? <SocialServicesScreen /> : null}
+        {activeRoute === "social-services" && !serviceDetailDocId ? (
+          <SocialServicesScreen proofs={walletProofReceipts} />
+        ) : null}
         {activeRoute === "shelter" ? (
           <ShelterScreen
             checklist={shelterChecklist}
@@ -662,39 +755,54 @@ export function App() {
             setShelterStaffAccounts={setShelterStaffAccounts}
             shelterUserAccounts={shelterUserAccounts}
             setShelterUserAccounts={setShelterUserAccounts}
+            worldIdState={worldIdSurfaceState}
           />
         ) : null}
         {activeRoute === "analytics" ? (
-          <AnalyticsScreen optedIn={analyticsOptIn} setOptedIn={setAnalyticsOptIn} />
+          <AnalyticsScreen optedIn={analyticsOptIn} proofs={walletProofReceipts} setOptedIn={setAnalyticsOptIn} />
         ) : null}
         {activeRoute === "proof-center" ? (
           <ProofCenterScreen
             apiConfig={walletApiConfig}
             proofs={walletProofReceipts}
             refreshWalletAuditEvents={refreshWalletAuditEvents}
+            refreshWalletProofReceipts={refreshWalletProofReceipts}
             setProofs={setWalletProofReceipts}
+            worldIdState={worldIdSurfaceState}
           />
         ) : null}
         {activeRoute === "exports" ? (
           <ExportCenterScreen
             apiConfig={walletApiConfig}
             bundles={exportBundleViews}
+            proofs={walletProofReceipts}
             setBundles={setExportBundleViews}
           />
         ) : null}
         {activeRoute === "security" ? (
-          <SecurityScreen apiConfig={walletApiConfig} onSnapshotLoaded={refreshWalletAfterSnapshotLoad} />
+          <SecurityScreen
+            apiConfig={walletApiConfig}
+            onVerifyWorldId={() => navigate("proof-center")}
+            onSnapshotLoaded={refreshWalletAfterSnapshotLoad}
+            proofs={walletProofReceipts}
+            worldIdState={worldIdSurfaceState}
+          />
         ) : null}
-        {activeRoute === "audit" ? <AuditScreen events={walletAuditEvents} /> : null}
+        {activeRoute === "audit" ? <AuditScreen events={walletAuditEvents} proofs={walletProofReceipts} /> : null}
       </main>
       <AgentChatDrawer
         activeRouteLabel={getRouteLabel(activeRoute)}
         confirmations={agentChat.pendingConfirmations}
         evidenceBundles={agentChat.snapshot.session.evidenceBundles}
         messages={agentChat.messages}
+        mode={agentChatMode}
         onCancelConfirmation={(confirmationId) => agentChat.denyConfirmation(confirmationId)}
         onClose={() => setAgentChatOpen(false)}
         onConfirmConfirmation={(confirmationId) => agentChat.approveConfirmation(confirmationId)}
+        onOpenAudio={() => {
+          setAgentChatMode("audio");
+          setAgentChatOpen(true);
+        }}
         onOpenServiceDetail={(docId) =>
           openCanonicalServiceDetailRoute(docId, {
             setActiveRoute: (route) => {
@@ -709,7 +817,10 @@ export function App() {
         onSend={(message) => {
           void agentChat.sendMessage(message);
         }}
-        onToggle={() => setAgentChatOpen((open) => !open)}
+        onOpenText={() => {
+          setAgentChatMode("text");
+          setAgentChatOpen(true);
+        }}
         open={agentChatOpen}
         responding={agentChat.responding}
         toolCalls={agentChat.snapshot.session.toolCalls}
@@ -834,16 +945,29 @@ function LoginScreen({ onSignIn }: { onSignIn: (username: string) => void }) {
 }
 
 function HomeScreen({
+  accessRequests,
   navigate,
   nextCheckIn,
   recipients,
   uploads
 }: {
+  accessRequests: WalletAccessRequest[];
   navigate: (route: RouteId) => void;
   nextCheckIn: string;
   recipients: DisclosureRecipientDraft[];
   uploads: UploadItem[];
 }) {
+  const accessConsensusItems = accessRequests.length
+    ? accessRequests.slice(0, 2)
+    : [
+        {
+          id: "direct-recipient-access",
+          purpose: "Advisory recipient-access summary",
+          requesterName: "Local wallet",
+          resourceLabel: "derived artifacts"
+        }
+      ];
+
   return (
     <div className="screen home-screen">
       <div className="page-title home-hero">
@@ -889,6 +1013,23 @@ function HomeScreen({
           <span>Ready to review</span>
         </div>
       </div>
+      <Section title="Recipient access artifacts">
+        <div className="consensus-surface-list">
+          {accessConsensusItems.map((item) => (
+            <article className="consensus-surface-item" key={item.id}>
+              <div>
+                <h3>{item.resourceLabel}</h3>
+                <p>{item.requesterName} · {item.purpose}</p>
+              </div>
+              <ConsensusMetadataPanel
+                directLabel="Direct AI response"
+                metadata={getConsensusMetadataFromView(item)}
+                surfaceLabel="Recipient access derived artifacts"
+              />
+            </article>
+          ))}
+        </div>
+      </Section>
       <section className="support-card" aria-labelledby="support-card-title">
         <span className="support-card-badge" aria-hidden="true" />
         <div className="support-card-content">
@@ -912,16 +1053,236 @@ function StatusPanel({ label, value, tone, onClick }: { label: string; value: st
   );
 }
 
+function formatConsensusMode(mode: string): string {
+  const labels: Record<string, string> = {
+    chainlink_cre: "Chainlink CRE",
+    hybrid: "Hybrid consensus",
+    libp2p_quorum: "libp2p quorum",
+    receipt_only: "Receipt-only",
+    tee_or_zkml: "TEE or ZKML",
+    zkml_required: "ZKML required"
+  };
+  return labels[mode] ?? mode.replace(/_/g, " ");
+}
+
+function ConsensusMetadataPanel({
+  directLabel = "Direct AI response",
+  metadata,
+  surfaceLabel
+}: {
+  directLabel?: string;
+  metadata?: WalletConsensusMetadata;
+  surfaceLabel: string;
+}) {
+  const state = getConsensusDisplayState(metadata);
+  const modeLabel = metadata ? formatConsensusMode(metadata.mode) : "Direct";
+  const quorumLabel = metadata
+    ? metadata.operator_count > 0
+      ? `${metadata.selected_operator_count}/${metadata.operator_count}`
+      : "Not reported"
+    : "None";
+
+  return (
+    <div className={`consensus-panel consensus-${state.family}`} aria-label={`${surfaceLabel} ${state.statusLabel}`}>
+      <div className="consensus-panel-header">
+        <div>
+          <strong>{metadata ? state.statusLabel : directLabel}</strong>
+          <span>{state.detailLabel}</span>
+        </div>
+        <Badge tone={state.tone}>{state.badgeLabel}</Badge>
+      </div>
+      <div className="consensus-row-grid">
+        <div className="consensus-row">
+          <span>Mode</span>
+          <strong>{modeLabel}</strong>
+        </div>
+        <div className="consensus-row">
+          <span>Quorum</span>
+          <strong>{quorumLabel}</strong>
+        </div>
+        <div className="consensus-row">
+          <span>Evidence</span>
+          <strong>{state.evidenceLabel}</strong>
+        </div>
+        <div className="consensus-row">
+          <span>Boundary</span>
+          <strong>{state.inputBoundaryLabel}</strong>
+        </div>
+      </div>
+      {metadata ? (
+        <div className="consensus-metadata-list">
+          <span>{metadata.comparison.replace(/_/g, " ")}</span>
+          {metadata.receipt_hash ? <span>receipt {shortHash(metadata.receipt_hash)}</span> : null}
+          {metadata.receipt_cid ? <span>CID {shortHash(metadata.receipt_cid)}</span> : null}
+          {metadata.proof_cid ? <span>proof {shortHash(metadata.proof_cid)}</span> : null}
+          {metadata.public_inputs_hash ? <span>public inputs {shortHash(metadata.public_inputs_hash)}</span> : null}
+          {metadata.tee_attestation_hash ? <span>TEE {shortHash(metadata.tee_attestation_hash)}</span> : null}
+          {metadata.cre_workflow_id ? <span>CRE workflow {metadata.cre_workflow_id}</span> : null}
+          {metadata.cre_report_id ? <span>CRE report {metadata.cre_report_id}</span> : null}
+          {metadata.chain_id || metadata.tx_hash ? <span>{state.onChainLabel}</span> : null}
+          {metadata.fail_closed_error ? <span>{metadata.fail_closed_error.replace(/_/g, " ")}</span> : null}
+          {metadata.failure_reason ? <span>{metadata.failure_reason}</span> : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ConsensusSurfaceStats({ proofs }: { proofs: ProofReceiptView[] }) {
+  const consensusStates = proofs.map(getConsensusMetadataFromView).filter(Boolean) as WalletConsensusMetadata[];
+  const creCount = consensusStates.filter((metadata) => metadata.mode === "chainlink_cre").length;
+  const zkmlCount = consensusStates.filter((metadata) => metadata.proof_mode === "zkml_required" || metadata.mode === "zkml_required").length;
+  const teeCount = consensusStates.filter((metadata) => metadata.proof_mode === "tee_or_zkml" || Boolean(metadata.tee_attestation_hash)).length;
+  const manualCount = consensusStates.filter((metadata) => getConsensusDisplayState(metadata).manualReview).length;
+
+  return (
+    <div className="privacy-metrics consensus-metrics">
+      <StatusPanel label="CRE claims" value={String(creCount)} tone="teal" />
+      <StatusPanel label="ZKML claims" value={String(zkmlCount)} tone="gold" />
+      <StatusPanel label="TEE attestations" value={String(teeCount)} tone="teal" />
+      <StatusPanel label="Manual review" value={String(manualCount)} tone="red" />
+    </div>
+  );
+}
+
+function proofApiErrorMessage(error: unknown): string {
+  if (error instanceof WalletApiRequestError) {
+    return error.detail || error.message;
+  }
+  return error instanceof Error ? error.message : "Proof request failed.";
+}
+
+function proofSurfaceMessage(proof: ProofReceiptView, surface: "uploads" | "provider" | "dashboard" | "export" | "security" | "audit" | "qr"): string {
+  const state = getProofReceiptUiState(proof);
+  if (surface === "provider") return state.providerLabel;
+  if (surface === "dashboard") return state.dashboardLabel;
+  if (surface === "export") return state.exportLabel;
+  if (surface === "qr") return state.qrReviewLabel;
+  if (surface === "security") return state.failClosed ? "Verifier state fails closed" : state.inputBoundaryLabel;
+  if (surface === "audit") return `${state.statusLabel} · ${state.proofSystemLabel}`;
+  return state.inputBoundaryLabel;
+}
+
+function ProofSurfaceSummary({
+  emptyMessage = "No proof receipts are available yet.",
+  limit = 4,
+  proofs,
+  surface,
+  title
+}: {
+  emptyMessage?: string;
+  limit?: number;
+  proofs: ProofReceiptView[];
+  surface: "uploads" | "provider" | "dashboard" | "export" | "security" | "audit" | "qr";
+  title: string;
+}) {
+  const visibleProofs = proofs.slice(0, limit);
+
+  return (
+    <Section title={title}>
+      {visibleProofs.length ? (
+        <div className="proof-surface-grid">
+          {visibleProofs.map((proof) => {
+            const state = getProofReceiptUiState(proof);
+            return (
+              <article
+                aria-label={`${proof.claim} ${state.proofSystemLabel} ${state.statusLabel}`}
+                className={`proof-surface-card proof-system-${state.proofSystemFamily}`}
+                key={`${surface}-${proof.id}`}
+              >
+                <div className="scope-header">
+                  <div>
+                    <h3>{proof.claim}</h3>
+                    <p>{proof.verifier}</p>
+                  </div>
+                  <Badge tone={state.statusTone}>{state.statusLabel}</Badge>
+                </div>
+                <div className="badge-row">
+                  <Badge>{state.proofSystemLabel}</Badge>
+                  <Badge tone={state.productionEvidence ? "success" : "warning"}>{state.dashboardLabel}</Badge>
+                </div>
+                <div className="proof-state-row">
+                  <strong>Surface</strong>
+                  <span>{proofSurfaceMessage(proof, surface)}</span>
+                </div>
+                <div className="proof-state-row">
+                  <strong>On-chain</strong>
+                  <span>{state.onChainLabel}</span>
+                </div>
+                <ConsensusMetadataPanel
+                  directLabel="Direct wallet proof"
+                  metadata={state.consensus}
+                  surfaceLabel={`${title} consensus state`}
+                />
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <StatusBanner tone="info">{emptyMessage}</StatusBanner>
+      )}
+    </Section>
+  );
+}
+
+function WorldIdSurfaceSummary({
+  description,
+  onVerify,
+  state,
+  surfaceLabel
+}: {
+  description: string;
+  onVerify: () => void;
+  state: WorldIdSurfaceState;
+  surfaceLabel: string;
+}) {
+  const headingId = `world-id-${surfaceLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-status`;
+
+  return (
+    <section aria-label={`${surfaceLabel} World ID status`} className="world-id-surface-summary">
+      <div className="scope-header">
+        <div>
+          <p className="eyebrow">{surfaceLabel} World ID status</p>
+          <h2 id={headingId}>Proof-of-human status</h2>
+        </div>
+        <Badge tone={state.statusTone}>{state.statusLabel}</Badge>
+      </div>
+      <p className="world-id-surface-copy">{description}</p>
+      <div className="world-id-surface-facts" aria-label={`${surfaceLabel} World ID facts`}>
+        <StatusPanel label="Status" tone={state.statusTone} value={state.verified ? "Verified proof-of-human" : "Not verified"} />
+        <StatusPanel label="Proof receipt" tone={state.statusTone} value={state.proofReceiptLabel} />
+        <StatusPanel label="Verification" tone={state.canOfferVerification ? "success" : "warning"} value={state.availabilityLabel} />
+        <StatusPanel label="Wallet" tone={state.walletLabel === "Not connected" ? "warning" : "success"} value={state.walletLabel} />
+        <StatusPanel label="Actor DID" tone={state.actorDidLabel === "Required" ? "warning" : "success"} value={state.actorDidLabel} />
+      </div>
+      <StatusBanner tone="info">
+        World ID is optional on this surface. Emergency and essential-service flows remain available even when World ID is unavailable.
+      </StatusBanner>
+      <div className="world-id-surface-actions">
+        {state.canOfferVerification ? (
+          <Button onClick={onVerify} variant="secondary">
+            <ShieldCheck aria-hidden="true" size={18} /> Verify with World ID
+          </Button>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function RegistrationScreen({
+  onVerifyWorldId,
   profile,
   setProfile,
   shelterStaffAccounts,
-  setShelterStaffAccounts
+  setShelterStaffAccounts,
+  worldIdState
 }: {
+  onVerifyWorldId: () => void;
   profile: RegistrationProfileDraft;
   setProfile: (profile: RegistrationProfileDraft) => void;
   shelterStaffAccounts: ShelterStaffAccount[];
   setShelterStaffAccounts: (accounts: ShelterStaffAccount[]) => void;
+  worldIdState: WorldIdSurfaceState;
 }) {
   const update = (patch: Partial<RegistrationProfileDraft>) => setProfile({ ...profile, ...patch });
   const [photoFileDetail, setPhotoFileDetail] = useState("");
@@ -971,6 +1332,12 @@ function RegistrationScreen({
         <h1>Create your Abby profile</h1>
       </div>
       <p className="page-note">To start, add your name, birth date, photo or ID.</p>
+      <WorldIdSurfaceSummary
+        description="World ID can add an optional proof-of-human receipt to the wallet. It does not prove legal name, age, citizenship, address, or document ownership."
+        onVerify={onVerifyWorldId}
+        state={worldIdState}
+        surfaceLabel="Register"
+      />
       <form className="form-grid" onSubmit={(event) => event.preventDefault()}>
         <Field help="This helps us know it is you in an emergency." label="Legal or full name" required>
           <input value={profile.legalName} onChange={(event) => update({ legalName: event.target.value })} />
@@ -1052,14 +1419,52 @@ function RegistrationScreen({
           <span>Quick health check complete (step 1)</span>
         </label>
         <label className="captcha-box full-span">
+          <input checked={worldIdState.verified} disabled type="checkbox" />
+          <span>
+            <strong>World ID proof-of-human verified for intake</strong>
+            <small>
+              Uses the wallet-bound World ID receipt instead of the demo bot check when available.
+            </small>
+          </span>
+        </label>
+        <label className="captcha-box full-span">
           <input
-            checked={Boolean(profile.captchaToken)}
-            disabled={profile.easyBotCheckStatus !== "passed"}
-            onChange={(event) => update({ captchaToken: event.target.checked ? "mock-captcha-token" : "" })}
+            checked={hasManualIntakeFallback(profile)}
+            disabled={worldIdState.verified}
+            onChange={(event) =>
+              update({
+                easyBotCheckStatus: event.target.checked ? "failed" : "pending",
+                captchaToken: event.target.checked ? MANUAL_INTAKE_FALLBACK_TOKEN : ""
+              })
+            }
             type="checkbox"
           />
-          <span>Bot check complete (step 2)</span>
+          <span>
+            <strong>Use manual intake fallback</strong>
+            <small>Available for accessibility, device availability, or emergency service access.</small>
+          </span>
         </label>
+        <label className="captcha-box full-span">
+          <input
+            checked={hasDemoBotCheck(profile)}
+            disabled={
+              worldIdState.verified ||
+              hasManualIntakeFallback(profile) ||
+              profile.easyBotCheckStatus !== "passed"
+            }
+            onChange={(event) => update({ captchaToken: event.target.checked ? DEMO_BOT_CHECK_TOKEN : "" })}
+            type="checkbox"
+          />
+          <span>
+            <strong>Bot check complete (legacy demo fallback)</strong>
+            <small>Use only when World ID is not available in the local demo.</small>
+          </span>
+        </label>
+        <div className="full-span" aria-label="Client intake verification status">
+          <StatusBanner tone={getIntakeVerificationTone(profile, worldIdState)}>
+            {getIntakeVerificationMessage(profile, worldIdState)}
+          </StatusBanner>
+        </div>
         <label className="consent-box full-span">
           <input
             checked={isShelterStaff}
@@ -1730,16 +2135,25 @@ function ContactsScreen({
 
 function UploadsScreen({
   apiConfig,
+  onVerifyWorldId,
+  proofs,
   refreshWalletAuditEvents,
   uploads,
-  setUploads
+  setUploads,
+  worldIdState
 }: {
   apiConfig?: WalletApiConfig;
+  onVerifyWorldId: () => void;
+  proofs: ProofReceiptView[];
   refreshWalletAuditEvents: () => Promise<void>;
   uploads: UploadItem[];
   setUploads: (uploads: UploadItem[]) => void;
+  worldIdState: WorldIdSurfaceState;
 }) {
   const [repairingUploadIds, setRepairingUploadIds] = useState<string[]>([]);
+  const [walrusUploadIds, setWalrusUploadIds] = useState<string[]>([]);
+  const walrusStorageConfig = getWalrusStorageConfig();
+  const walrusStorageReady = Boolean(walrusStorageConfig);
 
   async function addUpload(file: File | null) {
     if (!file) return;
@@ -1803,12 +2217,73 @@ function UploadsScreen({
     }
   }
 
+  async function storeWalletRecordOnWalrus(upload: UploadItem) {
+    if (!walrusStorageConfig || !upload.recordId) return;
+    setWalrusUploadIds((uploadIds) => [...uploadIds, upload.id]);
+    updateUpload(upload.id, {
+      decentralizedStorageMessage: "Sending wallet record to Walrus.",
+      decentralizedStorageStatus: "uploading"
+    });
+    try {
+      const result = await uploadWalletRecordToWalrusStorage(upload, {
+        clientConfig: walrusStorageConfig,
+        walletConfig: apiConfig
+      });
+      const patch = toWalrusStoragePatch(result, walrusStorageConfig);
+      updateUpload(upload.id, patch);
+    } catch (error) {
+      updateUpload(upload.id, {
+        decentralizedStorageMessage: error instanceof Error ? error.message : "Walrus upload failed.",
+        decentralizedStorageStatus: "failed"
+      });
+    } finally {
+      setWalrusUploadIds((uploadIds) => uploadIds.filter((id) => id !== upload.id));
+    }
+  }
+
+  function updateUpload(uploadId: string, patch: Partial<UploadItem>) {
+    setUploads(uploads.map((item) => (item.id === uploadId ? { ...item, ...patch } : item)));
+  }
+
+  function allowSharing(upload: UploadItem) {
+    updateUpload(upload.id, {
+      shared: true,
+      sharingMode: "public"
+    });
+  }
+
+  function makePrivate(upload: UploadItem) {
+    updateUpload(upload.id, {
+      allowedRecipientIds: [],
+      shared: false,
+      sharingMode: "private"
+    });
+  }
+
+  function toggleSharingRecipient(upload: UploadItem, recipientId: string) {
+    const currentRecipients = upload.allowedRecipientIds ?? [];
+    const allowedRecipientIds = currentRecipients.includes(recipientId)
+      ? currentRecipients.filter((id) => id !== recipientId)
+      : [...currentRecipients, recipientId];
+    updateUpload(upload.id, {
+      allowedRecipientIds,
+      shared: allowedRecipientIds.length > 0,
+      sharingMode: allowedRecipientIds.length > 0 ? "selected_contacts" : "private"
+    });
+  }
+
   return (
     <div className="screen">
       <div className="page-title">
         <p className="eyebrow">Uploads</p>
         <h1>Saved files and info</h1>
       </div>
+      <WorldIdSurfaceSummary
+        description="Saved files can carry an optional World ID proof-of-human receipt beside other wallet proof receipts. Uploads do not require World ID."
+        onVerify={onVerifyWorldId}
+        state={worldIdState}
+        surfaceLabel="Uploads"
+      />
       <Section title="Add information">
         <label className="upload-dropzone">
           <Upload aria-hidden="true" size={28} />
@@ -1840,6 +2315,11 @@ function UploadsScreen({
                 ) : null}
                 <Badge>{upload.shared ? "Shared" : "Private"}</Badge>
               </div>
+              <ConsensusMetadataPanel
+                directLabel="Direct upload profile"
+                metadata={getConsensusMetadataFromView(upload)}
+                surfaceLabel="Wallet uploads profiling"
+              />
             </div>
             <div className="row-actions list-item-action">
               {upload.storageOk === false && upload.recordId && apiConfig?.actorDid ? (
@@ -1850,6 +2330,16 @@ function UploadsScreen({
                 >
                   <Wrench aria-hidden="true" size={18} />
                   {repairingUploadIds.includes(upload.id) ? "Fixing" : "Fix save"}
+                </Button>
+              ) : null}
+              {walrusStorageReady && upload.recordId && !upload.walrusBlobId ? (
+                <Button
+                  disabled={walrusUploadIds.includes(upload.id)}
+                  onClick={() => void storeWalletRecordOnWalrus(upload)}
+                  variant="secondary"
+                >
+                  <Upload aria-hidden="true" size={18} />
+                  {walrusUploadIds.includes(upload.id) ? "Storing" : "Store on Walrus"}
                 </Button>
               ) : null}
               <Button
@@ -1864,11 +2354,17 @@ function UploadsScreen({
           </article>
         ))}
       </div>
+      <ProofSurfaceSummary
+        emptyMessage="No wallet proof receipts are linked to uploaded records yet."
+        proofs={proofs}
+        surface="uploads"
+        title="Wallet proof receipts"
+      />
     </div>
   );
 }
 
-function SocialServicesScreen() {
+function SocialServicesScreen({ proofs }: { proofs: ProofReceiptView[] }) {
   const categories = ["Shelter", "Food", "Health", "Legal", "Benefits", "Transportation", "Employment", "Crisis"];
   const suggestedPrompts = ["food pantry near Portland", "emergency shelter", "utility bill help"];
   const [query, setQuery] = useState("");
@@ -1985,6 +2481,15 @@ function SocialServicesScreen() {
           <Button>Start request</Button>
         </div>
       </Section>
+      <ProofSurfaceSummary
+        emptyMessage="No provider-reviewable proof receipts are ready yet."
+        proofs={proofs}
+        surface="provider"
+        title="Provider proof review"
+      />
+      <Section title="Provider eligibility claims">
+        <ConsensusSurfaceStats proofs={proofs} />
+      </Section>
       <Section title="Matched services">
         <div className="list-stack">
           {serviceMatches.map((service) => (
@@ -2014,7 +2519,8 @@ function ShelterScreen({
   shelterStaffAccounts,
   setShelterStaffAccounts,
   shelterUserAccounts,
-  setShelterUserAccounts
+  setShelterUserAccounts,
+  worldIdState
 }: {
   checklist: typeof defaultShelterChecklist;
   setChecklist: (value: typeof defaultShelterChecklist) => void;
@@ -2026,6 +2532,7 @@ function ShelterScreen({
   setShelterStaffAccounts: (accounts: ShelterStaffAccount[]) => void;
   shelterUserAccounts: ShelterUserAccount[];
   setShelterUserAccounts: (accounts: ShelterUserAccount[]) => void;
+  worldIdState: WorldIdSurfaceState;
 }) {
   const [isShelterAdmin, setIsShelterAdmin] = useState(false);
   const [adminShelter, setAdminShelter] = useState(shelterOptions[0]);
@@ -2036,6 +2543,7 @@ function ShelterScreen({
   const [nudgeDraft, setNudgeDraft] = useState({ userName: "Abby Example", userContact: "abby@example.org" });
   const [managedUserFileDetail, setManagedUserFileDetail] = useState("");
   const [managedUserUploadError, setManagedUserUploadError] = useState("");
+  const [providerStaffWorldIdProofs, setProviderStaffWorldIdProofs] = useState<Record<string, boolean>>({});
 
   const staffForShelter = shelterStaffAccounts.filter((account) => account.shelter === adminShelter);
   const verifiedStaffForOperatorShelter = shelterStaffAccounts.filter(
@@ -2099,10 +2607,7 @@ function ShelterScreen({
   function createManagedUserAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const hasRequiredIdentity = userDraft.legalName.trim() && userDraft.photoAssetId;
-    const botCheckReady =
-      userDraft.easyBotCheckStatus === "failed" ||
-      (userDraft.easyBotCheckStatus === "passed" && Boolean(userDraft.captchaToken));
-    if (!selectedOperator || !hasRequiredIdentity || !botCheckReady) return;
+    if (!selectedOperator || !hasRequiredIdentity || !isIntakeVerified(userDraft, worldIdState)) return;
 
     const newUser: ShelterUserAccount = {
       id: `user-${Date.now()}`,
@@ -2144,6 +2649,26 @@ function ShelterScreen({
     };
     setShelterStaffAccounts([...shelterStaffAccounts, newStaff]);
     setStaffDraft({ displayName: "", email: "" });
+  }
+
+  function verifyStaffWithProviderWorldId(account: ShelterStaffAccount) {
+    if (!isShelterAdmin || account.shelter !== adminShelter) return;
+    setShelterStaffAccounts(
+      shelterStaffAccounts.map((item) =>
+        item.id === account.id ? { ...item, verified: true, updatedAt: new Date().toISOString() } : item
+      )
+    );
+    setProviderStaffWorldIdProofs({ ...providerStaffWorldIdProofs, [account.id]: true });
+  }
+
+  function revokeStaffWorldIdVerification(account: ShelterStaffAccount) {
+    const { [account.id]: _removed, ...remainingProofs } = providerStaffWorldIdProofs;
+    setProviderStaffWorldIdProofs(remainingProofs);
+    setShelterStaffAccounts(
+      shelterStaffAccounts.map((item) =>
+        item.id === account.id ? { ...item, verified: false, updatedAt: new Date().toISOString() } : item
+      )
+    );
   }
 
   function shelterRecipientExists(shelterName: string) {
@@ -2354,6 +2879,33 @@ function ShelterScreen({
                     />
                     <span>Quick health check complete (step 1)</span>
                   </label>
+                  <label className="captcha-box full-span">
+                    <input checked={worldIdState.verified} disabled type="checkbox" />
+                    <span>
+                      <strong>World ID proof-of-human verified for assisted intake</strong>
+                      <small>
+                        Uses the wallet-bound World ID receipt instead of the demo bot check when available.
+                      </small>
+                    </span>
+                  </label>
+                  <label className="captcha-box full-span">
+                    <input
+                      checked={hasManualIntakeFallback(userDraft)}
+                      disabled={worldIdState.verified}
+                      onChange={(event) =>
+                        setUserDraft({
+                          ...userDraft,
+                          easyBotCheckStatus: event.target.checked ? "failed" : "pending",
+                          captchaToken: event.target.checked ? MANUAL_INTAKE_FALLBACK_TOKEN : ""
+                        })
+                      }
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>Use manual intake fallback</strong>
+                      <small>Available for accessibility, device availability, or emergency service access.</small>
+                    </span>
+                  </label>
                   <div className="full-span">
                     <span className="field-label">Service needs</span>
                     <div className="chip-grid">
@@ -2372,15 +2924,27 @@ function ShelterScreen({
                   </div>
                   <label className="captcha-box full-span">
                     <input
-                      checked={Boolean(userDraft.captchaToken)}
-                      disabled={userDraft.easyBotCheckStatus !== "passed"}
+                      checked={hasDemoBotCheck(userDraft)}
+                      disabled={
+                        worldIdState.verified ||
+                        hasManualIntakeFallback(userDraft) ||
+                        userDraft.easyBotCheckStatus !== "passed"
+                      }
                       onChange={(event) =>
-                        setUserDraft({ ...userDraft, captchaToken: event.target.checked ? "mock-captcha-token" : "" })
+                        setUserDraft({ ...userDraft, captchaToken: event.target.checked ? DEMO_BOT_CHECK_TOKEN : "" })
                       }
                       type="checkbox"
                     />
-                    <span>Bot check complete (step 2)</span>
+                    <span>
+                      <strong>Bot check complete (legacy demo fallback)</strong>
+                      <small>Use only when World ID is not available in the local demo.</small>
+                    </span>
                   </label>
+                  <div className="full-span" aria-label="Assisted intake verification status">
+                    <StatusBanner tone={getIntakeVerificationTone(userDraft, worldIdState)}>
+                      {getIntakeVerificationMessage(userDraft, worldIdState)}
+                    </StatusBanner>
+                  </div>
                   <label className="consent-box full-span">
                     <input
                       checked={userDraft.localPrecinctNotified}
@@ -2406,8 +2970,7 @@ function ShelterScreen({
                       disabled={
                         !userDraft.legalName.trim() ||
                         !userDraft.photoAssetId ||
-                        (userDraft.easyBotCheckStatus === "pending") ||
-                        (userDraft.easyBotCheckStatus === "passed" && !userDraft.captchaToken)
+                        !isIntakeVerified(userDraft, worldIdState)
                       }
                       type="submit"
                     >
@@ -2537,7 +3100,8 @@ function ShelterScreen({
                             <Badge tone={account.foundPermanentHousing ? "success" : "neutral"}>
                               {account.foundPermanentHousing ? "Found housing" : "Housing not found"}
                             </Badge>
-                            {account.easyBotCheckStatus === "failed" ? <Badge tone="warning">Health check</Badge> : null}
+                            {hasManualIntakeFallback(account) ? <Badge tone="warning">Manual fallback</Badge> : null}
+                            {hasDemoBotCheck(account) ? <Badge tone="neutral">Demo bot check</Badge> : null}
                           </div>
                         </div>
                       </article>
@@ -2560,7 +3124,8 @@ function ShelterScreen({
                             <Badge tone={account.foundPermanentHousing ? "success" : "neutral"}>
                               {account.foundPermanentHousing ? "Found housing" : "Housing not found"}
                             </Badge>
-                            {account.easyBotCheckStatus === "failed" ? <Badge tone="warning">Health check</Badge> : null}
+                            {hasManualIntakeFallback(account) ? <Badge tone="warning">Manual fallback</Badge> : null}
+                            {hasDemoBotCheck(account) ? <Badge tone="neutral">Demo bot check</Badge> : null}
                           </div>
                         </div>
                       </article>
@@ -2635,22 +3200,24 @@ function ShelterScreen({
                         <Badge tone={account.verified ? "success" : "warning"}>
                           {account.verified ? "Verified" : "Revoked"}
                         </Badge>
+                        {providerStaffWorldIdProofs[account.id] ? (
+                          <Badge tone="success">World ID staff proof</Badge>
+                        ) : null}
                       </div>
+                      <small>World ID action: {PROVIDER_STAFF_WORLD_ID_ACTION}</small>
                     </div>
-                    <Button
-                      onClick={() =>
-                        setShelterStaffAccounts(
-                          shelterStaffAccounts.map((item) =>
-                            item.id === account.id
-                              ? { ...item, verified: !item.verified, updatedAt: new Date().toISOString() }
-                              : item
-                          )
-                        )
-                      }
-                      variant="secondary"
-                    >
-                      {account.verified ? "Revoke verification" : "Re-verify"}
-                    </Button>
+                    {account.verified ? (
+                      <Button
+                        onClick={() => revokeStaffWorldIdVerification(account)}
+                        variant="secondary"
+                      >
+                        Revoke verification
+                      </Button>
+                    ) : (
+                      <Button onClick={() => verifyStaffWithProviderWorldId(account)} variant="secondary">
+                        Verify with provider staff World ID
+                      </Button>
+                    )}
                   </article>
                 ))
               ) : (
@@ -2666,9 +3233,11 @@ function ShelterScreen({
 
 function AnalyticsScreen({
   optedIn,
+  proofs,
   setOptedIn
 }: {
   optedIn: Record<string, boolean>;
+  proofs: ProofReceiptView[];
   setOptedIn: (value: Record<string, boolean>) => void;
 }) {
   function toggleStudy(studyId: string) {
@@ -2678,6 +3247,13 @@ function AnalyticsScreen({
   function isStudySelected(studyId: string) {
     return optedIn[studyId] ?? true;
   }
+
+  const productionProofCount = proofs.filter((proof) => getProofReceiptUiState(proof).productionEvidence).length;
+  const onChainWrapperCount = proofs.filter((proof) => {
+    const state = getProofReceiptUiState(proof);
+    return state.accepted && state.proofSystemFamily === "provekit_recursive_groth16";
+  }).length;
+  const failClosedCount = proofs.filter((proof) => getProofReceiptUiState(proof).failClosed).length;
 
   return (
     <div className="screen">
@@ -2691,6 +3267,21 @@ function AnalyticsScreen({
       <StatusBanner tone="warning">
         A privacy and legal team must review this before real use.
       </StatusBanner>
+      <Section title="Public proof dashboard">
+        <div className="privacy-metrics">
+          <StatusPanel label="Production proof evidence" value={String(productionProofCount)} tone="teal" />
+          <StatusPanel label="Recursive wrappers" value={String(onChainWrapperCount)} tone="gold" />
+          <StatusPanel label="Fail-closed receipts" value={String(failClosedCount)} tone="red" />
+        </div>
+        <ConsensusSurfaceStats proofs={proofs} />
+        <ProofSurfaceSummary
+          emptyMessage="No public proof receipts are available for the dashboard yet."
+          limit={6}
+          proofs={proofs}
+          surface="dashboard"
+          title="Dashboard proof systems"
+        />
+      </Section>
       <div className="analytics-grid">
         {analyticsStudies.map((study) => {
           const selected = isStudySelected(study.id);
@@ -2768,12 +3359,16 @@ function ProofCenterScreen({
   apiConfig,
   proofs,
   refreshWalletAuditEvents,
-  setProofs
+  refreshWalletProofReceipts,
+  setProofs,
+  worldIdState
 }: {
   apiConfig?: WalletApiConfig;
   proofs: ProofReceiptView[];
   refreshWalletAuditEvents: () => Promise<void>;
+  refreshWalletProofReceipts: () => Promise<void>;
   setProofs: (proofs: ProofReceiptView[]) => void;
+  worldIdState: WorldIdSurfaceState;
 }) {
   const [locationRecordId, setLocationRecordId] = useState(
     (import.meta.env.VITE_DEMO_LOCATION_RECORD_ID as string | undefined) ?? "rec-location-current"
@@ -2781,13 +3376,26 @@ function ProofCenterScreen({
   const [regionId, setRegionId] = useState("multnomah_county");
   const [grantId, setGrantId] = useState("");
   const [proofStatus, setProofStatus] = useState<"idle" | "creating" | "created" | "failed">("idle");
+  const [proofError, setProofError] = useState("");
+  const worldIdProofs = proofs.filter((proof) => proof.proofType === "world_id_proof_of_human");
+  const verifiedWorldIdProof = worldIdProofs.find((proof) => getProofReceiptUiState(proof).accepted);
+  const worldIdReceiptState = verifiedWorldIdProof ? getProofReceiptUiState(verifiedWorldIdProof) : null;
+  const worldIdStatusLabel = worldIdState.verified
+    ? "Verified proof-of-human"
+    : worldIdState.canOfferVerification
+      ? "Ready to verify"
+      : worldIdState.availabilityLabel;
+  const [proofFailureConsensus, setProofFailureConsensus] = useState<WalletConsensusMetadata | undefined>();
 
   async function createProof(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!apiConfig?.actorDid || !locationRecordId.trim() || !regionId.trim()) {
+      setProofError("A connected wallet API, actor DID, location record, and region ID are required.");
       setProofStatus("failed");
       return;
     }
+    setProofError("");
+    setProofFailureConsensus(undefined);
     setProofStatus("creating");
     try {
       const proof = await createLocationRegionProof(apiConfig, {
@@ -2798,7 +3406,9 @@ function ProofCenterScreen({
       setProofs([proof, ...proofs.filter((item) => item.id !== proof.id)]);
       await refreshWalletAuditEvents().catch(() => undefined);
       setProofStatus("created");
-    } catch {
+    } catch (error) {
+      setProofError(proofApiErrorMessage(error));
+      setProofFailureConsensus(error instanceof WalletApiConsensusFailClosedError ? error.consensus : undefined);
       setProofStatus("failed");
     }
   }
@@ -2812,6 +3422,42 @@ function ProofCenterScreen({
       <p className="page-note">
         Proof receipts expose public claims and verifier details without showing raw documents or precise location.
       </p>
+      <section className="world-id-proof-center-summary" aria-label="World ID wallet status">
+        <div>
+          <p className="eyebrow">World ID wallet status</p>
+          <h2>{worldIdStatusLabel}</h2>
+          <p>
+            Proof-of-human can show that a World ID human credential is bound to this wallet. It does not disclose
+            or prove legal name, age, citizenship, address, government ID, or other legal identity attributes.
+          </p>
+          <p>
+            World ID is optional here. Emergency and essential-service flows remain available when World ID is
+            unavailable or cannot be used.
+          </p>
+        </div>
+        <div className="world-id-proof-center-facts" aria-label="World ID proof center facts">
+          <StatusPanel
+            label="Wallet"
+            tone={apiConfig ? "success" : "warning"}
+            value={apiConfig?.walletId ?? "Not connected"}
+          />
+          <StatusPanel
+            label="Actor DID"
+            tone={apiConfig?.actorDid ? "success" : "warning"}
+            value={apiConfig?.actorDid ?? "Required"}
+          />
+          <StatusPanel
+            label="Proof receipt"
+            tone={worldIdReceiptState?.statusTone ?? "warning"}
+            value={worldIdReceiptState?.statusLabel ?? "Not created"}
+          />
+        </div>
+      </section>
+      <WorldIdVerificationPanel
+        apiConfig={apiConfig}
+        onAuditRefresh={refreshWalletAuditEvents}
+        onProofsRefresh={refreshWalletProofReceipts}
+      />
       <article className="proof-card" aria-label="Create location region proof">
         <div className="scope-header">
           <div>
@@ -2862,34 +3508,56 @@ function ProofCenterScreen({
             <StatusBanner tone="success">Proof receipt created and added to the wallet timeline.</StatusBanner>
           ) : null}
           {proofStatus === "failed" ? (
-            <StatusBanner tone="warning">Proof creation failed. Check the record ID, grant, and API proof mode.</StatusBanner>
+            <StatusBanner tone="warning">
+              Proof creation failed. {proofError || "Check the record ID, grant, and API proof mode."} No simulated
+              fallback was created.
+            </StatusBanner>
+          ) : null}
+          {proofFailureConsensus ? (
+            <ConsensusMetadataPanel
+              metadata={proofFailureConsensus}
+              surfaceLabel="Proof Center fail-closed proof creation"
+            />
           ) : null}
           <Button disabled={!apiConfig?.actorDid || proofStatus === "creating"} type="submit" variant="secondary">
             {proofStatus === "creating" ? "Creating proof..." : "Create proof"}
           </Button>
         </form>
       </article>
+      <ConsensusSurfaceStats proofs={proofs} />
       <div className="list-stack">
         {proofs.map((proof) => {
           const titleId = `proof-title-${proof.id}`;
+          const state = getProofReceiptUiState(proof);
+          const isWorldIdProof = proof.proofType === "world_id_proof_of_human";
 
           return (
-            <article aria-labelledby={titleId} className="proof-card" key={proof.id}>
+            <article
+              aria-labelledby={titleId}
+              className={`proof-card proof-system-${state.proofSystemFamily}${isWorldIdProof ? " world-id-proof-receipt-card" : ""}`}
+              key={proof.id}
+            >
               <div className="scope-header">
                 <div>
                   <h3 id={titleId}>{proof.claim}</h3>
                   <p>
-                    {proof.proofType} · {proof.proofSystem} · {proof.verifier}
+                    {proof.proofType} · {proof.verifier}
                   </p>
                 </div>
-                <Badge tone={proof.simulated ? "warning" : "success"}>
-                  {proof.simulated ? "Simulated" : proof.verificationStatus}
-                </Badge>
+                <Badge tone={state.statusTone}>{state.statusLabel}</Badge>
               </div>
               <div className="badge-row">
                 <Badge>{proof.createdAt}</Badge>
-                <Badge>{proof.witnessLabel}</Badge>
+                {proof.simulated ? <Badge tone="warning">Simulated</Badge> : null}
+                <Badge>{state.inputBoundaryLabel}</Badge>
+                <Badge tone={state.productionEvidence ? "success" : "warning"}>{state.dashboardLabel}</Badge>
               </div>
+              {isWorldIdProof ? (
+                <StatusBanner tone="info">
+                  This World ID proof-of-human receipt is not legal identity. It does not disclose or prove legal name,
+                  age, citizenship, address, government ID, or document possession.
+                </StatusBanner>
+              ) : null}
               <div
                 className="capability-preview"
                 role="group"
@@ -2900,9 +3568,7 @@ function ProofCenterScreen({
                     <h4>What this allows</h4>
                     <p>{proof.proofType} · public inputs only</p>
                   </div>
-                  <Badge tone={proof.simulated ? "warning" : "success"}>
-                    {proof.simulated ? "development proof" : "verified proof"}
-                  </Badge>
+                  <Badge tone={state.statusTone}>{state.accepted ? state.evidenceLabel : "not accepted"}</Badge>
                 </div>
                 <div className="disclosure-package">
                   <div className="disclosure-row">
@@ -2910,8 +3576,32 @@ function ProofCenterScreen({
                     <span>proof/verify</span>
                   </div>
                   <div className="disclosure-row">
+                    <strong>Proof system</strong>
+                    <span>{state.proofSystemLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
                     <strong>Verification</strong>
-                    <span>{proof.verificationStatus}</span>
+                    <span>{state.statusLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
+                    <strong>Provider review</strong>
+                    <span>{state.providerLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
+                    <strong>Public dashboard</strong>
+                    <span>{state.dashboardLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
+                    <strong>QR and export</strong>
+                    <span>{state.exportLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
+                    <strong>On-chain status</strong>
+                    <span>{state.onChainLabel}</span>
+                  </div>
+                  <div className="disclosure-row">
+                    <strong>Evidence label</strong>
+                    <span>{state.evidenceLabel}</span>
                   </div>
                   {proof.circuitId ? (
                     <div className="disclosure-row">
@@ -2929,6 +3619,12 @@ function ProofCenterScreen({
                     <strong>Public inputs</strong>
                     <span>{Object.keys(proof.publicInputs).join(", ")}</span>
                   </div>
+                  {isWorldIdProof ? (
+                    <div className="disclosure-row">
+                      <strong>Not a legal ID claim</strong>
+                      <span>Legal name, age, citizenship, address, government ID, document possession</span>
+                    </div>
+                  ) : null}
                   <div className="disclosure-row">
                     <strong>Not allowed</strong>
                     <span>{nonGrantedCapabilities(["proof/verify"]).join(", ")}</span>
@@ -2943,6 +3639,11 @@ function ProofCenterScreen({
                   </div>
                 ))}
               </div>
+              <ConsensusMetadataPanel
+                directLabel="Direct wallet proof"
+                metadata={state.consensus}
+                surfaceLabel="Proof Center proof card"
+              />
             </article>
           );
         })}
@@ -2954,10 +3655,12 @@ function ProofCenterScreen({
 function ExportCenterScreen({
   apiConfig,
   bundles,
+  proofs,
   setBundles
 }: {
   apiConfig?: WalletApiConfig;
   bundles: ExportBundleView[];
+  proofs: ProofReceiptView[];
   setBundles: (bundles: ExportBundleView[]) => void;
 }) {
   const [audienceDid, setAudienceDid] = useState("did:key:legal-aid-desk");
@@ -3025,6 +3728,13 @@ function ExportCenterScreen({
       {exportStatus === "failed" ? <StatusBanner tone="warning">Export bundle creation failed.</StatusBanner> : null}
       {importStatus === "imported" ? <StatusBanner tone="success">Export descriptors imported.</StatusBanner> : null}
       {importStatus === "failed" ? <StatusBanner tone="warning">Export import failed.</StatusBanner> : null}
+      <ProofSurfaceSummary
+        emptyMessage="No proof receipts are ready for QR review yet."
+        limit={6}
+        proofs={proofs}
+        surface="qr"
+        title="QR proof review"
+      />
       <Section title="Create export bundle">
         <form className="form-grid export-builder" onSubmit={createBundle}>
           <Field label="Recipient DID" required>
@@ -3091,6 +3801,15 @@ function ExportCenterScreen({
       <div className="list-stack">
         {bundles.map((bundle) => {
           const titleId = `export-title-${bundle.id}`;
+          const bundleProofs = proofReceiptsFromExportBundle(bundle);
+          const proofSystemLabels = uniqueProofSystemLabels(bundleProofs);
+          const failClosedProofCount = bundleProofs.filter((proof) => getProofReceiptUiState(proof).failClosed).length;
+          const onChainLabel = bundleProofs.some((proof) => {
+            const state = getProofReceiptUiState(proof);
+            return state.accepted && state.proofSystemFamily === "provekit_recursive_groth16";
+          })
+            ? "Recursive wrapper evidence included"
+            : "No on-chain claim in this export";
 
           return (
             <article aria-labelledby={titleId} className="export-card" key={bundle.id}>
@@ -3110,6 +3829,30 @@ function ExportCenterScreen({
               <div className="receipt-hash-row">
                 <span>Bundle hash</span>
                 <code>{bundle.bundleHash}</code>
+              </div>
+              <div className="disclosure-package" aria-label={`${bundle.audienceName} export proof review`}>
+                <div className="disclosure-row">
+                  <strong>Proof systems</strong>
+                  <span>
+                    {proofSystemLabels.length
+                      ? proofSystemLabels.join(", ")
+                      : bundle.proofCount
+                        ? "Proof receipts included; source wallet metadata only"
+                        : "No proofs included"}
+                  </span>
+                </div>
+                <div className="disclosure-row">
+                  <strong>QR review</strong>
+                  <span>Public proof metadata only; witness and private axiom content are not exported.</span>
+                </div>
+                <div className="disclosure-row">
+                  <strong>Verifier state</strong>
+                  <span>{failClosedProofCount ? `${failClosedProofCount} proof receipts fail closed` : "No blocked proof receipts"}</span>
+                </div>
+                <div className="disclosure-row">
+                  <strong>On-chain status</strong>
+                  <span>{onChainLabel}</span>
+                </div>
               </div>
               <div className="badge-row">
                 <Badge tone={bundle.hashOk ? "success" : "warning"}>
@@ -3157,12 +3900,31 @@ function shortHash(value?: string): string {
   return value.length > 24 ? `${value.slice(0, 12)}...${value.slice(-8)}` : value;
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function proofReceiptsFromExportBundle(bundle: ExportBundleView): ProofReceiptView[] {
+  const rawProofs = isPlainRecord(bundle.bundle) && Array.isArray(bundle.bundle.proofs) ? bundle.bundle.proofs : [];
+  return rawProofs.filter(isPlainRecord).map(mapProofReceiptRecordForUi);
+}
+
+function uniqueProofSystemLabels(proofs: ProofReceiptView[]): string[] {
+  return Array.from(new Set(proofs.map((proof) => getProofReceiptUiState(proof).proofSystemLabel)));
+}
+
 function SecurityScreen({
   apiConfig,
-  onSnapshotLoaded
+  onVerifyWorldId,
+  onSnapshotLoaded,
+  proofs,
+  worldIdState
 }: {
   apiConfig?: WalletApiConfig;
+  onVerifyWorldId: () => void;
   onSnapshotLoaded: () => Promise<void> | void;
+  proofs: ProofReceiptView[];
+  worldIdState: WorldIdSurfaceState;
 }) {
   const [snapshotIds, setSnapshotIds] = useState<string[]>([]);
   const [snapshotStatus, setSnapshotStatus] = useState<"idle" | "saving" | "saved" | "loading" | "loaded" | "failed">(
@@ -3235,6 +3997,12 @@ function SecurityScreen({
       {snapshotStatus === "saved" ? <StatusBanner tone="success">Wallet backup saved.</StatusBanner> : null}
       {snapshotStatus === "loaded" ? <StatusBanner tone="success">Wallet backup loaded.</StatusBanner> : null}
       {snapshotStatus === "failed" ? <StatusBanner tone="warning">Wallet backup action failed.</StatusBanner> : null}
+      <WorldIdSurfaceSummary
+        description="Security review shows the same World ID proof-of-human state as the wallet proof center. Backups and recovery do not require World ID."
+        onVerify={onVerifyWorldId}
+        state={worldIdState}
+        surfaceLabel="Security"
+      />
       <Section
         title="Wallet backups"
         actions={
@@ -3289,17 +4057,31 @@ function SecurityScreen({
           <ShieldCheck size={24} /> Bot check settings
         </button>
       </div>
+      <ProofSurfaceSummary
+        emptyMessage="No proof receipts are available for security review yet."
+        limit={6}
+        proofs={proofs}
+        surface="security"
+        title="Proof security review"
+      />
     </div>
   );
 }
 
-function AuditScreen({ events }: { events: AuditEvent[] }) {
+function AuditScreen({ events, proofs }: { events: AuditEvent[]; proofs: ProofReceiptView[] }) {
   return (
     <div className="screen">
       <div className="page-title">
         <p className="eyebrow">Audit</p>
         <h1>Consent and access history</h1>
       </div>
+      <ProofSurfaceSummary
+        emptyMessage="No proof receipts have been recorded in the audit coverage view yet."
+        limit={6}
+        proofs={proofs}
+        surface="audit"
+        title="Proof audit coverage"
+      />
       <div className="timeline">
         {events.map((event) => (
           <article className="timeline-event" key={event.id}>
@@ -3313,6 +4095,12 @@ function AuditScreen({ events }: { events: AuditEvent[] }) {
                 <small>
                   {[event.decision, event.resource, event.grantId].filter(Boolean).join(" · ")}
                 </small>
+              ) : null}
+              {getConsensusMetadataFromView(event) ? (
+                <ConsensusMetadataPanel
+                  metadata={getConsensusMetadataFromView(event)}
+                  surfaceLabel="Security audit event"
+                />
               ) : null}
             </div>
           </article>

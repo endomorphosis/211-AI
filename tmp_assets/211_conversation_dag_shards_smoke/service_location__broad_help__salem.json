@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__broad_help__salem",
+  "kind": "service_location",
+  "key": "broad_help__salem",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "realistic_grounded_013_youth_day_center_salem#turn-1",
+      "scenarioId": "realistic_grounded_013_youth_day_center_salem",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "broad_help",
+      "locationTag": "salem",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I'm fleeing a bad situation and I'm in Salem. I need help for a young person outside, but I need it to be safe.",
+      "normalizedQuery": "i'm fleeing bad situation salem young person outside it be safe",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:e25fd4aa967fb6a0",
+        "service:a1e021534ee03771",
+        "service:9d8134994edb4433",
+        "service:755193c3d210f2d9",
+        "service:2e6331f97ca5eacd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_085_youth_day_center_salem#turn-1",
+          "score": 0.775243,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_085_youth_day_center_salem",
+          "user": "I'm trying to help a neighbor who has no internet. They are in Salem and need help for a young person outside."
+        },
+        {
+          "recordId": "realistic_grounded_067_youth_day_center_hillsboro#turn-1",
+          "score": 0.7561,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_067_youth_day_center_hillsboro",
+          "user": "I'm not sure what the program is called. I am in Hillsboro and need help for a young person outside."
+        },
+        {
+          "recordId": "realistic_grounded_031_youth_day_center_medford#turn-1",
+          "score": 0.72897,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_031_youth_day_center_medford",
+          "user": "I'm a veteran in Medford. I need help for a young person outside and someone I can call."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_005#turn-1",
+      "scenarioId": "realistic_broad_to_service_005",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "broad_help",
+      "locationTag": "salem",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I'm helping someone at the library in Salem. They need help but can't explain it clearly.",
+      "normalizedQuery": "i'm helping someone at library salem they can't explain it clearly",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:2cd688d9cc364427",
+        "page:bafkreif7g2gcpqes477n7n5caqwsx72w4fl3pvtsvoynhgsftfulgukeci",
+        "service:41b7f1d43890b691",
+        "page:bafkreidfroqrzw3suir2f6oeijvni565x4fx54qlelqoqc5j7odzir372e",
+        "service:b343c89117b06e05"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_005#turn-3",
+          "score": 0.673728,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_broad_to_service_005",
+          "user": "I don't have an address. Will that stop me?"
+        },
+        {
+          "recordId": "sms_need_help#turn-1",
+          "score": 0.651183,
+          "route": "clarifying_prompt",
+          "scenarioId": "sms_need_help",
+          "user": "Need help"
+        },
+        {
+          "recordId": "broad_then_medical#turn-1",
+          "score": 0.651059,
+          "route": "clarifying_prompt",
+          "scenarioId": "broad_then_medical",
+          "user": "Help me figure out what to do."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_broad_to_service_005#turn-1",
+      "to": "realistic_broad_to_service_005#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "clarifying_prompt->grounded_211_answer"
+    }
+  ]
+}

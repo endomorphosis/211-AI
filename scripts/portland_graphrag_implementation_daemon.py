@@ -17,7 +17,10 @@ os.environ.setdefault("IPFS_AUTO_INSTALL", "false")
 os.environ.setdefault("IPFS_DATASETS_PY_MINIMAL_IMPORTS", "1")
 
 from scraper.utils import setup_logging
-from scripts.portal_implementation_daemon import PortalImplementationDaemon
+from scripts.portal_implementation_daemon import (
+    DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS,
+    PortalImplementationDaemon,
+)
 
 logger = logging.getLogger("scraper.portland_graphrag.implementation.daemon")
 
@@ -78,7 +81,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="",
         help="Command used for implementation. Defaults to codex exec --full-auto.",
     )
-    parser.add_argument("--implementation-timeout", type=float, default=1800.0)
+    parser.add_argument("--implementation-timeout", type=float, default=DEFAULT_IMPLEMENTATION_TIMEOUT_SECONDS)
     parser.add_argument(
         "--no-ephemeral-worktree",
         action="store_true",

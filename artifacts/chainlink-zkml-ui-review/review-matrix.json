@@ -1,0 +1,48 @@
+{
+  "review_id": "chainlink-zkml-ui-review",
+  "generated_for": "CLZKML-285",
+  "reviewed_surfaces": [
+    "recipient-access-artifacts",
+    "wallet-uploads",
+    "proof-center",
+    "qr-proof-review",
+    "provider-eligibility",
+    "public-analytics",
+    "security-audit",
+    "audit-history"
+  ],
+  "viewport_coverage": [
+    {
+      "name": "Desktop Chrome",
+      "evidence": "chainlink-consensus-ux.spec.ts desktop project"
+    },
+    {
+      "name": "Mobile Chrome",
+      "evidence": "chainlink-consensus-ux.spec.ts mobile viewport pass"
+    },
+    {
+      "name": "Mobile Safari",
+      "evidence": "chainlink-consensus-ux.spec.ts mobile safari project"
+    }
+  ],
+  "checks": [
+    "keyboard focus reaches consensus controls and receipt surfaces",
+    "consensus receipt badges have accurate accessible names",
+    "manual-review fallback paths remain visible for fail-closed no-quorum and proof/CRE mismatch states",
+    "receipt-only and TEE evidence are not labeled as mathematical ZK proof",
+    "CRE evidence is described as CRE verification, not ZK proof",
+    "horizontal overflow and incoherent overlap are blocked across reviewed routes",
+    "raw prompt, wallet plaintext, operator secret, proof witness, raw proof payload, TEE quote, CRE private report, and bearer token sentinels do not render",
+    "screenshots are archived under artifacts/chainlink-zkml-ui-review during the Playwright run"
+  ],
+  "screenshot_routes": [
+    "home",
+    "uploads",
+    "proof-center",
+    "exports",
+    "social-services",
+    "analytics",
+    "security",
+    "audit"
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__work__salem",
+  "kind": "service_location",
+  "key": "work__salem",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "realistic_grounded_then_urgent_005_salem#turn-1",
+      "scenarioId": "realistic_grounded_then_urgent_005_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "work",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "I work days and can't wait on hold forever. I need mail service in Salem.",
+      "normalizedQuery": "work days can't wait on hold forever mail service salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8e98106e040e9fe3",
+        "service:8149fdd1582fa7a0",
+        "service:a42b4776a87f0d3e",
+        "service:38a45011f290f76c",
+        "service:2ebf3aa7073e45de"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_036_shelter_clackamas#turn-1",
+          "score": 0.69488,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_036_shelter_clackamas",
+          "user": "I work days and can't wait on hold forever. I need shelter in Clackamas County."
+        },
+        {
+          "recordId": "realistic_grounded_016_diapers_portland#turn-1",
+          "score": 0.666719,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_016_diapers_portland",
+          "user": "I work days and can't wait on hold forever. I need baby supplies in Portland."
+        },
+        {
+          "recordId": "realistic_grounded_056_community_meals_portland#turn-1",
+          "score": 0.658732,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_056_community_meals_portland",
+          "user": "I work days and can't wait on hold forever. I need somewhere to eat in Portland."
+        }
+      ]
+    },
+    {
+      "id": "matrix_employment_salem#turn-1",
+      "scenarioId": "matrix_employment_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "work",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find employment help in Salem?",
+      "normalizedQuery": "employment job work salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a4801eb08884f605",
+        "page:bafkreiaingo724bqtdcrerrq3tmcsfysqbd2onxbvqpp5je5zj3ldcqsge",
+        "page:bafkreidrfqevqh6pxnnaot472yywzq2iruq2dgveqkiv34qplytymrduvu",
+        "page:bafkreiewrcan5xmbqdxyz7d756hv2ekyoxnqqufb6oticmbviucpnf2ndi",
+        "page:bafkreihrax4vlyumpstv5dnn4dbuqpgemgftkurp32chxkgr3wjhzd2k3e"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_employment_eugene#turn-1",
+          "score": 0.864241,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_employment_eugene",
+          "user": "Can you find employment help in Eugene?"
+        },
+        {
+          "recordId": "matrix_employment_beaverton#turn-1",
+          "score": 0.824957,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_employment_beaverton",
+          "user": "Can you find employment help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_employment_medford#turn-1",
+          "score": 0.792593,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_employment_medford",
+          "user": "Can you find employment help in Medford?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_grounded_then_urgent_005_salem#turn-1",
+      "to": "realistic_grounded_then_urgent_005_salem#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    }
+  ]
+}

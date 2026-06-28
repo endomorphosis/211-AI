@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__broad_help__medford",
+  "kind": "service_location",
+  "key": "broad_help__medford",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "realistic_grounded_031_youth_day_center_medford#turn-1",
+      "scenarioId": "realistic_grounded_031_youth_day_center_medford",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "broad_help",
+      "locationTag": "medford",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I'm a veteran in Medford. I need help for a young person outside and someone I can call.",
+      "normalizedQuery": "i'm veteran veterans va medford young person outside someone call",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "page:bafkreiakltk4f7ajva6urd36geny3hwnxhyqfe5xh4i36qefdec5slxxse",
+        "page:bafkreid7xxxrifppuw2dykxxi4674uneduk7zexkjlramkrrpc4ojufkty",
+        "service:97fa08901c4087f2",
+        "service:eca077347563500f",
+        "service:b6ee4cf72e03517c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_071_senior_meals_medford#turn-1",
+          "score": 0.804537,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_071_senior_meals_medford",
+          "user": "I'm a veteran in Medford. I need meals for my mom and someone I can call."
+        },
+        {
+          "recordId": "realistic_grounded_091_food_pantry_hillsboro#turn-1",
+          "score": 0.761373,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_091_food_pantry_hillsboro",
+          "user": "I'm a veteran in Hillsboro. I need a pantry and someone I can call."
+        },
+        {
+          "recordId": "realistic_grounded_011_domestic_violence_advocacy_hillsboro#turn-1",
+          "score": 0.735307,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_011_domestic_violence_advocacy_hillsboro",
+          "user": "I'm a veteran in Hillsboro. I need DV help and someone I can call."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_007#turn-1",
+      "scenarioId": "realistic_broad_to_service_007",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "broad_help",
+      "locationTag": "medford",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I'm outside and tired. I need help in Medford, but I don't know where to start.",
+      "normalizedQuery": "i'm outside tired medford don't know start",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:3309400a4da9a7e6",
+        "service:900148af08bd3d1d",
+        "service:cb11afeba28b9ec0",
+        "service:f8ac5198064cba09",
+        "service:e8399a8259fb5c21"
+      ],
+      "similarCases": [
+        {
+          "recordId": "family_needs_help#turn-1",
+          "score": 0.785377,
+          "route": "clarifying_prompt",
+          "scenarioId": "family_needs_help",
+          "user": "My family needs help but I do not know where to start."
+        },
+        {
+          "recordId": "realistic_broad_to_service_007#turn-3",
+          "score": 0.738238,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_broad_to_service_007",
+          "user": "Do they help people with pets?"
+        },
+        {
+          "recordId": "realistic_grounded_043_mental_health_hillsboro#turn-1",
+          "score": 0.723159,
+          "route": "clarifying_prompt",
+          "scenarioId": "realistic_grounded_043_mental_health_hillsboro",
+          "user": "My stuff got taken and I'm around Hillsboro. Can you help me find counseling?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_broad_to_service_007#turn-1",
+      "to": "realistic_broad_to_service_007#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "clarifying_prompt->grounded_211_answer"
+    }
+  ]
+}

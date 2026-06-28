@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__health__statewide",
+  "kind": "service_location",
+  "key": "health__statewide",
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "id": "medical_emergency_signal#turn-1",
+      "scenarioId": "medical_emergency_signal",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "health",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I have a medical emergency and cannot breathe.",
+      "normalizedQuery": "have medical emergency breathe",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:38e1292dd11bc0d7",
+        "service:b03287ff06662c46",
+        "service:d5d4ac236c6cd15c",
+        "service:d51408fa91a6f897",
+        "service:72db06bcc7c9ff8d"
+      ],
+      "similarCases": [
+        {
+          "recordId": "violence_threat_now#turn-1",
+          "score": 0.679365,
+          "route": "live_agent",
+          "scenarioId": "violence_threat_now",
+          "user": "Someone is threatening violence and I need help right now."
+        },
+        {
+          "recordId": "unsafe_domestic_violence_now#turn-1",
+          "score": 0.666666,
+          "route": "live_agent",
+          "scenarioId": "unsafe_domestic_violence_now",
+          "user": "I am unsafe because of domestic violence right now in Portland."
+        },
+        {
+          "recordId": "broad_help_then_urgent_shelter#turn-2",
+          "score": 0.654653,
+          "route": "live_agent",
+          "scenarioId": "broad_help_then_urgent_shelter",
+          "user": "I am outside tonight and do not feel safe."
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

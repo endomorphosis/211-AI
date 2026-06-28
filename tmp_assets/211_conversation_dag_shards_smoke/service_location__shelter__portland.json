@@ -1,0 +1,1052 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__shelter__portland",
+  "kind": "service_location",
+  "key": "shelter__portland",
+  "nodeCount": 20,
+  "nodes": [
+    {
+      "id": "urgent_shelter_tonight#turn-1",
+      "scenarioId": "urgent_shelter_tonight",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I am outside in Portland tonight and need a safe shelter right now.",
+      "normalizedQuery": "outside portland tonight safe shelter shelters homeless overnight warming right now",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:32f8d8103ea16592",
+        "service:06316d26dda9c85b",
+        "service:b5d06c266ca98fec",
+        "service:d3db844d9700f43d",
+        "service:bd5c5bd198f76c8b"
+      ],
+      "similarCases": [
+        {
+          "recordId": "shelter_with_child_tonight#turn-1",
+          "score": 0.94481,
+          "route": "live_agent",
+          "scenarioId": "shelter_with_child_tonight",
+          "user": "My child and I need shelter tonight right now."
+        },
+        {
+          "recordId": "realistic_grounded_054_shelter_eugene#turn-1",
+          "score": 0.852403,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_054_shelter_eugene",
+          "user": "I don't have ID right now. I'm in Eugene. Can I still get shelter?"
+        },
+        {
+          "recordId": "shelter_then_safety_escalation#turn-2",
+          "score": 0.775658,
+          "route": "live_agent",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "I am outside right now and do not feel safe tonight."
+        }
+      ]
+    },
+    {
+      "id": "live_agent_stays_sticky#turn-2",
+      "scenarioId": "live_agent_stays_sticky",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Actually maybe just search for Portland shelter.",
+      "normalizedQuery": "actually maybe just search portland shelter shelters homeless overnight warming",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "urgent_then_calmer_followup#turn-2",
+          "score": 0.882495,
+          "route": "live_agent",
+          "scenarioId": "urgent_then_calmer_followup",
+          "user": "Actually can you just send me a shelter list?"
+        },
+        {
+          "recordId": "realistic_broad_to_service_000#turn-2",
+          "score": 0.756645,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "I speak Spanish better than English. I am in Portland and need shelter."
+        },
+        {
+          "recordId": "live_agent_stays_sticky#turn-1",
+          "score": 0.755928,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Can I talk to a human about shelter?"
+        }
+      ]
+    },
+    {
+      "id": "legal_aid_portland#turn-1",
+      "scenarioId": "legal_aid_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find legal aid in Portland for housing problems?",
+      "normalizedQuery": "legal aid attorney advocacy portland housing problems",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3694ab25654f4b81",
+        "service:a4f4532cd4713872",
+        "service:789657f7cb049160",
+        "service:252041b98d8d25e0",
+        "service:4c69fc06bd8aef68"
+      ],
+      "similarCases": [
+        {
+          "recordId": "broad_then_legal#turn-2",
+          "score": 0.935971,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_legal",
+          "user": "I am in Portland and need legal aid for housing."
+        },
+        {
+          "recordId": "matrix_legal_aid_hillsboro#turn-1",
+          "score": 0.859336,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_hillsboro",
+          "user": "Can you find legal aid in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_legal_aid_gresham#turn-1",
+          "score": 0.843273,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_gresham",
+          "user": "Can you find legal aid in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "youth_day_center#turn-1",
+      "scenarioId": "youth_day_center",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need a day center for a homeless youth in Portland.",
+      "normalizedQuery": "day center homeless youth portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:c7b086b02389ae0b",
+        "page:bafkreigf3qdgysbxhu7fxjwbc3nel2kitoq35hvv46hr63xhood52koxm4",
+        "page:bafkreibw2skd7qw5p57ql3qsbahfnzroe6oqpmfqmltoj5m3nrylpkcc54",
+        "page:bafkreigjs2wbuh4heksmnlqkbxsuqvbsfwnhdxzpsjjq7wv62gtwryptva",
+        "page:bafkreicxbzphm7i44ai3ketd4lb5cujncwt3nwlps5kc3fzuwjvnqvjdrm"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_veteran_housing_medford#turn-1",
+          "score": 0.787881,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_veteran_housing_medford",
+          "user": "Can you find veteran housing help in Medford?"
+        },
+        {
+          "recordId": "warming_center_portland#turn-1",
+          "score": 0.785208,
+          "route": "grounded_211_answer",
+          "scenarioId": "warming_center_portland",
+          "user": "Find a warming shelter in Portland."
+        },
+        {
+          "recordId": "shelter_then_safety_escalation#turn-1",
+          "score": 0.756645,
+          "route": "grounded_211_answer",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "Can you find shelters in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "laundry_homeless_services#turn-1",
+      "scenarioId": "laundry_homeless_services",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Where can someone without housing do laundry in Portland?",
+      "normalizedQuery": "someone without housing laundry portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreiap5wfs3nc26sip5g27peqrkrqubu7mi6qaqbcos3vjamd5cgcrcq",
+        "page:bafkreigl4qcny3qamnmmy64riidqtkvyth5urkzzufxzp4y7anc4ipx4cy",
+        "service:19bc089bb5f7f7c8",
+        "service:c206b136bb648ef7",
+        "service:4a18c54c0e2ebaa1"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_laundry_portland#turn-1",
+          "score": 0.771829,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_portland",
+          "user": "Can you find laundry services in Portland?"
+        },
+        {
+          "recordId": "matrix_laundry_salem#turn-1",
+          "score": 0.704713,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_salem",
+          "user": "Can you find laundry services in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_salem#turn-1",
+          "score": 0.667546,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_salem",
+          "user": "Can you find ID replacement help in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "cooling_center_portland#turn-1",
+      "scenarioId": "cooling_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Find a cooling center in Portland.",
+      "normalizedQuery": "cooling center portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreibsex22bwruaokh6y3uzdpzq57nv4ob4nhzs24q66y267xg5zshdq",
+        "page:bafkreif4og5zucxk34jijkz3jef7rhndut2hzlnasqrzckxudqu23dd6wi",
+        "page:bafkreicvv6hycs5lzlygatxbc5qx2mx72w4bifuhi4baq4x46m2fpqe6vy",
+        "page:bafkreicnwl7z75gfauxai2esujlpuwrew7o4p3l7pv3tuhlqt76gospq3i",
+        "page:bafkreigripy52argoshygkackn5yiywcdnaphhyngglplio4bgc73lpj4a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_cooling_center_portland#turn-1",
+          "score": 0.999997,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_cooling_center_portland",
+          "user": "Can you find cooling center in Portland?"
+        },
+        {
+          "recordId": "matrix_cooling_center_gresham#turn-1",
+          "score": 0.892855,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_cooling_center_gresham",
+          "user": "Can you find cooling center in Gresham?"
+        },
+        {
+          "recordId": "matrix_cooling_center_beaverton#turn-1",
+          "score": 0.892855,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_cooling_center_beaverton",
+          "user": "Can you find cooling center in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "warming_center_portland#turn-1",
+      "scenarioId": "warming_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Find a warming shelter in Portland.",
+      "normalizedQuery": "warming shelter shelters homeless overnight portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "shelter_then_safety_escalation#turn-1",
+          "score": 0.92656,
+          "route": "grounded_211_answer",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "Can you find shelters in Portland?"
+        },
+        {
+          "recordId": "id_for_shelter#turn-1",
+          "score": 0.889497,
+          "route": "grounded_211_answer",
+          "scenarioId": "id_for_shelter",
+          "user": "Do I need identification before going to a shelter?"
+        },
+        {
+          "recordId": "realistic_grounded_072_shelter_portland#turn-1",
+          "score": 0.86672,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_072_shelter_portland",
+          "user": "I'm under 25 and staying outside in Portland. I need shelter."
+        }
+      ]
+    },
+    {
+      "id": "day_center_portland#turn-1",
+      "scenarioId": "day_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need a day center in Portland.",
+      "normalizedQuery": "day center portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9b872ce46b837ac3",
+        "service:979a210e07d85305",
+        "service:b1eec66d5e4b000d",
+        "service:f2dbc45e18a59e03",
+        "service:031bfb20ce232bc2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_youth_day_center_portland#turn-1",
+          "score": 0.985614,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_portland",
+          "user": "Can you find youth day center in Portland?"
+        },
+        {
+          "recordId": "matrix_mail_service_portland#turn-1",
+          "score": 0.828913,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_portland",
+          "user": "Can you find mail service in Portland?"
+        },
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.789439,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "broad_then_legal#turn-2",
+      "scenarioId": "broad_then_legal",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Portland and need legal aid for housing.",
+      "normalizedQuery": "portland legal aid attorney advocacy housing",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3694ab25654f4b81",
+        "service:a4f4532cd4713872",
+        "service:789657f7cb049160",
+        "service:b681fb7f468e02c2",
+        "service:ed3bd6f2e5ca5b5b"
+      ],
+      "similarCases": [
+        {
+          "recordId": "legal_aid_portland#turn-1",
+          "score": 0.935971,
+          "route": "grounded_211_answer",
+          "scenarioId": "legal_aid_portland",
+          "user": "Can you find legal aid in Portland for housing problems?"
+        },
+        {
+          "recordId": "matrix_broad_then_legal_aid_portland#turn-2",
+          "score": 0.854422,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_broad_then_legal_aid_portland",
+          "user": "I am in Portland and need legal aid."
+        },
+        {
+          "recordId": "matrix_legal_aid_gresham#turn-1",
+          "score": 0.850517,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_gresham",
+          "user": "Can you find legal aid in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "shelter_then_safety_escalation#turn-1",
+      "scenarioId": "shelter_then_safety_escalation",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find shelters in Portland?",
+      "normalizedQuery": "shelters shelter homeless overnight warming portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "warming_center_portland#turn-1",
+          "score": 0.92656,
+          "route": "grounded_211_answer",
+          "scenarioId": "warming_center_portland",
+          "user": "Find a warming shelter in Portland."
+        },
+        {
+          "recordId": "realistic_grounded_072_shelter_portland#turn-1",
+          "score": 0.868599,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_072_shelter_portland",
+          "user": "I'm under 25 and staying outside in Portland. I need shelter."
+        },
+        {
+          "recordId": "id_for_shelter#turn-1",
+          "score": 0.857141,
+          "route": "grounded_211_answer",
+          "scenarioId": "id_for_shelter",
+          "user": "Do I need identification before going to a shelter?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_000_shelter_portland#turn-1",
+      "scenarioId": "realistic_grounded_000_shelter_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm calling from my phone. I'm staying outside near Portland and need shelter.",
+      "normalizedQuery": "i'm calling from phone staying outside portland shelter shelters homeless overnight warming",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_072_shelter_portland#turn-1",
+          "score": 0.892416,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_072_shelter_portland",
+          "user": "I'm under 25 and staying outside in Portland. I need shelter."
+        },
+        {
+          "recordId": "shelter_then_safety_escalation#turn-1",
+          "score": 0.789542,
+          "route": "grounded_211_answer",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "Can you find shelters in Portland?"
+        },
+        {
+          "recordId": "realistic_grounded_090_shelter_beaverton#turn-1",
+          "score": 0.787881,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_090_shelter_beaverton",
+          "user": "I just got out of the hospital and I'm in Beaverton. I need shelter."
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_048_veteran_housing_portland#turn-1",
+      "scenarioId": "realistic_grounded_048_veteran_housing_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I got turned away earlier. Is there another place in Portland for veteran housing?",
+      "normalizedQuery": "got turned away earlier there another place portland veteran veterans va housing",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreifsfavs7nphb66a26ddwupzl44x4d6t766e2zh2rwnkhx7hiyiehe",
+        "page:bafkreieptnyajz7wzo3lvxb6piqsayg2iw44lomspftz4rdwzkpdmlpoim",
+        "service:ad5200d1cca9f0a3",
+        "service:afd6b15b4ed6ccff",
+        "service:135f60a712cd422e"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_veteran_housing_portland#turn-1",
+          "score": 0.775089,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_veteran_housing_portland",
+          "user": "Can you find veteran housing help in Portland?"
+        },
+        {
+          "recordId": "matrix_veteran_housing_eugene#turn-1",
+          "score": 0.766965,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_veteran_housing_eugene",
+          "user": "Can you find veteran housing help in Eugene?"
+        },
+        {
+          "recordId": "matrix_veteran_housing_medford#turn-1",
+          "score": 0.726599,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_veteran_housing_medford",
+          "user": "Can you find veteran housing help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_072_shelter_portland#turn-1",
+      "scenarioId": "realistic_grounded_072_shelter_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm under 25 and staying outside in Portland. I need shelter.",
+      "normalizedQuery": "i'm under 25 staying outside portland shelter shelters homeless overnight warming",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:57a62ba0bbb88f44"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_000_shelter_portland#turn-1",
+          "score": 0.892416,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_000_shelter_portland",
+          "user": "I'm calling from my phone. I'm staying outside near Portland and need shelter."
+        },
+        {
+          "recordId": "shelter_then_safety_escalation#turn-1",
+          "score": 0.868599,
+          "route": "grounded_211_answer",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "Can you find shelters in Portland?"
+        },
+        {
+          "recordId": "warming_center_portland#turn-1",
+          "score": 0.86672,
+          "route": "grounded_211_answer",
+          "scenarioId": "warming_center_portland",
+          "user": "Find a warming shelter in Portland."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_000#turn-2",
+      "scenarioId": "realistic_broad_to_service_000",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I speak Spanish better than English. I am in Portland and need shelter.",
+      "normalizedQuery": "speak spanish better than english portland shelter shelters homeless overnight warming",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_000#turn-3",
+          "score": 0.856349,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "Do they answer after hours?"
+        },
+        {
+          "recordId": "live_agent_stays_sticky#turn-2",
+          "score": 0.756645,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Actually maybe just search for Portland shelter."
+        },
+        {
+          "recordId": "urgent_then_calmer_followup#turn-2",
+          "score": 0.750367,
+          "route": "live_agent",
+          "scenarioId": "urgent_then_calmer_followup",
+          "user": "Actually can you just send me a shelter list?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_000#turn-3",
+      "scenarioId": "realistic_broad_to_service_000",
+      "turnIndex": 2,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Do they answer after hours?",
+      "normalizedQuery": "don't know ask i'm portland everything kind falling apart speak spanish better than english shelter shelters homeless overnight warming they answer after hours",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:be96f8a23ab9fa3c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_broad_to_service_000#turn-2",
+          "score": 0.856349,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_000",
+          "user": "I speak Spanish better than English. I am in Portland and need shelter."
+        },
+        {
+          "recordId": "realistic_broad_to_service_006#turn-2",
+          "score": 0.710048,
+          "route": "live_agent",
+          "scenarioId": "realistic_broad_to_service_006",
+          "user": "My stuff got taken and I'm around Eugene. Can you help me find medical care?"
+        },
+        {
+          "recordId": "live_agent_stays_sticky#turn-2",
+          "score": 0.704293,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Actually maybe just search for Portland shelter."
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_then_urgent_000_portland#turn-1",
+      "scenarioId": "realistic_grounded_then_urgent_000_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm a veteran in Portland. I need shelter and someone I can call.",
+      "normalizedQuery": "i'm veteran veterans va portland shelter shelters homeless overnight warming someone call",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:bd5c5bd198f76c8b",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_066_veteran_housing_beaverton#turn-1",
+          "score": 0.779814,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_066_veteran_housing_beaverton",
+          "user": "I'm on a borrowed phone in Beaverton. Please find veteran housing."
+        },
+        {
+          "recordId": "realistic_grounded_072_shelter_portland#turn-1",
+          "score": 0.755611,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_072_shelter_portland",
+          "user": "I'm under 25 and staying outside in Portland. I need shelter."
+        },
+        {
+          "recordId": "realistic_grounded_000_shelter_portland#turn-1",
+          "score": 0.744074,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_000_shelter_portland",
+          "user": "I'm calling from my phone. I'm staying outside near Portland and need shelter."
+        }
+      ]
+    },
+    {
+      "id": "matrix_veteran_housing_portland#turn-1",
+      "scenarioId": "matrix_veteran_housing_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find veteran housing help in Portland?",
+      "normalizedQuery": "veteran veterans va housing portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ad5200d1cca9f0a3",
+        "service:afd6b15b4ed6ccff",
+        "service:135f60a712cd422e",
+        "service:a9529c969da25392",
+        "service:067bd4965b6b8144"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_048_veteran_housing_portland#turn-1",
+          "score": 0.775089,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_048_veteran_housing_portland",
+          "user": "I got turned away earlier. Is there another place in Portland for veteran housing?"
+        },
+        {
+          "recordId": "matrix_child_care_portland#turn-1",
+          "score": 0.742781,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_portland",
+          "user": "Can you find child care help in Portland?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_gresham#turn-1",
+          "score": 0.735681,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_gresham",
+          "user": "Can you find eviction prevention in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_youth_day_center_portland#turn-1",
+      "scenarioId": "matrix_youth_day_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find youth day center in Portland?",
+      "normalizedQuery": "youth day center portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9b872ce46b837ac3",
+        "service:979a210e07d85305",
+        "service:b1eec66d5e4b000d",
+        "service:f2dbc45e18a59e03",
+        "service:031bfb20ce232bc2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "day_center_portland#turn-1",
+          "score": 0.985614,
+          "route": "grounded_211_answer",
+          "scenarioId": "day_center_portland",
+          "user": "I need a day center in Portland."
+        },
+        {
+          "recordId": "matrix_mail_service_portland#turn-1",
+          "score": 0.816984,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_portland",
+          "user": "Can you find mail service in Portland?"
+        },
+        {
+          "recordId": "transportation_to_clinic#turn-1",
+          "score": 0.778079,
+          "route": "grounded_211_answer",
+          "scenarioId": "transportation_to_clinic",
+          "user": "I need a ride or transportation to a medical clinic in Portland."
+        }
+      ]
+    },
+    {
+      "id": "matrix_warming_center_portland#turn-1",
+      "scenarioId": "matrix_warming_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find warming center in Portland?",
+      "normalizedQuery": "warming center portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:e3ed8747b4db6538",
+        "service:76dea112984fa350",
+        "service:f8ee0dad6e5e3c69",
+        "service:4f8e3518eda219dd",
+        "service:3297eb9cd670f461"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_warming_center_eugene#turn-1",
+          "score": 0.875759,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_eugene",
+          "user": "Can you find warming center in Eugene?"
+        },
+        {
+          "recordId": "matrix_warming_center_gresham#turn-1",
+          "score": 0.869563,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_gresham",
+          "user": "Can you find warming center in Gresham?"
+        },
+        {
+          "recordId": "matrix_warming_center_beaverton#turn-1",
+          "score": 0.869563,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_warming_center_beaverton",
+          "user": "Can you find warming center in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_cooling_center_portland#turn-1",
+      "scenarioId": "matrix_cooling_center_portland",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "portland",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find cooling center in Portland?",
+      "normalizedQuery": "cooling center portland",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreibsex22bwruaokh6y3uzdpzq57nv4ob4nhzs24q66y267xg5zshdq",
+        "page:bafkreif4og5zucxk34jijkz3jef7rhndut2hzlnasqrzckxudqu23dd6wi",
+        "page:bafkreicvv6hycs5lzlygatxbc5qx2mx72w4bifuhi4baq4x46m2fpqe6vy",
+        "page:bafkreicnwl7z75gfauxai2esujlpuwrew7o4p3l7pv3tuhlqt76gospq3i",
+        "page:bafkreigripy52argoshygkackn5yiywcdnaphhyngglplio4bgc73lpj4a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "cooling_center_portland#turn-1",
+          "score": 0.999997,
+          "route": "grounded_211_answer",
+          "scenarioId": "cooling_center_portland",
+          "user": "Find a cooling center in Portland."
+        },
+        {
+          "recordId": "matrix_cooling_center_gresham#turn-1",
+          "score": 0.892855,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_cooling_center_gresham",
+          "user": "Can you find cooling center in Gresham?"
+        },
+        {
+          "recordId": "matrix_cooling_center_beaverton#turn-1",
+          "score": 0.892855,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_cooling_center_beaverton",
+          "user": "Can you find cooling center in Beaverton?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "live_agent_stays_sticky#turn-2",
+      "to": "realistic_broad_to_service_000#turn-2",
+      "type": "semantic_similar",
+      "score": 0.756645,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "legal_aid_portland#turn-1",
+      "to": "broad_then_legal#turn-2",
+      "type": "semantic_similar",
+      "score": 0.935971,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "youth_day_center#turn-1",
+      "to": "warming_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.785208,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "youth_day_center#turn-1",
+      "to": "shelter_then_safety_escalation#turn-1",
+      "type": "semantic_similar",
+      "score": 0.756645,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "cooling_center_portland#turn-1",
+      "to": "matrix_cooling_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.999997,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "warming_center_portland#turn-1",
+      "to": "shelter_then_safety_escalation#turn-1",
+      "type": "semantic_similar",
+      "score": 0.92656,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "warming_center_portland#turn-1",
+      "to": "realistic_grounded_072_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.86672,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "day_center_portland#turn-1",
+      "to": "matrix_youth_day_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.985614,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_legal#turn-2",
+      "to": "legal_aid_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.935971,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "shelter_then_safety_escalation#turn-1",
+      "to": "shelter_then_safety_escalation#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "shelter_then_safety_escalation#turn-1",
+      "to": "warming_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.92656,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "shelter_then_safety_escalation#turn-1",
+      "to": "realistic_grounded_072_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.868599,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_000_shelter_portland#turn-1",
+      "to": "realistic_grounded_072_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.892416,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_000_shelter_portland#turn-1",
+      "to": "shelter_then_safety_escalation#turn-1",
+      "type": "semantic_similar",
+      "score": 0.789542,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_048_veteran_housing_portland#turn-1",
+      "to": "matrix_veteran_housing_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.775089,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_072_shelter_portland#turn-1",
+      "to": "realistic_grounded_000_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.892416,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_072_shelter_portland#turn-1",
+      "to": "shelter_then_safety_escalation#turn-1",
+      "type": "semantic_similar",
+      "score": 0.868599,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_072_shelter_portland#turn-1",
+      "to": "warming_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.86672,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_broad_to_service_000#turn-2",
+      "to": "realistic_broad_to_service_000#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_000#turn-2",
+      "to": "realistic_broad_to_service_000#turn-3",
+      "type": "semantic_similar",
+      "score": 0.856349,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_000#turn-2",
+      "to": "live_agent_stays_sticky#turn-2",
+      "type": "semantic_similar",
+      "score": 0.756645,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_000#turn-3",
+      "to": "realistic_broad_to_service_000#turn-2",
+      "type": "semantic_similar",
+      "score": 0.856349,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_broad_to_service_000#turn-3",
+      "to": "live_agent_stays_sticky#turn-2",
+      "type": "semantic_similar",
+      "score": 0.704293,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_000_portland#turn-1",
+      "to": "realistic_grounded_then_urgent_000_portland#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_000_portland#turn-1",
+      "to": "realistic_grounded_072_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.755611,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "realistic_grounded_then_urgent_000_portland#turn-1",
+      "to": "realistic_grounded_000_shelter_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.744074,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_veteran_housing_portland#turn-1",
+      "to": "realistic_grounded_048_veteran_housing_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.775089,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_youth_day_center_portland#turn-1",
+      "to": "day_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.985614,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_cooling_center_portland#turn-1",
+      "to": "cooling_center_portland#turn-1",
+      "type": "semantic_similar",
+      "score": 0.999997,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

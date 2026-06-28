@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__broad_help__gresham",
+  "kind": "service_location",
+  "key": "broad_help__gresham",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "realistic_grounded_049_youth_day_center_gresham#turn-1",
+      "scenarioId": "realistic_grounded_049_youth_day_center_gresham",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "broad_help",
+      "locationTag": "gresham",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I'm disabled and it is hard to get across town. I need help for a young person outside near Gresham.",
+      "normalizedQuery": "i'm disabled it hard across town young person outside gresham",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:f343701d786b3ebc",
+        "service:d968ced621aea83d",
+        "service:f064091646bc9755",
+        "service:81897d263c3388a2",
+        "service:7a8f64f224c2c5ea"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_009_id_replacement_gresham#turn-1",
+          "score": 0.747297,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_009_id_replacement_gresham",
+          "user": "I'm disabled and it is hard to get across town. I need ID help near Gresham."
+        },
+        {
+          "recordId": "realistic_grounded_089_senior_meals_gresham#turn-1",
+          "score": 0.719511,
+          "route": "grounded_211_answer",
+          "scenarioId": "realistic_grounded_089_senior_meals_gresham",
+          "user": "I'm disabled and it is hard to get across town. I need meals for my mom near Gresham."
+        },
+        {
+          "recordId": "realistic_grounded_013_youth_day_center_salem#turn-1",
+          "score": 0.690798,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_013_youth_day_center_salem",
+          "user": "I'm fleeing a bad situation and I'm in Salem. I need help for a young person outside, but I need it to be safe."
+        }
+      ]
+    },
+    {
+      "id": "realistic_broad_to_service_001#turn-1",
+      "scenarioId": "realistic_broad_to_service_001",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "broad_help",
+      "locationTag": "gresham",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I'm outside and tired. I need help in Gresham, but I don't know where to start.",
+      "normalizedQuery": "i'm outside tired gresham don't know start",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:e8399a8259fb5c21",
+        "service:a7e869c19c920b1a",
+        "service:d968ced621aea83d",
+        "service:d7abe58ca7495460",
+        "service:8cff3ea3d8ce0793"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_broad_then_food_pantry_portland#turn-1",
+          "score": 0.843272,
+          "route": "clarifying_prompt",
+          "scenarioId": "matrix_broad_then_food_pantry_portland",
+          "user": "I need help but I do not know where to start."
+        },
+        {
+          "recordId": "broad_help_then_food#turn-1",
+          "score": 0.816497,
+          "route": "clarifying_prompt",
+          "scenarioId": "broad_help_then_food",
+          "user": "I need help but I do not know where to start."
+        },
+        {
+          "recordId": "matrix_broad_then_community_meals_gresham#turn-1",
+          "score": 0.802953,
+          "route": "clarifying_prompt",
+          "scenarioId": "matrix_broad_then_community_meals_gresham",
+          "user": "I need help but I do not know where to start."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_broad_to_service_001#turn-1",
+      "to": "realistic_broad_to_service_001#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "clarifying_prompt->grounded_211_answer"
+    }
+  ]
+}

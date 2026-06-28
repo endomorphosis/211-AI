@@ -1,0 +1,48 @@
+{
+  "artifact": "world-id-idkit-signoff",
+  "generated_at": "2026-06-14T00:00:00Z",
+  "task": "WORLDID-250",
+  "required_before_production": [
+    {
+      "id": "world_id_staging_simulator",
+      "description": "Staging simulator runbook evidence covering successful verification, same-wallet retry, different-wallet conflict, snapshot save/load, and QR/export review.",
+      "source": "docs/WORLD_ID_IDKIT_STAGING_RUNBOOK.md"
+    },
+    {
+      "id": "world_id_fullstack_playwright",
+      "description": "Full-stack Playwright evidence with live wallet API and mocked Developer Portal verification.",
+      "source": "wallet_interface/ui/tests/world-id-fullstack.spec.ts"
+    },
+    {
+      "id": "world_id_ux_review",
+      "description": "Desktop and mobile accessibility, fallback, no-overflow, no-overclaim, and no-leak screenshots and test output.",
+      "source": "artifacts/world-id-idkit-ui-review"
+    },
+    {
+      "id": "world_id_privacy_nullifier_review",
+      "description": "Privacy review that confirms nullifiers are stored as commitments, raw IDKit payloads remain backend-private, and QR/export metadata is sanitized.",
+      "source": "docs/WORLD_ID_IDKIT_WALLET_IMPLEMENTATION_PLAN.md"
+    },
+    {
+      "id": "world_id_security_signoff",
+      "description": "Security signoff covering RP signing keys, secret references, production readiness checks, and login/recovery non-key guardrails.",
+      "source": "docs/WALLET_SECURITY_ARCHITECTURE_ADR.md"
+    },
+    {
+      "id": "world_id_support_playbook",
+      "description": "Support/on-call evidence for disabled World ID, unavailable simulator, nullifier conflict, revoke/unlink wording, and manual fallback paths.",
+      "source": "docs/WORLD_ID_IDKIT_STAGING_RUNBOOK.md"
+    },
+    {
+      "id": "production_readiness",
+      "description": "Target readiness report with world_id_environment, world_id_secret_references, world_id_rp_signature_vector, world_id_verify_endpoint, and world_id_proof_sanitization checks set to ok.",
+      "source": "python -m wallet_interface.ops --validate-production-readiness"
+    },
+    {
+      "id": "product_owner_approval",
+      "description": "Human product-owner approval in the completed target signoff packet before production enablement.",
+      "source": "docs/WALLET_TARGET_PRODUCTION_SIGNOFF.md"
+    }
+  ],
+  "production_enablement_rule": "Do not enable WORLD_ID_ENVIRONMENT=production until the target signoff packet validates and all World ID evidence IDs resolve in the approved evidence system."
+}

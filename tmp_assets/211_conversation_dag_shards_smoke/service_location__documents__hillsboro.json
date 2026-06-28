@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__documents__hillsboro",
+  "kind": "service_location",
+  "key": "documents__hillsboro",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "realistic_grounded_027_id_replacement_hillsboro#turn-1",
+      "scenarioId": "realistic_grounded_027_id_replacement_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "documents",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "I'm not sure what the program is called. I am in Hillsboro and need ID help.",
+      "normalizedQuery": "i'm sure program called hillsboro id",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:cbb641cc5af6e9d6",
+        "service:6b92be127fcce66a",
+        "service:6cd0c322f0d1025d",
+        "service:a630e66e49b302e5",
+        "service:aab52d8086bd4878"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_youth_day_center_hillsboro#turn-1",
+          "score": 0.764218,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_youth_day_center_hillsboro",
+          "user": "Can you find youth day center in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_child_care_hillsboro#turn-1",
+          "score": 0.723677,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_hillsboro",
+          "user": "Can you find child care help in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_detox_hillsboro#turn-1",
+          "score": 0.703529,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_hillsboro",
+          "user": "Can you find detox help in Hillsboro?"
+        }
+      ]
+    },
+    {
+      "id": "realistic_grounded_then_urgent_003_hillsboro#turn-1",
+      "scenarioId": "realistic_grounded_then_urgent_003_hillsboro",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "documents",
+      "locationTag": "hillsboro",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I don't have ID right now. I'm in Hillsboro. Can I still get showers?",
+      "normalizedQuery": "don't have id right now i'm hillsboro still showers",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:078087b57125137d",
+        "service:2ef319d5e12550a7",
+        "service:bf0682fd9fa9809c",
+        "service:cbb641cc5af6e9d6",
+        "service:57fcd59e218a59f6"
+      ],
+      "similarCases": [
+        {
+          "recordId": "realistic_grounded_074_community_meals_beaverton#turn-1",
+          "score": 0.907411,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_074_community_meals_beaverton",
+          "user": "I don't have ID right now. I'm in Beaverton. Can I still get somewhere to eat?"
+        },
+        {
+          "recordId": "realistic_grounded_then_urgent_004_clackamas#turn-2",
+          "score": 0.809348,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_then_urgent_004_clackamas",
+          "user": "I do not feel safe right now."
+        },
+        {
+          "recordId": "realistic_grounded_then_urgent_008_portland#turn-2",
+          "score": 0.797925,
+          "route": "live_agent",
+          "scenarioId": "realistic_grounded_then_urgent_008_portland",
+          "user": "I do not feel safe right now."
+        }
+      ]
+    },
+    {
+      "id": "matrix_id_replacement_hillsboro#turn-1",
+      "scenarioId": "matrix_id_replacement_hillsboro",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "documents",
+      "locationTag": "hillsboro",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find ID replacement help in Hillsboro?",
+      "normalizedQuery": "id replacement hillsboro",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9f02d53fbb3e9c6a",
+        "service:cbb641cc5af6e9d6",
+        "service:a927abbe60497dda",
+        "service:3ad36b571383e0bf",
+        "service:8ba0530778ce4030"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_clothing_hillsboro#turn-1",
+          "score": 0.891892,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_clothing_hillsboro",
+          "user": "Can you find clothing help in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_laundry_hillsboro#turn-1",
+          "score": 0.880077,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_hillsboro",
+          "user": "Can you find laundry services in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_mail_service_hillsboro#turn-1",
+          "score": 0.811753,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mail_service_hillsboro",
+          "user": "Can you find mail service in Hillsboro?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "realistic_grounded_then_urgent_003_hillsboro#turn-1",
+      "to": "realistic_grounded_then_urgent_003_hillsboro#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    }
+  ]
+}

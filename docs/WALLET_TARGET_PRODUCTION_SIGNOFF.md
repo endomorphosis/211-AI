@@ -53,6 +53,21 @@ launch decision still requires validating the completed target packet path.
 | Proof verifier service URL or private service name |  |
 | Proof verifier ID |  |
 | Proof system |  |
+| World ID enabled decision |  |
+| World ID environment |  |
+| World ID app ID |  |
+| World ID relying-party ID |  |
+| World ID Developer Portal verify endpoint |  |
+| Secret-manager path for World ID RP signing key |  |
+| Secret-manager path for World ID nullifier commitment key |  |
+| World ID endpoint reachability evidence artifact |  |
+| World ID proof sanitization evidence artifact |  |
+| World ID staging simulator evidence artifact |  |
+| World ID full-stack Playwright evidence artifact |  |
+| World ID UX review evidence artifact |  |
+| World ID privacy/nullifier review evidence artifact |  |
+| World ID security signoff evidence artifact |  |
+| World ID support playbook evidence artifact |  |
 | Release-check evidence artifact |  |
 | Readiness report artifact |  |
 | Ops-health report artifact |  |
@@ -75,6 +90,14 @@ launch decision still requires validating the completed target packet path.
 | Encrypted storage replicas | `WALLET_STORAGE_CONFIG` and provider credentials are configured without placeholder values |  |
 | Storage repair | `/ops/health?verify_storage=true` plus wallet or record storage repair checks pass with ciphertext/hash evidence only |  |
 | External proof verifier | HTTP verifier health/prove/verify/no-leak contract passes with real staging credentials |  |
+| World ID production config | When enabled, `WORLD_ID_ENVIRONMENT=production`, `WORLD_ID_APP_ID`, `WORLD_ID_RP_ID`, and `WORLD_ID_VERIFY_BASE_URL=https://developer.world.org` are configured in the target runtime |  |
+| World ID secret references | RP signing and nullifier commitment secrets have approved secret-manager references and are not stored in browser-exposed env vars |  |
+| World ID RP signing vector | `python -m wallet_interface.ops --validate-production-readiness` reports `world_id_rp_signature_vector=status=ok` using the target signing secret |  |
+| World ID endpoint reachability | Target evidence proves the World Developer Portal verify endpoint was reachable from the deployment network before launch |  |
+| World ID staging simulator | `docs/WORLD_ID_IDKIT_STAGING_RUNBOOK.md` was executed with successful verification, same-wallet retry, different-wallet conflict, snapshot save/load, QR proof review, and archived redacted evidence |  |
+| World ID no-leak evidence | Backend sanitization and full-stack Playwright evidence prove raw nullifiers, IDKit proofs, RP signatures, Developer Portal responses, and PII are not rendered, exported, or logged |  |
+| World ID login/recovery guardrails | Any login or recovery assist remains post-MVP, uses a separate action, is not a wallet encryption key or sole recovery factor, and cannot bypass controller, threshold, user-presence, recovery-contact, or support-review policy |  |
+| World ID credential expansion | Passport/NFC, selfie, and identity-check policies are disabled unless claim-specific allowed/prohibited claims, UI wording, privacy/legal review, provider eligibility policy, and manual fallback are approved |  |
 | Secret management | Ops-health, alert, storage, and verifier credentials live in the selected secret manager and are not committed to the repo |  |
 | Alert routing | Warning/error reports reach the approved incident router with authenticated delivery |  |
 | Security architecture | `docs/WALLET_SECURITY_ARCHITECTURE_ADR.md` reviewed for the target deployment boundary |  |
@@ -84,6 +107,7 @@ launch decision still requires validating the completed target packet path.
 | Privacy review | Approved analytics templates have cohort thresholds, epsilon budgets, allowed dimensions, nullifier handling, withdrawal behavior, and reviewer identity |  |
 | Legal/policy review | User consent language, delegate terms, export behavior, revocation limits, and data-sharing obligations are approved |  |
 | Accessibility/usability review | Live UI auth, registration, sharing, recipient access, consent, proof center, export, and emergency revoke flows pass the target accessibility and usability standard |  |
+| World ID accessibility/fallback review | World ID proof center, wallet attach, client intake, security, QR review, and export/import flows pass desktop/mobile keyboard, accessible-name, no-overflow, emergency fallback, and no legal-identity-overclaim checks |  |
 | Incident response | `docs/WALLET_OPERATIONS_RUNBOOK.md` is linked from the on-call system and the team has tested proof-backend, storage-outage, revoked-grant, lost-key, and privacy-incident paths |  |
 | Operator reference | `docs/WALLET_OPERATOR_INTEGRATOR_REFERENCE.md` matches the deployed API, CLI, MCP, env, and release-check surface |  |
 | Backup and restore | Wallet repository and encrypted storage restore tests pass without exposing plaintext outside the wallet service boundary |  |

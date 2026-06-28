@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__shelter__statewide",
+  "kind": "service_location",
+  "key": "shelter__statewide",
+  "nodeCount": 5,
+  "nodes": [
+    {
+      "id": "live_agent_stays_sticky#turn-1",
+      "scenarioId": "live_agent_stays_sticky",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Can I talk to a human about shelter?",
+      "normalizedQuery": "talk human shelter shelters homeless overnight warming",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "live_agent_stays_sticky#turn-2",
+          "score": 0.835107,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Actually maybe just search for Portland shelter."
+        },
+        {
+          "recordId": "urgent_then_calmer_followup#turn-2",
+          "score": 0.828015,
+          "route": "live_agent",
+          "scenarioId": "urgent_then_calmer_followup",
+          "user": "Actually can you just send me a shelter list?"
+        },
+        {
+          "recordId": "stress_0129_cooling_center_clackamas_9#turn-2",
+          "score": 0.798552,
+          "route": "live_agent",
+          "scenarioId": "stress_0129_cooling_center_clackamas_9",
+          "user": "Can I talk to a person about this?"
+        }
+      ]
+    },
+    {
+      "id": "veteran_services#turn-1",
+      "scenarioId": "veteran_services",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am a veteran and need housing help in Oregon.",
+      "normalizedQuery": "veteran veterans va housing oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreiakltk4f7ajva6urd36geny3hwnxhyqfe5xh4i36qefdec5slxxse",
+        "page:bafkreid7xxxrifppuw2dykxxi4674uneduk7zexkjlramkrrpc4ojufkty",
+        "page:bafkreihw2dnaahulxuzcyhte67fjre5uo736rf7gx3t5oxtxos6jtp7t4e",
+        "page:bafkreifsfavs7nphb66a26ddwupzl44x4d6t766e2zh2rwnkhx7hiyiehe",
+        "page:bafkreiekc5coret46eepgjkrdmccp4tf7oorp6vdziq4mpamleikrrgx4q"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0588_veteran_housing_eugene_0#turn-1",
+          "score": 0.935047,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0588_veteran_housing_eugene_0",
+          "user": "I am in Eugene and need veteran housing help."
+        },
+        {
+          "recordId": "stress_0276_veteran_housing_beaverton_0#turn-1",
+          "score": 0.934297,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0276_veteran_housing_beaverton_0",
+          "user": "I am in Beaverton and need veteran housing help."
+        },
+        {
+          "recordId": "stress_0510_veteran_housing_hillsboro_6#turn-2",
+          "score": 0.921257,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0510_veteran_housing_hillsboro_6",
+          "user": "I am in Hillsboro and need veteran housing help."
+        }
+      ]
+    },
+    {
+      "id": "shelter_with_child_tonight#turn-1",
+      "scenarioId": "shelter_with_child_tonight",
+      "turnIndex": 0,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "My child and I need shelter tonight right now.",
+      "normalizedQuery": "child shelter shelters homeless overnight warming tonight right now",
+      "voiceResponse": "This sounds urgent. If you are in immediate danger, call 911. I can connect this to a person.",
+      "evidenceDocIds": [
+        "service:32f8d8103ea16592",
+        "service:06316d26dda9c85b",
+        "service:b5d06c266ca98fec",
+        "service:d3db844d9700f43d",
+        "service:bd5c5bd198f76c8b"
+      ],
+      "similarCases": [
+        {
+          "recordId": "urgent_shelter_tonight#turn-1",
+          "score": 0.871693,
+          "route": "live_agent",
+          "scenarioId": "urgent_shelter_tonight",
+          "user": "I am outside in Portland tonight and need a safe shelter right now."
+        },
+        {
+          "recordId": "shelter_then_safety_escalation#turn-2",
+          "score": 0.766924,
+          "route": "live_agent",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "I am outside right now and do not feel safe tonight."
+        },
+        {
+          "recordId": "urgent_then_calmer_followup#turn-1",
+          "score": 0.692858,
+          "route": "live_agent",
+          "scenarioId": "urgent_then_calmer_followup",
+          "user": "I am unsafe right now."
+        }
+      ]
+    },
+    {
+      "id": "id_for_shelter#turn-1",
+      "scenarioId": "id_for_shelter",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "shelter",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Do I need identification before going to a shelter?",
+      "normalizedQuery": "identification before going shelter shelters homeless overnight warming",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "shelter_then_safety_escalation#turn-1",
+          "score": 0.748182,
+          "route": "grounded_211_answer",
+          "scenarioId": "shelter_then_safety_escalation",
+          "user": "Can you find shelters in Portland?"
+        },
+        {
+          "recordId": "warming_center_portland#turn-1",
+          "score": 0.747522,
+          "route": "grounded_211_answer",
+          "scenarioId": "warming_center_portland",
+          "user": "Find a warming shelter in Portland."
+        },
+        {
+          "recordId": "matrix_rent_assistance_portland#turn-1",
+          "score": 0.672345,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_rent_assistance_portland",
+          "user": "Can you find rent assistance in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "urgent_then_calmer_followup#turn-2",
+      "scenarioId": "urgent_then_calmer_followup",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "shelter",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "Actually can you just send me a shelter list?",
+      "normalizedQuery": "actually just send shelter shelters homeless overnight warming list",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:5ded755b33454184",
+        "service:bd5c5bd198f76c8b",
+        "service:57c4c63dcadba358",
+        "service:da479dd20eb5563d",
+        "service:b4ef6dca3c3f73bd"
+      ],
+      "similarCases": [
+        {
+          "recordId": "live_agent_stays_sticky#turn-1",
+          "score": 0.828015,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Can I talk to a human about shelter?"
+        },
+        {
+          "recordId": "live_agent_stays_sticky#turn-2",
+          "score": 0.77963,
+          "route": "live_agent",
+          "scenarioId": "live_agent_stays_sticky",
+          "user": "Actually maybe just search for Portland shelter."
+        },
+        {
+          "recordId": "urgent_shelter_tonight#turn-1",
+          "score": 0.714289,
+          "route": "live_agent",
+          "scenarioId": "urgent_shelter_tonight",
+          "user": "I am outside in Portland tonight and need a safe shelter right now."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "live_agent_stays_sticky#turn-1",
+      "to": "live_agent_stays_sticky#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "live_agent_stays_sticky#turn-1",
+      "to": "urgent_then_calmer_followup#turn-2",
+      "type": "semantic_similar",
+      "score": 0.828015,
+      "routeTransition": "live_agent->live_agent"
+    },
+    {
+      "from": "urgent_then_calmer_followup#turn-2",
+      "to": "live_agent_stays_sticky#turn-1",
+      "type": "semantic_similar",
+      "score": 0.828015,
+      "routeTransition": "live_agent->live_agent"
+    }
+  ]
+}

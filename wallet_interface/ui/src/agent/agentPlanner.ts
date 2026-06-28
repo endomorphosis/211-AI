@@ -215,7 +215,7 @@ export function planAgentTurn(input: AgentPlannerInput): AgentPlannedTurn {
       tools: withToolSurface(input.context, [
         {
           name: toolName,
-          input: toolName === "search_211_services" ? { query: content, limit: 8 } : { question: content, useLocalModel: false },
+          input: toolName === "search_211_services" ? { query: content, limit: 8 } : { question: content, useLocalModel: true },
           title: getToolDefinition(toolName).title
         }
       ])
@@ -234,7 +234,7 @@ export function planAgentTurn(input: AgentPlannerInput): AgentPlannedTurn {
   }
 
   if (/\b(export|exports|download|bundle|share bundle)\b/.test(lower)) {
-    return navigationTurn("exports", "export_request");
+    return navigationTurn("security", "export_request");
   }
 
   return {
@@ -292,7 +292,7 @@ function isCurrentSurfaceQuestion(lower: string): boolean {
 
 function shouldNavigate(lower: string, route: RouteId): boolean {
   if (navigationPattern.test(lower)) return true;
-  if (route === "audit" || route === "proof-center" || route === "exports") {
+  if (route === "audit" || route === "proof-center" || route === "security") {
     return /\b(audit|history|proof|proofs|verify|verification|export|exports|bundle|download)\b/.test(lower);
   }
   return false;
@@ -373,7 +373,7 @@ function planExportTurn(context: SurfaceContext, lower: string, original: string
       return {
         intentKind: "export_request",
         summary: "Clarify export import request.",
-        tools: withToolSurface(context, [{ name: "navigate", input: { route: "exports" }, title: getToolDefinition("navigate").title }]),
+        tools: withToolSurface(context, [{ name: "navigate", input: { route: "security" }, title: getToolDefinition("navigate").title }]),
         response: "To import an export bundle, I need the export bundle ID or provided bundle data."
       };
     }
@@ -396,7 +396,7 @@ function planExportTurn(context: SurfaceContext, lower: string, original: string
     return {
       intentKind: "export_request",
       summary: "Clarify export bundle request.",
-      tools: withToolSurface(context, [{ name: "navigate", input: { route: "exports" }, title: getToolDefinition("navigate").title }]),
+        tools: withToolSurface(context, [{ name: "navigate", input: { route: "security" }, title: getToolDefinition("navigate").title }]),
       response: "To stage an export bundle, I need a recipient or audience label and at least one record ID."
     };
   }
@@ -1015,5 +1015,5 @@ function singleVisibleServiceId(context: SurfaceContext): string | undefined {
 }
 
 function fallbackResponse(context: SurfaceContext): string {
-  return `You are on ${context.routeLabel}. I can explain this screen, navigate the app, answer public 211 service questions, and ask for confirmation before changing wallet data.`;
+  return `I can help on the ${context.routeLabel} screen: explain what is visible, navigate the app, answer public 211 service questions, and ask before changing wallet data.`;
 }

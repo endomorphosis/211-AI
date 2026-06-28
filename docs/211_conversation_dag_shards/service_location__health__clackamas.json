@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__health__clackamas",
+  "kind": "service_location",
+  "key": "health__clackamas",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_detox_clackamas#turn-1",
+      "scenarioId": "matrix_detox_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find detox help in Clackamas County?",
+      "normalizedQuery": "detox clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:2d63f632b46d0d29",
+        "service:c1be66b3f546e230",
+        "service:45707f0c70045863",
+        "service:77801dbfae971c49"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0531_detox_clackamas_3#turn-1",
+          "score": 0.934934,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0531_detox_clackamas_3",
+          "user": "Where should someone call for detox help in Clackamas County?"
+        },
+        {
+          "recordId": "stress_0323_detox_clackamas_11#turn-2",
+          "score": 0.933967,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0323_detox_clackamas_11",
+          "user": "I am in Clackamas County and need detox help."
+        },
+        {
+          "recordId": "matrix_mental_health_clackamas#turn-1",
+          "score": 0.804303,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_mental_health_clackamas",
+          "user": "Can you find mental health services in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0323_detox_clackamas_11#turn-2",
+      "scenarioId": "stress_0323_detox_clackamas_11",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Clackamas County and need detox help.",
+      "normalizedQuery": "clackamas county detox",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "service:2d63f632b46d0d29",
+        "service:c1be66b3f546e230",
+        "service:45707f0c70045863",
+        "service:77801dbfae971c49"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0531_detox_clackamas_3#turn-1",
+          "score": 0.937582,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0531_detox_clackamas_3",
+          "user": "Where should someone call for detox help in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_detox_clackamas#turn-1",
+          "score": 0.933967,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_clackamas",
+          "user": "Can you find detox help in Clackamas County?"
+        },
+        {
+          "recordId": "stress_0011_detox_portland_11#turn-2",
+          "score": 0.850472,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0011_detox_portland_11",
+          "user": "I am in Portland and need detox help."
+        }
+      ]
+    },
+    {
+      "id": "stress_0531_detox_clackamas_3#turn-1",
+      "scenarioId": "stress_0531_detox_clackamas_3",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "health",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Where should someone call for detox help in Clackamas County?",
+      "normalizedQuery": "should someone call detox clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:a80fc4c7b16e0d53",
+        "page:bafkreid5ogq2lnpojuvguslzoint7utmfi4kv357cn4gdoa7ako4jfu42u",
+        "service:03f0d7f3a93aaddb",
+        "service:4f3f12fd2a097337",
+        "service:7a13b77aa237b2eb"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0323_detox_clackamas_11#turn-2",
+          "score": 0.937582,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0323_detox_clackamas_11",
+          "user": "I am in Clackamas County and need detox help."
+        },
+        {
+          "recordId": "matrix_detox_clackamas#turn-1",
+          "score": 0.934934,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_clackamas",
+          "user": "Can you find detox help in Clackamas County?"
+        },
+        {
+          "recordId": "stress_0219_detox_portland_3#turn-1",
+          "score": 0.864151,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0219_detox_portland_3",
+          "user": "Where should someone call for detox help in Portland?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_detox_clackamas#turn-1",
+      "to": "stress_0531_detox_clackamas_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.934934,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_detox_clackamas#turn-1",
+      "to": "stress_0323_detox_clackamas_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.933967,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0323_detox_clackamas_11#turn-2",
+      "to": "stress_0323_detox_clackamas_11#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->live_agent"
+    },
+    {
+      "from": "stress_0323_detox_clackamas_11#turn-2",
+      "to": "stress_0531_detox_clackamas_3#turn-1",
+      "type": "semantic_similar",
+      "score": 0.937582,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0323_detox_clackamas_11#turn-2",
+      "to": "matrix_detox_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.933967,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0531_detox_clackamas_3#turn-1",
+      "to": "stress_0323_detox_clackamas_11#turn-2",
+      "type": "semantic_similar",
+      "score": 0.937582,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0531_detox_clackamas_3#turn-1",
+      "to": "matrix_detox_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.934934,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

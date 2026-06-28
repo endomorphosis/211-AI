@@ -2,11 +2,21 @@ export type RouteId =
   | "home"
   | "register"
   | "check-in"
+  | "calendar"
+  | "messages"
   | "contacts"
   | "sharing-rules"
   | "uploads"
+  | "settings"
   | "social-services"
+  | "interactions"
   | "shelter"
+  | "provider-clients"
+  | "provider-cases"
+  | "provider-messages"
+  | "provider-analytics"
+  | "provider-proofs"
+  | "provider-operations"
   | "recipient-access"
   | "benefits-protection"
   | "analytics"
@@ -51,6 +61,8 @@ export interface RegistrationProfileDraft {
   currentLocation: string;
   shelterAffiliation: string;
   serviceNeeds: string[];
+  servicePartnerHelpRequested: boolean;
+  servicePartnerHelpRequestedAt: string;
   preferredCheckInChannels: CheckInChannel[];
   easyBotCheckStatus: EasyBotCheckStatus;
   captchaToken: string;
@@ -98,12 +110,59 @@ export interface UploadItem {
   id: string;
   recordId?: string;
   fileName: string;
+  createdAt?: string;
+  createdAtRaw?: string;
   machineSummary: string;
   category: string;
   sensitivity: "low" | "moderate" | "high" | "restricted";
   status: "stored" | "encrypting" | "failed";
   storageOk?: boolean;
   shared: boolean;
+  sharingMode?: "private" | "public" | "selected_contacts";
+  allowedRecipientIds?: string[];
+  decentralizedStorageStatus?: "not_configured" | "ready" | "uploading" | "stored" | "failed";
+  decentralizedStorageProvider?: "ipfs" | "filecoin" | "ipfs-filecoin" | "walrus" | "wallet-api" | "local";
+  decryptedClassification?: string;
+  decryptedLabels?: string[];
+  decryptedMimeType?: string;
+  encryptedMetadataCid?: string;
+  encryptedPayloadCid?: string;
+  ipfsCid?: string;
+  ipfsGatewayUrl?: string;
+  ipfsRootCid?: string;
+  ipldLinks?: Array<{ "/"?: string; cid?: string; mediaType?: string; name: string }>;
+  metadataCid?: string;
+  metadataFilecoinPinRequestId?: string;
+  metadataFilecoinPinStatus?: "queued" | "pinning" | "pinned" | "failed";
+  metadataFilecoinPinStatusUrl?: string;
+  metadataGatewayUrl?: string;
+  metadataIpldCid?: string;
+  metadataIpldLink?: { "/"?: string; cid?: string; mediaType?: string; name: string };
+  metadataStorageMessage?: string;
+  filecoinPieceCid?: string;
+  filecoinDealId?: string;
+  filecoinPinRequestId?: string;
+  filecoinPinStatus?: "queued" | "pinning" | "pinned" | "failed";
+  filecoinPinStatusUrl?: string;
+  walrusBlobId?: string;
+  walrusEndEpoch?: number;
+  walrusGatewayUrl?: string;
+  walrusObjectId?: string;
+  walrusStorageCost?: number;
+  walrusTxDigest?: string;
+  decentralizedStorageMessage?: string;
+  privacyProfileStatus?: "not_started" | "profiling" | "profiled" | "failed";
+  privacyProfileClassification?: string;
+  privacyProfileLabels?: string[];
+  privacyProfileSummary?: string;
+  privacyProfileMimeType?: string;
+  privacyProfileProofId?: string;
+  privacyProfileArtifactIds?: string[];
+  privacyProfileMessage?: string;
+  privacyProfilePublicInputs?: Record<string, unknown>;
+  privacyProfileSearchText?: string;
+  privacyProfileNeedsRefresh?: boolean;
+  privacyProfileVectorTerms?: string[];
 }
 
 export interface ServiceMatch {
@@ -258,6 +317,7 @@ export interface DerivedAnalysisResultView {
 export interface DecryptedRecordView {
   recordId: string;
   text: string;
+  base64?: string;
   sizeBytes: number;
 }
 

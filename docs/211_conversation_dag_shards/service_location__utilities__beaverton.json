@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__utilities__beaverton",
+  "kind": "service_location",
+  "key": "utilities__beaverton",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_utility_assistance_beaverton#turn-1",
+      "scenarioId": "matrix_utility_assistance_beaverton",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find utility assistance in Beaverton?",
+      "normalizedQuery": "utility utilities heat electric assistance beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0472_utility_assistance_beaverton_4#turn-1",
+          "score": 0.940394,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0472_utility_assistance_beaverton_4",
+          "user": "Find local utility assistance options around Beaverton."
+        },
+        {
+          "recordId": "stress_0264_utility_assistance_beaverton_0#turn-1",
+          "score": 0.934176,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0264_utility_assistance_beaverton_0",
+          "user": "I am in Beaverton and need utility assistance."
+        },
+        {
+          "recordId": "matrix_utility_assistance_portland#turn-1",
+          "score": 0.908556,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_portland",
+          "user": "Can you find utility assistance in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "stress_0264_utility_assistance_beaverton_0#turn-1",
+      "scenarioId": "stress_0264_utility_assistance_beaverton_0",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Beaverton and need utility assistance.",
+      "normalizedQuery": "beaverton utility utilities heat electric assistance",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0472_utility_assistance_beaverton_4#turn-1",
+          "score": 0.963289,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0472_utility_assistance_beaverton_4",
+          "user": "Find local utility assistance options around Beaverton."
+        },
+        {
+          "recordId": "matrix_utility_assistance_beaverton#turn-1",
+          "score": 0.934176,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_beaverton",
+          "user": "Can you find utility assistance in Beaverton?"
+        },
+        {
+          "recordId": "stress_0420_utility_assistance_portland_0#turn-1",
+          "score": 0.915048,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0420_utility_assistance_portland_0",
+          "user": "I am in Portland and need utility assistance."
+        }
+      ]
+    },
+    {
+      "id": "stress_0472_utility_assistance_beaverton_4#turn-1",
+      "scenarioId": "stress_0472_utility_assistance_beaverton_4",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "utilities",
+      "locationTag": "beaverton",
+      "promptTemplate": "grounded_service_match",
+      "user": "Find local utility assistance options around Beaverton.",
+      "normalizedQuery": "local utility utilities heat electric assistance options around beaverton",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9c4a0ab059aed565",
+        "service:d9c7707e45d265ad",
+        "service:b0fd90b106c6a4ef",
+        "service:ee46fefe2a001b32",
+        "service:76268562d32f66da"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0264_utility_assistance_beaverton_0#turn-1",
+          "score": 0.963289,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0264_utility_assistance_beaverton_0",
+          "user": "I am in Beaverton and need utility assistance."
+        },
+        {
+          "recordId": "matrix_utility_assistance_beaverton#turn-1",
+          "score": 0.940394,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_utility_assistance_beaverton",
+          "user": "Can you find utility assistance in Beaverton?"
+        },
+        {
+          "recordId": "stress_0004_utility_assistance_portland_4#turn-1",
+          "score": 0.913965,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0004_utility_assistance_portland_4",
+          "user": "Find local utility assistance options around Portland."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_utility_assistance_beaverton#turn-1",
+      "to": "stress_0472_utility_assistance_beaverton_4#turn-1",
+      "type": "semantic_similar",
+      "score": 0.940394,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_utility_assistance_beaverton#turn-1",
+      "to": "stress_0264_utility_assistance_beaverton_0#turn-1",
+      "type": "semantic_similar",
+      "score": 0.934176,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0264_utility_assistance_beaverton_0#turn-1",
+      "to": "stress_0472_utility_assistance_beaverton_4#turn-1",
+      "type": "semantic_similar",
+      "score": 0.963289,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0264_utility_assistance_beaverton_0#turn-1",
+      "to": "matrix_utility_assistance_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.934176,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0472_utility_assistance_beaverton_4#turn-1",
+      "to": "stress_0264_utility_assistance_beaverton_0#turn-1",
+      "type": "semantic_similar",
+      "score": 0.963289,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0472_utility_assistance_beaverton_4#turn-1",
+      "to": "matrix_utility_assistance_beaverton#turn-1",
+      "type": "semantic_similar",
+      "score": 0.940394,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

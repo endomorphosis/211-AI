@@ -78,6 +78,7 @@ function buildIcsEventLines(input: IcsEventInput): string[] {
   const createdAt = toValidDate(input.createdAt ?? new Date(), "createdAt");
   const updatedAt = toValidDate(input.updatedAt ?? createdAt, "updatedAt");
   const uid = input.uid ?? `${hashString([input.title, startsAt.toISOString(), input.location].join("|"))}@abby-211.local`;
+  const url = normalizeIcsUrl(input.url);
 
   return [
     "BEGIN:VEVENT",
@@ -90,7 +91,7 @@ function buildIcsEventLines(input: IcsEventInput): string[] {
     `SUMMARY:${escapeIcsText(input.title)}`,
     input.description ? `DESCRIPTION:${escapeIcsText(input.description)}` : undefined,
     input.location ? `LOCATION:${escapeIcsText(input.location)}` : undefined,
-    input.url ? `URL:${escapeIcsText(input.url)}` : undefined,
+    url ? `URL:${url}` : undefined,
     ...(input.alarms ?? []).flatMap(buildIcsAlarmLines),
     "END:VEVENT",
   ].filter(isPresent);
@@ -153,17 +154,43 @@ function formatIcsAllDayDate(date: Date): string {
 }
 
 function foldIcsLine(line: string): string {
-  const limit = 75;
-  if (line.length <= limit) return line;
+  const firstLineLimit = 75;
+  const continuationLimit = 74;
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= firstLineLimit) return line;
 
   const chunks: string[] = [];
-  let remaining = line;
-  while (remaining.length > limit) {
-    chunks.push(remaining.slice(0, limit));
-    remaining = remaining.slice(limit);
+  let current = "";
+  let currentBytes = 0;
+  let currentLimit = firstLineLimit;
+
+  for (const character of line) {
+    const characterBytes = encoder.encode(character).length;
+    if (current && currentBytes + characterBytes > currentLimit) {
+      chunks.push(current);
+      current = character;
+      currentBytes = characterBytes;
+      currentLimit = continuationLimit;
+    } else {
+      current += character;
+      currentBytes += characterBytes;
+    }
   }
-  chunks.push(remaining);
+
+  if (current) chunks.push(current);
   return chunks.join("\r\n ");
+}
+
+function normalizeIcsUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || /[\r\n]/.test(trimmed)) return undefined;
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function hashString(value: string): string {

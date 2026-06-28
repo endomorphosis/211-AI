@@ -17,8 +17,11 @@ type CaptureViewport = "desktop" | "mobile";
 type ScreenshotManifestEntry = Omit<CaptureScenario, "prepare"> & {
   viewport: CaptureViewport;
   screenshotPath: string;
+  screenshotPaths?: string[];
   multimodalPrompt: string;
 };
+
+const MAX_SCREENSHOT_DIMENSION = 32767;
 
 const captureScenarios: CaptureScenario[] = [
   {
@@ -27,8 +30,8 @@ const captureScenarios: CaptureScenario[] = [
     title: "Login page",
     state: "signed out",
     goals: [
-      "Username and password fields should be immediately visible.",
-      "The sign-in action should be clear and reachable on mobile.",
+      "Client and service provider portal choices should be immediately visible under the Abby logo.",
+      "The email or telephone login field and code/link action should be clear and reachable on mobile.",
       "The page should feel like the entry point to Abby without extra informational boxes."
     ]
   },
@@ -67,7 +70,7 @@ const captureScenarios: CaptureScenario[] = [
       "Required fields should be obvious without feeling punitive.",
       "Optional sensitive fields should feel clearly optional.",
       "The photo or photo ID field should allow image files and PDFs without promising a thumbnail preview.",
-      "The bot-check controls should be visible and understandable."
+      "The government-services help entry point should be visible on the registration page."
     ]
   },
   {
@@ -97,8 +100,6 @@ const captureScenarios: CaptureScenario[] = [
       await page.getByLabel(/Preferred shelter/i).fill("Rose City Shelter");
       await screen.getByRole("button", { name: "Shelter" }).click();
       await screen.getByRole("button", { name: "Benefits" }).click();
-      await page.getByLabel(/Quick health check complete/i).check();
-      await page.getByLabel(/Bot check complete/i).check();
     }
   },
   {
@@ -119,6 +120,17 @@ const captureScenarios: CaptureScenario[] = [
       });
       await expect(page.getByText(/We can't use this file/i)).toBeVisible();
     }
+  },
+  {
+    id: "client-settings",
+    path: "/#/settings",
+    title: "Client settings",
+    state: "account preferences",
+    goals: [
+      "The settings page should make the profile form feel editable after registration.",
+      "Privacy and account safety controls should read like saved settings without crowding the page.",
+      "The Settings navigation item should feel like a bottom-of-client-menu destination, not onboarding."
+    ]
   },
   {
     id: "check-in",
@@ -162,6 +174,28 @@ const captureScenarios: CaptureScenario[] = [
     }
   },
   {
+    id: "interactions-history",
+    path: "/#/interactions",
+    title: "Interaction history",
+    state: "seeded interaction timeline",
+    goals: [
+      "Wallet interaction history should read like one unified flow instead of a split sidebar layout.",
+      "Summary cards, filters, calendar handoff, audit details, and the grouped timeline should all remain visible without crowding.",
+      "Follow-up due events should stand out without exposing sensitive note content."
+    ]
+  },
+  {
+    id: "calendar-scheduled-services",
+    path: "/#/calendar",
+    title: "Calendar schedule",
+    state: "scheduled service appointment and follow-up",
+    goals: [
+      "Upcoming appointments, follow-ups, and check-ins should be easy to distinguish.",
+      "Travel and reminder details should be visible without crowding the row actions.",
+      "The schedule should remain readable on mobile with action buttons wrapping cleanly."
+    ]
+  },
+  {
     id: "contacts",
     path: "/#/contacts",
     title: "Emergency contacts",
@@ -183,7 +217,8 @@ const captureScenarios: CaptureScenario[] = [
       "The new-person sharing checkboxes should be visible and readable before save."
     ],
     prepare: async (page) => {
-      await page.getByLabel(/Name or group/i).fill("Morgan Caseworker");
+      await page.getByLabel(/First name/i).fill("Morgan");
+      await page.getByLabel(/Last name/i).fill("Caseworker");
       await page.getByLabel(/Relationship or role/i).fill("Outreach case worker");
       await page.getByLabel("Phone", { exact: true }).fill("(503) 555-0188");
       await page.getByLabel("Email", { exact: true }).fill("morgan@example.org");
@@ -201,7 +236,8 @@ const captureScenarios: CaptureScenario[] = [
       "The user should be able to review choices before adding the person."
     ],
     prepare: async (page) => {
-      await page.getByLabel(/Name or group/i).fill("Morgan Caseworker");
+      await page.getByLabel(/First name/i).fill("Morgan");
+      await page.getByLabel(/Last name/i).fill("Caseworker");
       await page.getByLabel(/Relationship or role/i).fill("Outreach case worker");
       await page.getByLabel("Phone", { exact: true }).fill("(503) 555-0188");
       await page.getByLabel("Email", { exact: true }).fill("morgan@example.org");
@@ -216,14 +252,14 @@ const captureScenarios: CaptureScenario[] = [
     title: "Emergency contacts edit sharing panel",
     state: "saved contact sharing editor open",
     goals: [
-      "A saved contact should open into an obvious sharing edit panel.",
+      "A saved contact should open into an obvious full-width sharing edit panel below the list.",
       "Checkboxes should have a clear group heading and readable labels.",
       "Save and cancel actions should be reachable without horizontal scrolling."
     ],
     prepare: async (page) => {
       const savedMaya = page.locator(".recipient-list-item").filter({ hasText: "Maya Johnson" });
       await savedMaya.getByRole("button", { name: /^Edit sharing$/i }).click();
-      await expect(savedMaya.getByRole("region", { name: /Edit sharing for Maya Johnson/i })).toBeVisible();
+      await expect(page.getByRole("region", { name: /Edit sharing for Maya Johnson/i })).toBeVisible();
     }
   },
   {
@@ -239,7 +275,7 @@ const captureScenarios: CaptureScenario[] = [
     prepare: async (page) => {
       const savedMaya = page.locator(".recipient-list-item").filter({ hasText: "Maya Johnson" });
       await savedMaya.getByRole("button", { name: /^Edit sharing$/i }).click();
-      const editPanel = savedMaya.getByRole("region", { name: /Edit sharing for Maya Johnson/i });
+      const editPanel = page.getByRole("region", { name: /Edit sharing for Maya Johnson/i });
       await editPanel.getByLabel(/Medical notes/i).uncheck();
       await editPanel.getByLabel(/Found permanent housing/i).uncheck();
       await expect(editPanel.getByText("9 selected", { exact: true })).toBeVisible();
@@ -256,31 +292,39 @@ const captureScenarios: CaptureScenario[] = [
       "The request history should remain understandable after approval."
     ],
     prepare: async (page) => {
-      const nudge = page.locator(".access-request-item").filter({ hasText: "Downtown Outreach Shelter" }).first();
-      await nudge.getByRole("button", { name: /^Approve$/i }).click();
+      const addContactSection = page.getByRole("region", { name: "Add contact" });
+      await addContactSection.getByText("Shelter or group", { exact: true }).click();
+      await expect(addContactSection.getByRole("button", { name: /Ask to add shelter/i })).toBeVisible({
+        timeout: 5000
+      });
+      const nudge = addContactSection.locator(".access-request-item").filter({ hasText: "Downtown Outreach Shelter" }).first();
+      const approveButton = nudge.getByRole("button", { name: /^Approve$/i });
+      await expect(approveButton).toBeVisible({ timeout: 5000 });
+      await approveButton.click();
       await expect(page.locator(".recipient-list-item").filter({ hasText: "Downtown Outreach Shelter" })).toBeVisible();
     }
   },
   {
     id: "uploads",
     path: "/#/uploads",
-    title: "Saved files and info",
+    title: "Wallet",
     state: "default",
     goals: [
-      "Upload affordance should work for camera/mobile and desktop file upload.",
-      "Private versus sharing-eligible status should be visually distinct.",
-      "The vault should not show or ask for a document sensitivity level."
+      "Wallet export and import controls should sit cleanly beside proof sharing and file upload tools.",
+      "The wallet upload affordance should work for camera/mobile and desktop file upload.",
+      "Per-file sharing controls should make private versus selected-contact access visually distinct.",
+      "The wallet should show IPFS/Filecoin backend readiness without exposing credentials."
     ]
   },
   {
     id: "uploads-new-file",
     path: "/#/uploads",
-    title: "Saved files after adding a document",
+    title: "Wallet after adding a file",
     state: "new file added",
     goals: [
       "The newly added file should be visible without exposing document contents.",
-      "Private versus share-eligible status should remain easy to scan.",
-      "The upload area should still be available after a file is added."
+      "Private versus selected-contact sharing status should remain easy to scan.",
+      "The wallet upload area should still be available after a file is added."
     ],
     prepare: async (page) => {
       await page.getByLabel(/Choose file to upload/i).setInputFiles({
@@ -298,24 +342,24 @@ const captureScenarios: CaptureScenario[] = [
     state: "default",
     goals: [
       "Service categories should be dense enough to scan but not cramped.",
-      "The government-services help entry point should be visible.",
+      "Saved and matched services should remain easy to scan without the government-help panel.",
       "Matched services should be easy to compare on mobile and desktop."
     ]
   },
   {
     id: "shelter",
     path: "/#/shelter",
-    title: "Shelter portal",
+    title: "Provider overview",
     state: "default",
     goals: [
-      "Shelter staff workflows should feel separate from personal account controls.",
-      "Shared-device safety should be explicit.",
+      "Provider staff workflows should feel separate from personal account controls.",
+      "Operational metrics should be easy to scan.",
       "The portal should support low-bandwidth, repeated-use contexts."
     ]
   },
   {
     id: "shelter-shared-device-checklist",
-    path: "/#/shelter",
+    path: "/#/provider-operations",
     title: "Shelter portal shared-device checklist",
     state: "safety checklist checked",
     goals: [
@@ -330,8 +374,19 @@ const captureScenarios: CaptureScenario[] = [
     }
   },
   {
+    id: "provider-case-management",
+    path: "/#/provider-cases",
+    title: "Provider case management",
+    state: "default caseload",
+    goals: [
+      "Case rows should show next steps, status, priority, and eligibility requirements without crowding.",
+      "Messaging and eligibility-proof actions should be visually available for each served client.",
+      "US citizenship and other criteria should read as proof requirements, not raw document disclosure."
+    ]
+  },
+  {
     id: "shelter-create-user-draft",
-    path: "/#/shelter",
+    path: "/#/provider-operations",
     title: "Shelter portal create-user draft",
     state: "staff-created user draft",
     goals: [
@@ -340,7 +395,7 @@ const captureScenarios: CaptureScenario[] = [
       "Contact reminder helper copy should remain readable in the staff flow."
     ],
     prepare: async (page) => {
-      await page.getByLabel(/Verified staff operator/i).selectOption({ label: "Avery Patel" });
+      await page.getByLabel(/Staff identity/i).selectOption({ label: "Avery Patel" });
       const createUser = page.locator('section[aria-labelledby="Create-user-account"]');
       await createUser.getByLabel(/Legal or full name/i).fill("Casey Example");
       await createUser.getByLabel(/Preferred name/i).fill("Casey");
@@ -356,43 +411,44 @@ const captureScenarios: CaptureScenario[] = [
   {
     id: "analytics",
     path: "/#/analytics",
-    title: "Group facts choice",
+    title: "Public analytics dashboard review",
     state: "default",
     goals: [
-      "Group facts choices should start checked unless the user saved them as off.",
-      "The user should be able to turn off each available choice in plain language.",
-      "Safe detail badges should be clearly separated from personal records.",
-      "Group size and privacy-left limits should be understandable."
+      "The screen should read like a public dashboard instead of an internal consent tool.",
+      "Population and provider sections should surface high-level homelessness and service capacity metrics.",
+      "Zero-knowledge and privacy guardrails should be prominent and easy to understand.",
+      "Published measure controls should clearly distinguish live, withheld, and paused releases.",
+      "Metric cards should remain scannable on mobile and desktop."
     ]
   },
   {
     id: "analytics-consented",
     path: "/#/analytics",
-    title: "Group facts selected study",
+    title: "Public analytics dashboard with measure included",
     state: "one choice on",
     goals: [
-      "The selected choice should be visually distinct from paused or available choices.",
-      "Safe detail badges should remain visible after consent is on.",
-      "Privacy-left and group-size limits should stay prominent."
+      "The included measure should read as part of the public release workflow.",
+      "Live, withheld, and paused states should stay visually distinct.",
+      "Privacy and publication details should remain visible after interaction."
     ],
     prepare: async (page) => {
-      const housingStudy = page.getByRole("article", { name: /Housing service gaps/i });
-      await housingStudy.getByRole("checkbox").check();
+      const releaseMeasure = page.getByRole("article", { name: /Provider capacity gap alerts/i });
+      await releaseMeasure.getByRole("checkbox").check();
     }
   },
   {
     id: "analytics-one-choice-off",
     path: "/#/analytics",
-    title: "Group facts choice with one option off",
+    title: "Public analytics dashboard with measure withheld",
     state: "one choice off",
     goals: [
-      "The off choice should be visually clear without making the user feel punished.",
-      "Available and paused choices should remain easy to compare.",
-      "Group size and privacy-left labels should remain visible."
+      "Withholding a measure should be visually clear without hiding privacy guardrails.",
+      "Live and paused measures should remain easy to compare.",
+      "Publication workflow controls should stay understandable."
     ],
     prepare: async (page) => {
-      const housingStudy = page.getByRole("article", { name: /Housing service gaps/i });
-      await housingStudy.getByRole("checkbox").uncheck();
+      const releaseMeasure = page.getByRole("article", { name: /Unsheltered residents seeking beds/i });
+      await releaseMeasure.getByRole("checkbox").uncheck();
     }
   },
   {
@@ -404,39 +460,6 @@ const captureScenarios: CaptureScenario[] = [
       "Proof creation controls should not imply private data is shown.",
       "Public proof inputs should be scannable.",
       "API-required state should be clear but not alarming."
-    ]
-  },
-  {
-    id: "exports",
-    path: "/#/exports",
-    title: "Export center",
-    state: "default",
-    goals: [
-      "Export bundle creation should communicate that records stay encrypted.",
-      "Recipient and record fields should fit on mobile.",
-      "Existing export status should be easy to scan."
-    ]
-  },
-  {
-    id: "security",
-    path: "/#/security",
-    title: "Security settings",
-    state: "default",
-    goals: [
-      "Security preferences should read as saved settings, not temporary reveal controls.",
-      "Shared-device guidance should be visible without exposing sensitive data.",
-      "Bot check copy should make prototype limits clear."
-    ]
-  },
-  {
-    id: "security-customized",
-    path: "/#/security",
-    title: "Security settings with wallet persistence",
-    state: "default wallet safety tools",
-    goals: [
-      "The layout should remain easy to scan on mobile.",
-      "Wallet backup controls should not imply local-only preferences are production enforcement.",
-      "Security tool tiles should be understandable without extra instructions."
     ]
   },
   {
@@ -456,16 +479,21 @@ const artifactRoot = path.resolve(process.cwd(), "artifacts/ui-screenshots/lates
 const appSessionKey = "abby-ui-session-v1";
 const routeReadyHeadings: Record<string, RegExp> = {
   "/": /Welcome to your safety plan!/i,
-  "/#/analytics": /Share group facts, not your name/i,
+  "/#/analytics": /Homelessness and service capacity dashboard/i,
+  "/#/calendar": /^Calendar$/i,
   "/#/check-in": /Set your schedule/i,
   "/#/contacts": /People who can help/i,
-  "/#/exports": /Shareable wallet bundles/i,
+  "/#/exports": /^Wallet$/i,
+  "/#/interactions": /Interaction history/i,
   "/#/proof-center": /Verified wallet claims/i,
   "/#/register": /Create your Abby profile/i,
-  "/#/security": /Account safety/i,
-  "/#/shelter": /Assisted access/i,
+  "/#/settings": /^Settings$/i,
+  "/#/messages": /^Messages$/i,
+  "/#/shelter": /Provider overview/i,
+  "/#/provider-cases": /Case management/i,
+  "/#/provider-operations": /Staff operations/i,
   "/#/social-services": /Find support/i,
-  "/#/uploads": /Saved files and info/i,
+  "/#/uploads": /^Wallet$/i,
   "/#/audit": /Consent and access history/i
 };
 
@@ -496,7 +524,8 @@ async function openCaptureScenario(page: Page, scenarioPath: string) {
     await page.evaluate((key) => window.localStorage.removeItem(key), appSessionKey);
     await page.reload();
     await expect(page.locator(".login-page")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Sign in/i })).toBeVisible();
+    await expect(page.getByRole("group", { name: /Choose portal/i })).toBeVisible();
+    await expect(page.getByLabel(/Email address or telephone/i)).toBeVisible();
     return;
   }
 
@@ -506,26 +535,276 @@ async function openCaptureScenario(page: Page, scenarioPath: string) {
     appSessionKey
   );
 
-  if (scenarioPath === "/#/shelter") {
+  if (scenarioPath === "/#/interactions") {
+    await seedInteractionsCaptureState(page);
+  }
+
+  if (scenarioPath === "/#/calendar") {
+    await seedCalendarCaptureState(page);
+  }
+
+  if (scenarioPath === "/#/shelter" || scenarioPath === "/#/provider-cases" || scenarioPath === "/#/provider-operations") {
     await verifyShelterStaffForCapture(page);
+    if (scenarioPath !== "/#/shelter") {
+      await page.goto(scenarioPath);
+      await page.reload();
+      if (scenarioPath === "/#/provider-cases") {
+        await expect(page.locator("h1", { hasText: routeReadyHeadings[scenarioPath] })).toBeVisible();
+      } else {
+        await expect(page.getByRole("heading", { name: routeReadyHeadings[scenarioPath] })).toBeVisible();
+      }
+    }
     return;
   }
   await page.goto(scenarioPath);
   await page.reload();
   await expect(page.locator(".screen")).toBeVisible();
-  await expect(page.getByRole("heading", { name: routeReadyHeadings[scenarioPath] })).toBeVisible();
+  if (scenarioPath === "/#/shelter" || scenarioPath === "/#/provider-cases") {
+    await expect(page.locator("h1", { hasText: routeReadyHeadings[scenarioPath] })).toBeVisible();
+  } else {
+    await expect(page.getByRole("heading", { name: routeReadyHeadings[scenarioPath] })).toBeVisible();
+  }
+}
+
+async function seedCalendarCaptureState(page: Page) {
+  const now = Date.now();
+  const appointmentAt = new Date(now + 26 * 60 * 60 * 1000).toISOString();
+  const reminderAt = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+  const followUpAt = new Date(now + 54 * 60 * 60 * 1000).toISOString();
+  const lastCheckInAt = new Date(now).toISOString();
+
+  await page.evaluate(
+    ({ appointmentAt, followUpAt, lastCheckInAt, reminderAt }) => {
+      window.localStorage.setItem(
+        "abby-ui-state-v1",
+        JSON.stringify({
+          policy: {
+            intervalDays: 2,
+            reminderChannels: ["email", "sms"],
+            gracePeriodHours: 12,
+            escalationEnabled: true,
+            lastCheckInAt
+          },
+          servicePlans: [
+            {
+              plan_id: "plan-calendar-capture",
+              wallet_id: "wallet-demo",
+              service_doc_id: "svc-food-pantry-1",
+              source_content_cid: "cid-food",
+              source_page_cid: "page-food",
+              service_title: "Food pantry intake",
+              provider_name: "Neighborhood Food Pantry",
+              goal: "Attend pantry appointment and confirm next pickup window.",
+              steps: ["Bring photo ID"],
+              documents_needed: ["Photo ID"],
+              questions_to_ask: ["What documents are needed next?"],
+              appointment_at: appointmentAt,
+              reminder_at: reminderAt,
+              travel_target: "Bus 12 to 4th Ave",
+              assigned_worker_recipient_id: "",
+              status: "active",
+              related_interaction_ids: [],
+              private_notes_record_id: "",
+              created_at: lastCheckInAt,
+              updated_at: lastCheckInAt
+            }
+          ],
+          serviceInteractions: [
+            {
+              interaction_id: "int-calendar-capture",
+              wallet_id: "wallet-demo",
+              service_doc_id: "svc-clinic-1",
+              source_content_cid: "cid-clinic",
+              source_page_cid: "page-clinic",
+              provider_name: "Health Clinic",
+              program_name: "Clinic intake",
+              interaction_type: "appointment_scheduled",
+              channel: "phone",
+              actor_did: "did:example:user",
+              counterparty_name: "Clinic desk",
+              counterparty_contact: "503-555-0100",
+              timestamp: lastCheckInAt,
+              status: "active",
+              outcome: "Call confirmed",
+              notes_record_id: "",
+              next_action: "Bring paperwork",
+              next_follow_up_at: followUpAt,
+              source_action_url: "",
+              related_grant_ids: [],
+              related_record_ids: [],
+              privacy_level: "private",
+              created_at: lastCheckInAt,
+              updated_at: lastCheckInAt,
+              metadata: {}
+            }
+          ]
+        })
+      );
+    },
+    { appointmentAt, followUpAt, lastCheckInAt, reminderAt }
+  );
+}
+
+async function seedInteractionsCaptureState(page: Page) {
+  const now = Date.now();
+  const dueFollowUpAt = new Date(now - 6 * 60 * 60 * 1000).toISOString();
+  const upcomingFollowUpAt = new Date(now + 42 * 60 * 60 * 1000).toISOString();
+  const recordedAt = new Date(now - 12 * 60 * 60 * 1000).toISOString();
+
+  await page.evaluate(
+    ({ dueFollowUpAt, recordedAt, upcomingFollowUpAt }) => {
+      window.localStorage.setItem(
+        "abby-ui-state-v1",
+        JSON.stringify({
+          savedServices: [
+            {
+              saved_service_id: "saved-food-pantry",
+              service_doc_id: "svc-food-pantry-1",
+              source_content_cid: "cid-food",
+              source_page_cid: "page-food",
+              title: "Food pantry intake",
+              label: "Food pantry intake",
+              provider_name: "Neighborhood Food Pantry",
+              program_name: "Food pantry intake",
+              notes: "",
+              saved_at: recordedAt,
+              updated_at: recordedAt
+            }
+          ],
+          servicePlans: [],
+          serviceInteractions: [
+            {
+              interaction_id: "int-capture-1",
+              wallet_id: "wallet-demo",
+              service_doc_id: "svc-food-pantry-1",
+              source_content_cid: "cid-food",
+              source_page_cid: "page-food",
+              provider_name: "Neighborhood Food Pantry",
+              program_name: "Food pantry intake",
+              interaction_type: "appointment_scheduled",
+              channel: "phone",
+              actor_did: "did:example:user",
+              counterparty_name: "Pantry intake desk",
+              counterparty_contact: "503-555-0100",
+              timestamp: recordedAt,
+              status: "active",
+              outcome: "Appointment confirmed.",
+              notes_record_id: "",
+              next_action: "Bring paperwork",
+              next_follow_up_at: upcomingFollowUpAt,
+              source_action_url: "",
+              related_grant_ids: [],
+              related_record_ids: [],
+              privacy_level: "private",
+              created_at: recordedAt,
+              updated_at: recordedAt,
+              metadata: {}
+            },
+            {
+              interaction_id: "int-capture-2",
+              wallet_id: "wallet-demo",
+              service_doc_id: "svc-clinic-1",
+              source_content_cid: "cid-clinic",
+              source_page_cid: "page-clinic",
+              provider_name: "Health Clinic",
+              program_name: "Clinic intake",
+              interaction_type: "called_provider",
+              channel: "phone",
+              actor_did: "did:example:user",
+              counterparty_name: "Clinic desk",
+              counterparty_contact: "503-555-0199",
+              timestamp: recordedAt,
+              status: "needs_follow_up",
+              outcome: "Left a voicemail.",
+              notes_record_id: "",
+              next_action: "Call back if no response",
+              next_follow_up_at: dueFollowUpAt,
+              source_action_url: "",
+              related_grant_ids: [],
+              related_record_ids: [],
+              privacy_level: "restricted",
+              created_at: recordedAt,
+              updated_at: recordedAt,
+              metadata: {}
+            }
+          ]
+        })
+      );
+    },
+    { dueFollowUpAt, recordedAt, upcomingFollowUpAt }
+  );
 }
 
 async function verifyShelterStaffForCapture(page: Page) {
-  await page.goto("/#/register");
-  await expect(page.getByRole("heading", { name: /Create your Abby profile/i })).toBeVisible();
-  await page.getByLabel(/I am shelter staff/i).check();
-  await page.locator("select").first().selectOption("Rose City Shelter");
-  await page.getByLabel(/Shelter staff PIN/i).fill("1234");
-  await page.getByRole("button", { name: /Verify shelter staff/i }).click();
-  await expect(page.getByText(/Shelter staff verified/i)).toBeVisible();
   await page.goto("/#/shelter");
-  await expect(page.getByRole("heading", { name: /Assisted access/i })).toBeVisible();
+  await page.reload();
+  await expect(page.locator(".screen")).toBeVisible();
+  await expect(page.locator("h1", { hasText: routeReadyHeadings["/#/shelter"] })).toBeVisible({ timeout: 15000 });
+  const staffIdentity = page.getByRole("combobox", { name: /Staff identity/i });
+  await expect(staffIdentity).toBeVisible({ timeout: 15000 });
+  await staffIdentity.selectOption("staff-demo-rose");
+}
+
+async function captureScenarioScreenshot(page: Page, outputPath: string): Promise<string[]> {
+  try {
+    await page.screenshot({
+      fullPage: true,
+      scale: "css",
+      path: outputPath,
+    });
+    return [outputPath];
+  } catch (error) {
+    if (!isScreenshotDimensionLimitError(error)) {
+      throw error;
+    }
+  }
+
+  return captureScenarioScreenshotTiles(page, outputPath);
+}
+
+async function captureScenarioScreenshotTiles(page: Page, outputPath: string): Promise<string[]> {
+  const viewportSize = page.viewportSize();
+  const viewportHeight = viewportSize?.height ?? await page.evaluate(() => window.innerHeight);
+  const totalHeight = await page.evaluate(() => Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight,
+    document.documentElement.clientHeight,
+  ));
+  const maxScrollTop = Math.max(0, totalHeight - viewportHeight);
+  const scrollStep = Math.max(1, viewportHeight - 120);
+  const positions = new Set<number>();
+  for (let top = 0; top <= maxScrollTop; top += scrollStep) {
+    positions.add(Math.min(top, maxScrollTop));
+  }
+  positions.add(maxScrollTop);
+
+  const ext = path.extname(outputPath);
+  const base = outputPath.slice(0, outputPath.length - ext.length);
+  const partPaths: string[] = [];
+
+  let index = 0;
+  for (const top of [...positions].sort((left, right) => left - right)) {
+    index += 1;
+    await page.evaluate((value) => window.scrollTo(0, value), top);
+    await page.waitForTimeout(50);
+    const partPath = `${base}-part-${String(index).padStart(2, "0")}${ext}`;
+    await page.screenshot({
+      fullPage: false,
+      scale: "css",
+      path: partPath,
+    });
+    partPaths.push(partPath);
+  }
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(50);
+  return partPaths;
+}
+
+function isScreenshotDimensionLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Cannot take screenshot larger than 32767 pixels on any dimension/i.test(message) ||
+    new RegExp(String(MAX_SCREENSHOT_DIMENSION)).test(message);
 }
 
 test("capture Abby UI screenshots for multimodal UX review", async ({ page }, testInfo) => {
@@ -545,10 +824,10 @@ test("capture Abby UI screenshots for multimodal UX review", async ({ page }, te
     if (route.prepare) {
       await route.prepare(page);
     }
-    await page.screenshot({
-      fullPage: true,
-      path: path.join(viewportDir, `${route.id}.png`)
-    });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(50);
+    const screenshotPaths = await captureScenarioScreenshot(page, path.join(viewportDir, `${route.id}.png`));
+    const relativeScreenshotPaths = screenshotPaths.map((screenshotPath) => path.relative(process.cwd(), screenshotPath));
 
     manifest.push({
       id: route.id,
@@ -557,7 +836,8 @@ test("capture Abby UI screenshots for multimodal UX review", async ({ page }, te
       state: route.state,
       goals: route.goals,
       viewport,
-      screenshotPath: path.relative(process.cwd(), path.join(viewportDir, `${route.id}.png`)),
+      screenshotPath: relativeScreenshotPaths[0],
+      screenshotPaths: relativeScreenshotPaths.length > 1 ? relativeScreenshotPaths : undefined,
       multimodalPrompt: buildPrompt(route, viewport)
     });
   }

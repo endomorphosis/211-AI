@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "location__multnomah",
+  "kind": "location",
+  "key": "multnomah",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "eviction_prevention_multnomah#turn-1",
+      "scenarioId": "eviction_prevention_multnomah",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "rent",
+      "locationTag": "multnomah",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need eviction prevention help in Multnomah County.",
+      "normalizedQuery": "eviction prevention multnomah county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:6f7a5b8f93e42931",
+        "service:5baf40645f0369dd",
+        "page:bafkreidvlohevfa3hypn533wgtzd2mnxorfphy2cuidbfsgvoy3nrg4tyy",
+        "page:bafkreihxt2q5b3ugwbgw4fyp6xbas4xgp5x4cqf5zkcn37yj223fpifrnm",
+        "service:a06ac3489b28750b"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_rent_assistance_clackamas#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_rent_assistance_clackamas",
+          "user": "Can you find rent assistance in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_portland#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_portland",
+          "user": "Can you find eviction prevention in Portland?"
+        },
+        {
+          "recordId": "matrix_eviction_prevention_beaverton#turn-1",
+          "score": 0.852435,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_eviction_prevention_beaverton",
+          "user": "Can you find eviction prevention in Beaverton?"
+        }
+      ]
+    },
+    {
+      "id": "childcare_help#turn-1",
+      "scenarioId": "childcare_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "multnomah",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need child care help in Multnomah County.",
+      "normalizedQuery": "child care multnomah county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreiby4s3gvaonqwwpya5yf5f3qniw63vgpqlcdybseb5xiewplhv76u",
+        "page:bafkreid6v2cfyd6lzag4ozf4w43u5dczhvmpocxa6ai3l5l2qq7fvdkxsa",
+        "service:df6f05609bb7717a",
+        "service:c6e7d10a43fdd9cc",
+        "service:e335c849572cb114"
+      ],
+      "similarCases": [
+        {
+          "recordId": "eviction_prevention_multnomah#turn-1",
+          "score": 0.801191,
+          "route": "grounded_211_answer",
+          "scenarioId": "eviction_prevention_multnomah",
+          "user": "I need eviction prevention help in Multnomah County."
+        },
+        {
+          "recordId": "matrix_child_care_portland#turn-1",
+          "score": 0.77992,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_portland",
+          "user": "Can you find child care help in Portland?"
+        },
+        {
+          "recordId": "matrix_child_care_beaverton#turn-1",
+          "score": 0.742781,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_beaverton",
+          "user": "Can you find child care help in Beaverton?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "childcare_help#turn-1",
+      "to": "eviction_prevention_multnomah#turn-1",
+      "type": "semantic_similar",
+      "score": 0.801191,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

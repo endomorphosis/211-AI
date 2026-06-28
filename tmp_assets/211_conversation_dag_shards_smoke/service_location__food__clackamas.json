@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__food__clackamas",
+  "kind": "service_location",
+  "key": "food__clackamas",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_food_pantry_clackamas#turn-1",
+      "scenarioId": "matrix_food_pantry_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find food pantry in Clackamas County?",
+      "normalizedQuery": "food pantry meal meals groceries clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:b8c762144d937988",
+        "service:0dfbfb30f06432a9",
+        "service:d8559ced93d0f936",
+        "service:0420159846f1dd26",
+        "service:0d4be1a249bfe7ab"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_food_pantry_portland#turn-1",
+          "score": 0.923188,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_portland",
+          "user": "Can you find food pantry in Portland?"
+        },
+        {
+          "recordId": "food_then_human#turn-1",
+          "score": 0.897152,
+          "route": "grounded_211_answer",
+          "scenarioId": "food_then_human",
+          "user": "Can you find food help in Portland?"
+        },
+        {
+          "recordId": "matrix_food_pantry_gresham#turn-1",
+          "score": 0.892415,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_gresham",
+          "user": "Can you find food pantry in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_community_meals_clackamas#turn-1",
+      "scenarioId": "matrix_community_meals_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find community meals in Clackamas County?",
+      "normalizedQuery": "community meals clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:77801dbfae971c49",
+        "service:d8559ced93d0f936",
+        "service:0420159846f1dd26",
+        "service:4f3f12fd2a097337",
+        "service:2d63f632b46d0d29"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_clothing_clackamas#turn-1",
+          "score": 0.842233,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_clothing_clackamas",
+          "user": "Can you find clothing help in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_food_pantry_clackamas#turn-1",
+          "score": 0.822439,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_clackamas",
+          "user": "Can you find food pantry in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_food_pantry_salem#turn-1",
+          "score": 0.801783,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_food_pantry_salem",
+          "user": "Can you find food pantry in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_senior_meals_clackamas#turn-1",
+      "scenarioId": "matrix_senior_meals_clackamas",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "food",
+      "locationTag": "clackamas",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find senior meals in Clackamas County?",
+      "normalizedQuery": "senior meals clackamas county",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:3e6d01012573fc89",
+        "service:cf214c29c2d9d13a",
+        "service:e93eb5db903fdd34",
+        "service:5588dfa8fd4b53b9",
+        "service:6acd6e7a7e6bb46c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_senior_meals_gresham#turn-1",
+          "score": 0.897083,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_senior_meals_gresham",
+          "user": "Can you find senior meals in Gresham?"
+        },
+        {
+          "recordId": "matrix_senior_meals_beaverton#turn-1",
+          "score": 0.897083,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_senior_meals_beaverton",
+          "user": "Can you find senior meals in Beaverton?"
+        },
+        {
+          "recordId": "matrix_senior_meals_medford#turn-1",
+          "score": 0.897083,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_senior_meals_medford",
+          "user": "Can you find senior meals in Medford?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_community_meals_clackamas#turn-1",
+      "to": "matrix_food_pantry_clackamas#turn-1",
+      "type": "semantic_similar",
+      "score": 0.822439,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

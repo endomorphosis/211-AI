@@ -15,7 +15,7 @@ import type {
   WalletAccessRequest,
   WalletGrantReceipt
 } from "../models/abby";
-import type { ShelterStaffAccount, ShelterUserAccount } from "./appState";
+import type { ShelterCaseRecord, ShelterProviderMessage, ShelterStaffAccount, ShelterUserAccount } from "./appState";
 import { type WalletApiConfig } from "../services/walletApi";
 import {
   answerServiceNavigationQuestion,
@@ -150,10 +150,13 @@ export interface AppActionState {
   shelterContactRequests?: ShelterContactRequest[];
   shelterStaffAccounts?: ShelterStaffAccount[];
   shelterUserAccounts?: ShelterUserAccount[];
+  shelterCaseRecords?: ShelterCaseRecord[];
+  shelterProviderMessages?: ShelterProviderMessage[];
   uploads: UploadItem[];
   accessRequests: WalletAccessRequest[];
   grantReceipts: WalletGrantReceipt[];
   walletAuditEvents: AuditEvent[];
+  benefitsOptIn?: boolean;
   analyticsStudies?: AnalyticsStudy[];
   analyticsOptIn?: Record<string, boolean>;
   walletProofReceipts: ProofReceiptView[];
@@ -412,10 +415,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 async function search211ServicesAction(
-  _runtime: AppActionRuntime,
+  runtime: AppActionRuntime,
   input: Search211ServicesCommandInput
 ): Promise<AppActionResult> {
-  const response = await searchServiceNavigation(input);
+  const response = await searchServiceNavigation(input, {
+    walletApiConfig: runtime.walletApiConfig,
+  });
   return success("search_211_services", response.summary, {
     evidenceBundle: response.evidenceBundle,
     recordIds: response.recordIds
@@ -423,13 +428,16 @@ async function search211ServicesAction(
 }
 
 async function answer211QuestionAction(
-  _runtime: AppActionRuntime,
+  runtime: AppActionRuntime,
   input: Answer211QuestionCommandInput
 ): Promise<AppActionResult> {
-  const response = await answerServiceNavigationQuestion(input);
+  const response = await answerServiceNavigationQuestion(input, {
+    walletApiConfig: runtime.walletApiConfig,
+  });
   return success("answer_211_question", response.answer, {
     evidenceBundle: response.evidenceBundle,
-    recordIds: response.recordIds
+    recordIds: response.recordIds,
+    metadata: response.metadata,
   });
 }
 

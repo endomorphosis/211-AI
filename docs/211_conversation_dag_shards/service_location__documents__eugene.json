@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-19T22:50:42.990598+00:00",
+  "id": "service_location__documents__eugene",
+  "kind": "service_location",
+  "key": "documents__eugene",
+  "nodeCount": 3,
+  "nodes": [
+    {
+      "id": "matrix_id_replacement_eugene#turn-1",
+      "scenarioId": "matrix_id_replacement_eugene",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "documents",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find ID replacement help in Eugene?",
+      "normalizedQuery": "id replacement eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9f02d53fbb3e9c6a",
+        "service:225c81db65f1ee12",
+        "service:fbd5bccefe3a07a8",
+        "service:8ba0530778ce4030",
+        "service:57b678175066bf52"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0162_id_replacement_eugene_6#turn-2",
+          "score": 0.933345,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0162_id_replacement_eugene_6",
+          "user": "I am in Eugene and need ID replacement help."
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.899694,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        },
+        {
+          "recordId": "stress_0578_id_replacement_eugene_2#turn-1",
+          "score": 0.869436,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0578_id_replacement_eugene_2",
+          "user": "Please search 211 for ID replacement help near Eugene."
+        }
+      ]
+    },
+    {
+      "id": "stress_0162_id_replacement_eugene_6#turn-2",
+      "scenarioId": "stress_0162_id_replacement_eugene_6",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "documents",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "I am in Eugene and need ID replacement help.",
+      "normalizedQuery": "eugene id replacement",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:9f02d53fbb3e9c6a",
+        "service:225c81db65f1ee12",
+        "service:fbd5bccefe3a07a8",
+        "service:8ba0530778ce4030",
+        "service:57b678175066bf52"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_id_replacement_eugene#turn-1",
+          "score": 0.933345,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_eugene",
+          "user": "Can you find ID replacement help in Eugene?"
+        },
+        {
+          "recordId": "stress_0006_id_replacement_portland_6#turn-2",
+          "score": 0.906672,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0006_id_replacement_portland_6",
+          "user": "I am in Portland and need ID replacement help."
+        },
+        {
+          "recordId": "stress_0630_id_replacement_portland_6#turn-2",
+          "score": 0.906672,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0630_id_replacement_portland_6",
+          "user": "I am in Portland and need ID replacement help."
+        }
+      ]
+    },
+    {
+      "id": "stress_0578_id_replacement_eugene_2#turn-1",
+      "scenarioId": "stress_0578_id_replacement_eugene_2",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "documents",
+      "locationTag": "eugene",
+      "promptTemplate": "grounded_service_match",
+      "user": "Please search 211 for ID replacement help near Eugene.",
+      "normalizedQuery": "please search 211 id replacement eugene",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreibzy5efotmw3ske2hfpvhghn5uxaccx2jhlgo7egckhrutj3izodq",
+        "service:9f02d53fbb3e9c6a",
+        "service:bf0682fd9fa9809c",
+        "service:41039f7cc90af447",
+        "service:225c81db65f1ee12"
+      ],
+      "similarCases": [
+        {
+          "recordId": "stress_0422_id_replacement_portland_2#turn-1",
+          "score": 0.943998,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0422_id_replacement_portland_2",
+          "user": "Please search 211 for ID replacement help near Portland."
+        },
+        {
+          "recordId": "stress_0266_id_replacement_beaverton_2#turn-1",
+          "score": 0.918905,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0266_id_replacement_beaverton_2",
+          "user": "Please search 211 for ID replacement help near Beaverton."
+        },
+        {
+          "recordId": "stress_0162_id_replacement_eugene_6#turn-2",
+          "score": 0.904236,
+          "route": "grounded_211_answer",
+          "scenarioId": "stress_0162_id_replacement_eugene_6",
+          "user": "I am in Eugene and need ID replacement help."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_id_replacement_eugene#turn-1",
+      "to": "stress_0162_id_replacement_eugene_6#turn-2",
+      "type": "semantic_similar",
+      "score": 0.933345,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "matrix_id_replacement_eugene#turn-1",
+      "to": "stress_0578_id_replacement_eugene_2#turn-1",
+      "type": "semantic_similar",
+      "score": 0.869436,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0162_id_replacement_eugene_6#turn-2",
+      "to": "matrix_id_replacement_eugene#turn-1",
+      "type": "semantic_similar",
+      "score": 0.933345,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "stress_0578_id_replacement_eugene_2#turn-1",
+      "to": "stress_0162_id_replacement_eugene_6#turn-2",
+      "type": "semantic_similar",
+      "score": 0.904236,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

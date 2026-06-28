@@ -1,0 +1,15 @@
+FROM node:24-bookworm-slim
+
+ARG FILECOIN_PIN_NPM_VERSION=0.20.1
+
+ENV NODE_ENV=production
+
+WORKDIR /opt/filecoin-pin
+
+RUN npm install --global --omit=dev "filecoin-pin@${FILECOIN_PIN_NPM_VERSION}" \
+    && npm cache clean --force \
+    && mkdir -p /var/lib/filecoin-pin/cars
+
+EXPOSE 3456
+
+CMD ["filecoin-pin", "server"]

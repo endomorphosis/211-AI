@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__family__salem",
+  "kind": "service_location",
+  "key": "family__salem",
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "id": "matrix_diapers_salem#turn-1",
+      "scenarioId": "matrix_diapers_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find diapers in Salem?",
+      "normalizedQuery": "diapers diaper baby salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:72a4239cdad3e299",
+        "service:c196660a779416f8",
+        "service:25f3554514a1b499",
+        "service:0de8e3b5ff9b859a",
+        "service:0661e27999f1553c"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_diapers_beaverton#turn-1",
+          "score": 0.967202,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_beaverton",
+          "user": "Can you find diapers in Beaverton?"
+        },
+        {
+          "recordId": "diapers_portland#turn-1",
+          "score": 0.965515,
+          "route": "grounded_211_answer",
+          "scenarioId": "diapers_portland",
+          "user": "Where can I get diapers for my baby in Portland?"
+        },
+        {
+          "recordId": "matrix_diapers_portland#turn-1",
+          "score": 0.965515,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_portland",
+          "user": "Can you find diapers in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "matrix_child_care_salem#turn-1",
+      "scenarioId": "matrix_child_care_salem",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "family",
+      "locationTag": "salem",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find child care help in Salem?",
+      "normalizedQuery": "child care salem",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:e775cce8cfe81bc7",
+        "service:f6cfd37be1bc9b0c",
+        "service:2ebf3aa7073e45de",
+        "service:7816785321a6d77a",
+        "service:bba38bd4c66dc4e3"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_detox_salem#turn-1",
+          "score": 0.738271,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_detox_salem",
+          "user": "Can you find detox help in Salem?"
+        },
+        {
+          "recordId": "matrix_laundry_salem#turn-1",
+          "score": 0.738271,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_salem",
+          "user": "Can you find laundry services in Salem?"
+        },
+        {
+          "recordId": "matrix_diapers_salem#turn-1",
+          "score": 0.732674,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_diapers_salem",
+          "user": "Can you find diapers in Salem?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "matrix_child_care_salem#turn-1",
+      "to": "matrix_diapers_salem#turn-1",
+      "type": "semantic_similar",
+      "score": 0.732674,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    }
+  ]
+}

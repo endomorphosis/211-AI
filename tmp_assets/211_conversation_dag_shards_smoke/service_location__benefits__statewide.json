@@ -1,0 +1,758 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-05-20T06:58:58.852262+00:00",
+  "id": "service_location__benefits__statewide",
+  "kind": "service_location",
+  "key": "benefits__statewide",
+  "nodeCount": 14,
+  "nodes": [
+    {
+      "id": "documents_for_benefits#turn-1",
+      "scenarioId": "documents_for_benefits",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for benefits in Oregon?",
+      "normalizedQuery": "documents apply benefits snap assistance oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.952788,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.950708,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.904748,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "repeated_under_evidenced_documents#turn-1",
+      "scenarioId": "repeated_under_evidenced_documents",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for benefits in Oregon?",
+      "normalizedQuery": "documents apply benefits snap assistance oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:02b582c05d666cd2"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.952788,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.905823,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.880773,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "repeated_under_evidenced_documents#turn-2",
+      "scenarioId": "repeated_under_evidenced_documents",
+      "turnIndex": 1,
+      "route": "live_agent",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "live_agent_handoff",
+      "user": "I still cannot figure out what paperwork to bring for benefits.",
+      "normalizedQuery": "still paperwork bring benefits snap assistance",
+      "voiceResponse": "This is better handled by a person. I can keep this handoff active.",
+      "evidenceDocIds": [
+        "service:02b582c05d666cd2",
+        "service:ea585d467287a4d5",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:9f02d53fbb3e9c6a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.663293,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "snap_help_portland#turn-1",
+          "score": 0.646508,
+          "route": "grounded_211_answer",
+          "scenarioId": "snap_help_portland",
+          "user": "I need help with SNAP benefits in Portland."
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-4",
+          "score": 0.628151,
+          "route": "live_agent",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "I still cannot figure out what documents I need."
+        }
+      ]
+    },
+    {
+      "id": "immigration_legal_help#turn-1",
+      "scenarioId": "immigration_legal_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need immigration legal help in Oregon.",
+      "normalizedQuery": "immigration legal aid attorney advocacy oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:8db66f70f2f5ec90",
+        "service:0963e94e6b3dc85a",
+        "page:bafkreih6misfhdwx4z2wqmfbd2tavnam7irrs7q3ekzsprs3aras3p5rpu",
+        "page:bafkreigawl5nzrtvorkwvbvyrdp66mc2cfj535zrg4kqx7hlt7lgx5joha",
+        "service:7f96e069e2322ed5"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_legal_aid_portland#turn-1",
+          "score": 0.889001,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_portland",
+          "user": "Can you find legal aid in Portland?"
+        },
+        {
+          "recordId": "matrix_legal_aid_clackamas#turn-1",
+          "score": 0.835191,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_clackamas",
+          "user": "Can you find legal aid in Clackamas County?"
+        },
+        {
+          "recordId": "matrix_legal_aid_salem#turn-1",
+          "score": 0.825501,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_legal_aid_salem",
+          "user": "Can you find legal aid in Salem?"
+        }
+      ]
+    },
+    {
+      "id": "birth_certificate_help#turn-1",
+      "scenarioId": "birth_certificate_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find help getting a birth certificate in Oregon?",
+      "normalizedQuery": "getting birth certificate oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:b4c63c7647754bb5",
+        "page:bafkreiemvimtczhcn3mohrl6plj6ad2xf6gz5h44iu7vmwspgqjujrxd54",
+        "page:bafkreibqsqu6eecgrxj572cxeem2e52dpwgkyidomtveqovayklc6ql2y4",
+        "service:83d45b4739eb013a",
+        "service:1165013475864614"
+      ],
+      "similarCases": [
+        {
+          "recordId": "internet_discount#turn-1",
+          "score": 0.758097,
+          "route": "grounded_211_answer",
+          "scenarioId": "internet_discount",
+          "user": "Can you find internet discount help in Oregon?"
+        },
+        {
+          "recordId": "domestic_violence_advocacy#turn-1",
+          "score": 0.742781,
+          "route": "grounded_211_answer",
+          "scenarioId": "domestic_violence_advocacy",
+          "user": "Can you find domestic violence survivor advocacy in Oregon?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_clackamas#turn-1",
+          "score": 0.728356,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_clackamas",
+          "user": "Can you find domestic violence survivor advocacy in Clackamas County?"
+        }
+      ]
+    },
+    {
+      "id": "domestic_violence_advocacy#turn-1",
+      "scenarioId": "domestic_violence_advocacy",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find domestic violence survivor advocacy in Oregon?",
+      "normalizedQuery": "domestic violence survivor advocacy oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:5365a85b387044f7",
+        "page:bafkreic6nu6qu24tvolxmf5wtd3ad5jm6a63vimixhqccz6fvswg6asxfa",
+        "page:bafkreienlugsyfq2ximthab6ol46hzz7eampw5b6add5nsf2fckf7bk5ze",
+        "service:a704a02c64a5a445",
+        "page:bafkreifobj7dii4ftnmjbulmimj5gtanaahukkpu5rodpv7rdv6npvya34"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_domestic_violence_advocacy_hillsboro#turn-1",
+          "score": 0.96225,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_hillsboro",
+          "user": "Can you find domestic violence survivor advocacy in Hillsboro?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_portland#turn-1",
+          "score": 0.96,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_portland",
+          "user": "Can you find domestic violence survivor advocacy in Portland?"
+        },
+        {
+          "recordId": "matrix_domestic_violence_advocacy_gresham#turn-1",
+          "score": 0.96,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_domestic_violence_advocacy_gresham",
+          "user": "Can you find domestic violence survivor advocacy in Gresham?"
+        }
+      ]
+    },
+    {
+      "id": "disability_benefits_help#turn-1",
+      "scenarioId": "disability_benefits_help",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find disability benefits help in Oregon?",
+      "normalizedQuery": "disability benefits snap assistance oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "page:bafkreial32y3hqwwh35fangrldpwce6hqlz4r22ysrwxbni6aaxa6xa3cu",
+        "service:8ba0530778ce4030"
+      ],
+      "similarCases": [
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-2",
+          "score": 0.94673,
+          "route": "grounded_211_answer",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "I need benefits help in Oregon."
+        },
+        {
+          "recordId": "matrix_id_replacement_salem#turn-1",
+          "score": 0.90796,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_salem",
+          "user": "Can you find ID replacement help in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.872098,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "tax_help_low_income#turn-1",
+      "scenarioId": "tax_help_low_income",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find free tax help for low income people in Oregon?",
+      "normalizedQuery": "free tax low income people oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreigpdz7gkgx2mye6fznkrjudjznsysth4oynsm5sy5sx3lnlquzige",
+        "page:bafkreicyhaqjidp3zdegweootwo2veoh3hasyf3gepfdjhlnes5qwxq6xu",
+        "page:bafkreigecvz7zurvbyqbc374ty2wgbymmjfpajkse2h33bizpy3rgtxt2q",
+        "service:1f2dcf4580114cf1",
+        "service:40f7711cf75fcb99"
+      ],
+      "similarCases": [
+        {
+          "recordId": "internet_discount#turn-1",
+          "score": 0.695378,
+          "route": "grounded_211_answer",
+          "scenarioId": "internet_discount",
+          "user": "Can you find internet discount help in Oregon?"
+        },
+        {
+          "recordId": "matrix_child_care_beaverton#turn-1",
+          "score": 0.681329,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_beaverton",
+          "user": "Can you find child care help in Beaverton?"
+        },
+        {
+          "recordId": "matrix_child_care_medford#turn-1",
+          "score": 0.674451,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_medford",
+          "user": "Can you find child care help in Medford?"
+        }
+      ]
+    },
+    {
+      "id": "internet_discount#turn-1",
+      "scenarioId": "internet_discount",
+      "turnIndex": 0,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "Can you find internet discount help in Oregon?",
+      "normalizedQuery": "internet discount oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "page:bafkreicdczc2b2zirtf5txrgtr2x55fhaq3d5i44pnlttrxczbtmlgzhky",
+        "page:bafkreicqqcsqjcodbcc2hz5xu57bxa35rep6pwawx4c6zacq25u5twsmmy",
+        "page:bafkreigipvqsfqtnljoancnowioqjegf54rutlmvszxpbi437dezf6jfxu",
+        "service:8c0123ab7654635e",
+        "page:bafkreihuzkdvhnqwg5msa4gy2z5g6433jnfjp5lvsbipdpntflueqvxypy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "matrix_child_care_eugene#turn-1",
+          "score": 0.760608,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_child_care_eugene",
+          "user": "Can you find child care help in Eugene?"
+        },
+        {
+          "recordId": "birth_certificate_help#turn-1",
+          "score": 0.758097,
+          "route": "grounded_211_answer",
+          "scenarioId": "birth_certificate_help",
+          "user": "Can you find help getting a birth certificate in Oregon?"
+        },
+        {
+          "recordId": "matrix_laundry_portland#turn-1",
+          "score": 0.749999,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_laundry_portland",
+          "user": "Can you find laundry services in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "new_to_oregon_help#turn-1",
+      "scenarioId": "new_to_oregon_help",
+      "turnIndex": 0,
+      "route": "clarifying_prompt",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "clarify_need_or_location",
+      "user": "I am new to Oregon and need help.",
+      "normalizedQuery": "new oregon",
+      "voiceResponse": "I can help. What city are you in, and what kind of help do you need most?",
+      "evidenceDocIds": [
+        "service:5127a05e8be9124b",
+        "service:1efb2c3319525645",
+        "service:0fe71816f1005b6b",
+        "service:3ae1afd8cc467e09",
+        "service:588a6cf25a10415a"
+      ],
+      "similarCases": [
+        {
+          "recordId": "sms_need_help#turn-1",
+          "score": 0.80322,
+          "route": "clarifying_prompt",
+          "scenarioId": "sms_need_help",
+          "user": "Need help"
+        },
+        {
+          "recordId": "broad_then_medical#turn-1",
+          "score": 0.769897,
+          "route": "clarifying_prompt",
+          "scenarioId": "broad_then_medical",
+          "user": "Help me figure out what to do."
+        },
+        {
+          "recordId": "voice_short_help#turn-1",
+          "score": 0.76584,
+          "route": "clarifying_prompt",
+          "scenarioId": "voice_short_help",
+          "user": "Help me."
+        }
+      ]
+    },
+    {
+      "id": "documents_for_snap#turn-1",
+      "scenarioId": "documents_for_snap",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for SNAP in Oregon?",
+      "normalizedQuery": "documents apply snap oregon",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy",
+        "service:f1f0337793c6aa3b",
+        "service:57b678175066bf52",
+        "page:bafkreifxuxv2yejobx6nnecqy7nartv36ivezehcvuu6xbqy73a2phnidq",
+        "service:8ba0530778ce4030"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.950708,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.905823,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "broad_then_benefits_documents_then_repeat#turn-3",
+          "score": 0.860151,
+          "route": "template_guided_fallback",
+          "scenarioId": "broad_then_benefits_documents_then_repeat",
+          "user": "What paperwork do I need to bring?"
+        }
+      ]
+    },
+    {
+      "id": "apply_for_oregon_health_plan#turn-1",
+      "scenarioId": "apply_for_oregon_health_plan",
+      "turnIndex": 0,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What documents do I need to apply for Oregon Health Plan?",
+      "normalizedQuery": "documents apply oregon health plan",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "service:1ee7d308cca82397",
+        "service:d5b5854601af8a3b",
+        "service:7ea0969a6672cb62",
+        "service:0964a8d5435f63c7",
+        "page:bafkreic5powj2jap5qsfqrppnuikh2vujyjuipdwghjwmkc65hg4pbxhra"
+      ],
+      "similarCases": [
+        {
+          "recordId": "oregon_health_plan_salem#turn-1",
+          "score": 0.71293,
+          "route": "grounded_211_answer",
+          "scenarioId": "oregon_health_plan_salem",
+          "user": "Can you find Oregon Health Plan application help near Salem?"
+        },
+        {
+          "recordId": "paperwork_for_rent_assistance#turn-1",
+          "score": 0.705978,
+          "route": "template_guided_fallback",
+          "scenarioId": "paperwork_for_rent_assistance",
+          "user": "What paperwork should I bring for a rental assistance application?"
+        },
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.686209,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        }
+      ]
+    },
+    {
+      "id": "broad_then_benefits_documents_then_repeat#turn-2",
+      "scenarioId": "broad_then_benefits_documents_then_repeat",
+      "turnIndex": 1,
+      "route": "grounded_211_answer",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "grounded_service_match",
+      "user": "I need benefits help in Oregon.",
+      "normalizedQuery": "benefits snap assistance oregon",
+      "voiceResponse": "I found a likely 211 match. I can give the phone number, location, or intake details.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "service:8ba0530778ce4030",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "disability_benefits_help#turn-1",
+          "score": 0.94673,
+          "route": "grounded_211_answer",
+          "scenarioId": "disability_benefits_help",
+          "user": "Can you find disability benefits help in Oregon?"
+        },
+        {
+          "recordId": "matrix_id_replacement_salem#turn-1",
+          "score": 0.87913,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_salem",
+          "user": "Can you find ID replacement help in Salem?"
+        },
+        {
+          "recordId": "matrix_id_replacement_portland#turn-1",
+          "score": 0.844408,
+          "route": "grounded_211_answer",
+          "scenarioId": "matrix_id_replacement_portland",
+          "user": "Can you find ID replacement help in Portland?"
+        }
+      ]
+    },
+    {
+      "id": "broad_then_benefits_documents_then_repeat#turn-3",
+      "scenarioId": "broad_then_benefits_documents_then_repeat",
+      "turnIndex": 2,
+      "route": "template_guided_fallback",
+      "serviceTag": "benefits",
+      "locationTag": "statewide",
+      "promptTemplate": "fallback_general_guidance",
+      "user": "What paperwork do I need to bring?",
+      "normalizedQuery": "know start benefits snap assistance oregon paperwork bring",
+      "voiceResponse": "I do not have enough grounded detail for that. Tell me your city or the exact program, or I can connect you to a person.",
+      "evidenceDocIds": [
+        "service:ea585d467287a4d5",
+        "service:57b678175066bf52",
+        "service:02b582c05d666cd2",
+        "service:8ba0530778ce4030",
+        "page:bafkreifocmry3au445mzz2wj5xc5uswvqzpzqhzbaqq5m446yma6u52wjy"
+      ],
+      "similarCases": [
+        {
+          "recordId": "documents_for_benefits#turn-1",
+          "score": 0.904748,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_benefits",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "repeated_under_evidenced_documents#turn-1",
+          "score": 0.880773,
+          "route": "template_guided_fallback",
+          "scenarioId": "repeated_under_evidenced_documents",
+          "user": "What documents do I need to apply for benefits in Oregon?"
+        },
+        {
+          "recordId": "documents_for_snap#turn-1",
+          "score": 0.860151,
+          "route": "template_guided_fallback",
+          "scenarioId": "documents_for_snap",
+          "user": "What documents do I need to apply for SNAP in Oregon?"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.952788,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.950708,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_benefits#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.904748,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-2",
+      "type": "scenario_next_turn",
+      "routeTransition": "template_guided_fallback->live_agent"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.952788,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.905823,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.880773,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "repeated_under_evidenced_documents#turn-2",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.663293,
+      "routeTransition": "live_agent->template_guided_fallback"
+    },
+    {
+      "from": "birth_certificate_help#turn-1",
+      "to": "internet_discount#turn-1",
+      "type": "semantic_similar",
+      "score": 0.758097,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "birth_certificate_help#turn-1",
+      "to": "domestic_violence_advocacy#turn-1",
+      "type": "semantic_similar",
+      "score": 0.742781,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "disability_benefits_help#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-2",
+      "type": "semantic_similar",
+      "score": 0.94673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "tax_help_low_income#turn-1",
+      "to": "internet_discount#turn-1",
+      "type": "semantic_similar",
+      "score": 0.695378,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "internet_discount#turn-1",
+      "to": "birth_certificate_help#turn-1",
+      "type": "semantic_similar",
+      "score": 0.758097,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.950708,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.905823,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "documents_for_snap#turn-1",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "semantic_similar",
+      "score": 0.860151,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "apply_for_oregon_health_plan#turn-1",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.686209,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-2",
+      "to": "broad_then_benefits_documents_then_repeat#turn-3",
+      "type": "scenario_next_turn",
+      "routeTransition": "grounded_211_answer->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-2",
+      "to": "disability_benefits_help#turn-1",
+      "type": "semantic_similar",
+      "score": 0.94673,
+      "routeTransition": "grounded_211_answer->grounded_211_answer"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "broad_then_benefits_documents_then_repeat#turn-4",
+      "type": "scenario_next_turn",
+      "routeTransition": "template_guided_fallback->live_agent"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "documents_for_benefits#turn-1",
+      "type": "semantic_similar",
+      "score": 0.904748,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "repeated_under_evidenced_documents#turn-1",
+      "type": "semantic_similar",
+      "score": 0.880773,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    },
+    {
+      "from": "broad_then_benefits_documents_then_repeat#turn-3",
+      "to": "documents_for_snap#turn-1",
+      "type": "semantic_similar",
+      "score": 0.860151,
+      "routeTransition": "template_guided_fallback->template_guided_fallback"
+    }
+  ]
+}
